@@ -15,12 +15,17 @@ use App\Http\Controllers\WithdrawRequestController;
 use App\Http\Controllers\WithdrawRequestLineController;
 
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
+    return Inertia::render('Auth/Login', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
+        'canResetPassword' => Route::has('password.request'),
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
     ]);
+});
+
+Route::get('/dashboardtest', function () {
+    return Inertia::render('DashboardTest');
 });
 
 Route::get('/dashboard', function () {
