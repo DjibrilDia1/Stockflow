@@ -35,12 +35,12 @@ const navigation = [
     { name: 'Demandes', route: 'demandes.index', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
     { name: 'Rapports',route:'rapports.index', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
     { name: 'Utilisateur',route:'utilisateurs.index', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
-    { name: 'Paramètres', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
+    { name: 'Services & Fournitures', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
 
 ];
 
 const topArticles = [
-    { name: 'Feuilles A3', value: 85 },
+    { name: 'Feuilles A3', value: 85 , },
     { name: 'Stylos Bleus', value: 60 },
     { name: 'Cahier Spirales', value: 45 },
     { name: 'Grant Laser', value: 25 }
@@ -235,29 +235,36 @@ const logout = () => {
     </div>
 </div>
 
-    <div class="bg-white rounded-xl shadow-md border border-slate-100 overflow-hidden self-start flex flex-col">
+    <div class="bg-white rounded-xl shadow-md border border-slate-100 overflow-hidden flex flex-col">
     <div class="px-6 py-4 border-b border-slate-100">
         <h3 class="text-lg font-semibold text-slate-800">Top 5 articles consommés</h3>
     </div>
     
-    <div class="p-6 space-y-6">
-        <div v-for="article in topArticles" :key="article.name">
-            <div class="flex justify-between text-sm mb-2">
-                <span class="font-medium text-slate-700">{{ article.name }}</span>
-                <span class="text-teal-600 font-bold">{{ article.value }}%</span>
-            </div>
-            
-            <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-                <div 
-                    class="bg-teal-600 h-full progress-bar transition-all duration-1000" 
-                    :style="{ width: article.value + '%' }"
-                ></div>
+    <div class="p-6">
+    <div class="relative">
+        
+        <div class="absolute inset-0 flex justify-between pointer-events-none" style="margin-left: 8rem;">
+            <div v-for="i in 6" :key="i" class="h-full border-l border-slate-200 w-full last:border-r"></div>
+        </div>
+
+        <div class="relative z-10">
+            <div v-for="article in topArticles" :key="article.name" class="flex items-center group border-b border-slate-50 last:border-0">
+                <div class="w-32 py-4 pr-4 text-sm font-medium text-slate-700 truncate">
+                    {{ article.name }}
+                </div>
+                
+                <div class="flex-1 py-4">
+                    <div class="h-8 bg-teal-600 rounded-r-sm transition-all duration-1000 ease-out shadow-sm group-hover:bg-teal-500"
+                        :style="{ width: article.value + '%' }">
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="p-4 mt-auto border-t border-slate-50">
-        <button class="w-full py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold rounded-lg transition-colors flex items-center justify-center gap-2">
+    <div class="p-4 mt-auto flex justify-end">
+        <button class="px-6 py-2 bg-teal-700 hover:bg-teal-800 text-white text-sm font-semibold rounded-lg transition-colors">
             Voir rapports
         </button>
     </div>
