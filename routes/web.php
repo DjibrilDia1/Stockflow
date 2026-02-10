@@ -5,14 +5,14 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ServiceController;
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\WarehouseController;
-use App\Http\Controllers\SupplierController;
-use App\Http\Controllers\ItemController;
-use App\Http\Controllers\ItemStockController;
-use App\Http\Controllers\StockMovementController;
-use App\Http\Controllers\WithdrawRequestController;
-use App\Http\Controllers\WithdrawRequestLineController;
+use App\Http\Controllers\CategorieController;
+use App\Http\Controllers\EntrepotController;
+use App\Http\Controllers\FournisseurController;
+use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\StockArticleController;
+use App\Http\Controllers\MouvementStockController;
+use App\Http\Controllers\DemandeSortieController;
+use App\Http\Controllers\LigneDemandeSortieController;
 
 Route::get('/', function () {
     return Inertia::render('Auth/Login', [
@@ -26,10 +26,10 @@ Route::get('/', function () {
 
 Route::get('/dashboardtest', function () {
     return Inertia::render('DashboardTest');
-})->name('dashboardtest'); // <--- Ajoutez ceci !
+})->name('dashboardtest'); 
 
 Route::get('/articles', function () {
-    return Inertia::render('Articles'); // Correspond à Pages/Articles.vue
+    return Inertia::render('Articles'); // Correspond Ã  Pages/Articles.vue
 })->name('articles.index');
 
 Route::get('/mouvements', function () {
@@ -59,14 +59,15 @@ Route::middleware('auth')->group(function () {
 
 
     Route::resource('services', ServiceController::class);
-    Route::resource('categories', CategoryController::class);
-    Route::resource('warehouses', WarehouseController::class);
-    Route::resource('suppliers', SupplierController::class);
-    Route::resource('items', ItemController::class);
-    Route::resource('item-stocks', ItemStockController::class);
-    Route::resource('stock-movements', StockMovementController::class);
-    Route::resource('withdraw-requests', WithdrawRequestController::class);
-    Route::resource('withdraw-request-lines', WithdrawRequestLineController::class);
+    Route::resource('categories', CategorieController::class);
+    Route::resource('warehouses', EntrepotController::class);
+    Route::resource('suppliers', FournisseurController::class);
+    Route::resource('items', ArticleController::class);
+    Route::resource('item-stocks', StockArticleController::class);
+    Route::resource('stock-movements', MouvementStockController::class);
+    Route::resource('withdraw-requests', DemandeSortieController::class);
+    Route::resource('withdraw-request-lines', LigneDemandeSortieController::class);
 });
 
 require __DIR__.'/auth.php';
+

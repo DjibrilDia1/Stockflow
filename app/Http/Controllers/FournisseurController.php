@@ -2,21 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Supplier;
+use App\Models\Fournisseur;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class SupplierController extends Controller
+class FournisseurController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index(): Response
     {
-        return Inertia::render('Suppliers/Index', [
-            'suppliers' => Supplier::all(),
+        return Inertia::render('Fournisseurs/Index', [
+            'suppliers' => Fournisseur::all(),
         ]);
     }
 
@@ -25,7 +25,7 @@ class SupplierController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Suppliers/Create');
+        return Inertia::render('Fournisseurs/Create');
     }
 
     /**
@@ -34,14 +34,14 @@ class SupplierController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'contact_name' => 'nullable|string|max:255',
-            'phone' => 'nullable|string|max:255',
-            'email' => 'nullable|email|max:255',
-            'address' => 'nullable|string',
+            'fou_nom' => 'required|string|max:255',
+            'fou_contact_nom' => 'nullable|string|max:255',
+            'fou_telephone' => 'nullable|string|max:255',
+            'fou_email' => 'nullable|email|max:255',
+            'fou_adresse' => 'nullable|string',
         ]);
 
-        Supplier::create($validated);
+        Fournisseur::create($validated);
 
         return Redirect::route('suppliers.index');
     }
@@ -49,9 +49,9 @@ class SupplierController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Supplier $supplier): Response
+    public function show(Fournisseur $supplier): Response
     {
-        return Inertia::render('Suppliers/Show', [
+        return Inertia::render('Fournisseurs/Show', [
             'supplier' => $supplier,
         ]);
     }
@@ -59,9 +59,9 @@ class SupplierController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Supplier $supplier): Response
+    public function edit(Fournisseur $supplier): Response
     {
-        return Inertia::render('Suppliers/Edit', [
+        return Inertia::render('Fournisseurs/Edit', [
             'supplier' => $supplier,
         ]);
     }
@@ -69,14 +69,14 @@ class SupplierController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Supplier $supplier)
+    public function update(Request $request, Fournisseur $supplier)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'contact_name' => 'nullable|string|max:255',
-            'phone' => 'nullable|string|max:255',
-            'email' => 'nullable|email|max:255',
-            'address' => 'nullable|string',
+            'fou_nom' => 'required|string|max:255',
+            'fou_contact_nom' => 'nullable|string|max:255',
+            'fou_telephone' => 'nullable|string|max:255',
+            'fou_email' => 'nullable|email|max:255',
+            'fou_adresse' => 'nullable|string',
         ]);
 
         $supplier->update($validated);
@@ -87,10 +87,11 @@ class SupplierController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Supplier $supplier)
+    public function destroy(Fournisseur $supplier)
     {
         $supplier->delete();
 
         return Redirect::route('suppliers.index');
     }
 }
+

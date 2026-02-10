@@ -7,9 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Item extends Model
+class Article extends Model
 {
     use HasFactory;
+
+    protected $table = 'articles';
+    protected $primaryKey = 'art_id';
+
+    public const CREATED_AT = 'art_created_at';
+    public const UPDATED_AT = 'art_updated_at';
 
     /**
      * The attributes that are mass assignable.
@@ -17,13 +23,13 @@ class Item extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'ref',
-        'name',
-        'unit',
-        'category_id',
-        'low_threshold',
-        'safety_stock',
-        'default_price',
+        'art_reference',
+        'art_nom',
+        'art_unite',
+        'art_cat_id',
+        'art_seuil_alerte',
+        'art_stock_securite',
+        'art_prix_defaut',
     ];
 
     /**
@@ -31,7 +37,7 @@ class Item extends Model
      */
     public function category(): BelongsTo
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(Categorie::class, 'art_cat_id', 'cat_id');
     }
 
     /**
@@ -39,7 +45,7 @@ class Item extends Model
      */
     public function itemStocks(): HasMany
     {
-        return $this->hasMany(ItemStock::class);
+        return $this->hasMany(StockArticle::class, 'sta_art_id', 'art_id');
     }
 
     /**
@@ -47,7 +53,7 @@ class Item extends Model
      */
     public function stockMovements(): HasMany
     {
-        return $this->hasMany(StockMovement::class);
+        return $this->hasMany(MouvementStock::class, 'mvs_art_id', 'art_id');
     }
 
     /**
@@ -55,6 +61,7 @@ class Item extends Model
      */
     public function withdrawRequestLines(): HasMany
     {
-        return $this->hasMany(WithdrawRequestLine::class);
+        return $this->hasMany(LigneDemandeSortie::class, 'lds_art_id', 'art_id');
     }
 }
+

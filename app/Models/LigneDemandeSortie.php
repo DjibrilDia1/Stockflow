@@ -6,9 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class WithdrawRequestLine extends Model
+class LigneDemandeSortie extends Model
 {
     use HasFactory;
+
+    protected $table = 'lignes_demande_sortie';
+    protected $primaryKey = 'lds_id';
 
     /**
      * Indicates if the model should be timestamped.
@@ -23,12 +26,12 @@ class WithdrawRequestLine extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'withdraw_request_id',
-        'item_id',
-        'warehouse_id',
-        'qty_requested',
-        'qty_fulfilled',
-        'note',
+        'lds_dso_id',
+        'lds_art_id',
+        'lds_ent_id',
+        'lds_qte_demandee',
+        'lds_qte_servie',
+        'lds_note',
     ];
 
     /**
@@ -36,7 +39,7 @@ class WithdrawRequestLine extends Model
      */
     public function withdrawRequest(): BelongsTo
     {
-        return $this->belongsTo(WithdrawRequest::class);
+        return $this->belongsTo(DemandeSortie::class, 'lds_dso_id', 'dso_id');
     }
 
     /**
@@ -44,7 +47,7 @@ class WithdrawRequestLine extends Model
      */
     public function item(): BelongsTo
     {
-        return $this->belongsTo(Item::class);
+        return $this->belongsTo(Article::class, 'lds_art_id', 'art_id');
     }
 
     /**
@@ -52,6 +55,7 @@ class WithdrawRequestLine extends Model
      */
     public function warehouse(): BelongsTo
     {
-        return $this->belongsTo(Warehouse::class);
+        return $this->belongsTo(Entrepot::class, 'lds_ent_id', 'ent_id');
     }
 }
+

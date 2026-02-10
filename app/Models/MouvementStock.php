@@ -6,9 +6,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class StockMovement extends Model
+class MouvementStock extends Model
 {
     use HasFactory;
+
+    protected $table = 'mouvements_stock';
+    protected $primaryKey = 'mvs_id';
+
+    public const CREATED_AT = 'mvs_created_at';
+    public const UPDATED_AT = 'mvs_updated_at';
 
     /**
      * The attributes that are mass assignable.
@@ -16,17 +22,17 @@ class StockMovement extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'item_id',
-        'warehouse_id',
-        'type',
-        'qty',
-        'reason',
-        'supplier_id',
-        'service_id',
-        'user_id',
-        'linked_transfer_id',
-        'attachment_url',
-        'moved_at',
+        'mvs_art_id',
+        'mvs_ent_id',
+        'mvs_type',
+        'mvs_quantite',
+        'mvs_motif',
+        'mvs_fou_id',
+        'mvs_ser_id',
+        'mvs_usr_id',
+        'mvs_transfer_id',
+        'mvs_piece_jointe_url',
+        'mvs_date_mouvement',
     ];
 
     /**
@@ -35,7 +41,7 @@ class StockMovement extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'moved_at' => 'datetime',
+        'mvs_date_mouvement' => 'datetime',
     ];
 
     /**
@@ -43,7 +49,7 @@ class StockMovement extends Model
      */
     public function item(): BelongsTo
     {
-        return $this->belongsTo(Item::class);
+        return $this->belongsTo(Article::class, 'mvs_art_id', 'art_id');
     }
 
     /**
@@ -51,7 +57,7 @@ class StockMovement extends Model
      */
     public function warehouse(): BelongsTo
     {
-        return $this->belongsTo(Warehouse::class);
+        return $this->belongsTo(Entrepot::class, 'mvs_ent_id', 'ent_id');
     }
 
     /**
@@ -59,7 +65,7 @@ class StockMovement extends Model
      */
     public function supplier(): BelongsTo
     {
-        return $this->belongsTo(Supplier::class);
+        return $this->belongsTo(Fournisseur::class, 'mvs_fou_id', 'fou_id');
     }
 
     /**
@@ -67,7 +73,7 @@ class StockMovement extends Model
      */
     public function service(): BelongsTo
     {
-        return $this->belongsTo(Service::class);
+        return $this->belongsTo(Service::class, 'mvs_ser_id', 'ser_id');
     }
 
     /**
@@ -75,6 +81,7 @@ class StockMovement extends Model
      */
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'mvs_usr_id', 'id');
     }
 }
+

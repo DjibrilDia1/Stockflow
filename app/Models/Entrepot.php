@@ -6,9 +6,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Warehouse extends Model
+class Entrepot extends Model
 {
     use HasFactory;
+
+    protected $table = 'entrepots';
+    protected $primaryKey = 'ent_id';
+
+    public const CREATED_AT = 'ent_created_at';
+    public const UPDATED_AT = 'ent_updated_at';
 
     /**
      * The attributes that are mass assignable.
@@ -16,9 +22,9 @@ class Warehouse extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
-        'code',
-        'location',
+        'ent_nom',
+        'ent_code',
+        'ent_localisation',
     ];
 
     /**
@@ -26,7 +32,7 @@ class Warehouse extends Model
      */
     public function itemStocks(): HasMany
     {
-        return $this->hasMany(ItemStock::class);
+        return $this->hasMany(StockArticle::class, 'sta_ent_id', 'ent_id');
     }
 
     /**
@@ -34,6 +40,7 @@ class Warehouse extends Model
      */
     public function stockMovements(): HasMany
     {
-        return $this->hasMany(StockMovement::class);
+        return $this->hasMany(MouvementStock::class, 'mvs_ent_id', 'ent_id');
     }
 }
+

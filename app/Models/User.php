@@ -52,7 +52,7 @@ class User extends Authenticatable
      */
     public function stockMovements(): HasMany
     {
-        return $this->hasMany(StockMovement::class);
+        return $this->hasMany(MouvementStock::class, 'mvs_usr_id', 'id');
     }
 
     /**
@@ -60,6 +60,7 @@ class User extends Authenticatable
      */
     public function withdrawRequests(): HasMany
     {
-        return $this->hasMany(WithdrawRequest::class, 'requested_by');
+        return $this->hasMany(DemandeSortie::class, 'dso_demandeur_id', 'id');
     }
 }
+

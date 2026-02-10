@@ -6,9 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Category extends Model
+class Categorie extends Model
 {
     use HasFactory;
+
+    protected $primaryKey = 'cat_id';
+
+    public const CREATED_AT = 'cat_created_at';
+    public const UPDATED_AT = 'cat_updated_at';
 
     /**
      * The attributes that are mass assignable.
@@ -16,9 +21,9 @@ class Category extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
-        'code',
-        'description',
+        'cat_nom',
+        'cat_code',
+        'cat_description',
     ];
 
     /**
@@ -26,6 +31,7 @@ class Category extends Model
      */
     public function items(): HasMany
     {
-        return $this->hasMany(Item::class);
+        return $this->hasMany(Article::class, 'art_cat_id', 'cat_id');
     }
 }
+

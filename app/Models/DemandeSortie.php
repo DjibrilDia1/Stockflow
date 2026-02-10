@@ -7,9 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class WithdrawRequest extends Model
+class DemandeSortie extends Model
 {
     use HasFactory;
+
+    protected $table = 'demandes_sortie';
+    protected $primaryKey = 'dso_id';
+
+    public const CREATED_AT = 'dso_created_at';
+    public const UPDATED_AT = 'dso_updated_at';
 
     /**
      * The attributes that are mass assignable.
@@ -17,9 +23,9 @@ class WithdrawRequest extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'service_id',
-        'requested_by',
-        'status',
+        'dso_ser_id',
+        'dso_demandeur_id',
+        'dso_statut',
     ];
 
     /**
@@ -27,7 +33,7 @@ class WithdrawRequest extends Model
      */
     public function service(): BelongsTo
     {
-        return $this->belongsTo(Service::class);
+        return $this->belongsTo(Service::class, 'dso_ser_id', 'ser_id');
     }
 
     /**
@@ -35,7 +41,7 @@ class WithdrawRequest extends Model
      */
     public function requester(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'requested_by');
+        return $this->belongsTo(User::class, 'dso_demandeur_id', 'id');
     }
 
     /**
@@ -43,6 +49,7 @@ class WithdrawRequest extends Model
      */
     public function lines(): HasMany
     {
-        return $this->hasMany(WithdrawRequestLine::class);
+        return $this->hasMany(LigneDemandeSortie::class, 'lds_dso_id', 'dso_id');
     }
 }
+

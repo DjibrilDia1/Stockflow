@@ -2,21 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Warehouse;
+use App\Models\Entrepot;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class WarehouseController extends Controller
+class EntrepotController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index(): Response
     {
-        return Inertia::render('Warehouses/Index', [
-            'warehouses' => Warehouse::all(),
+        return Inertia::render('Entrepots/Index', [
+            'warehouses' => Entrepot::all(),
         ]);
     }
 
@@ -25,21 +25,21 @@ class WarehouseController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Warehouses/Create');
+        return Inertia::render('Entrepots/Create');
     }
-
+    
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'code' => 'required|string|max:255|unique:warehouses',
-            'location' => 'nullable|string|max:255',
+            'ent_nom' => 'required|string|max:255',
+            'ent_code' => 'required|string|max:255|unique:entrepots,ent_code',
+            'ent_localisation' => 'nullable|string|max:255',
         ]);
 
-        Warehouse::create($validated);
+        Entrepot::create($validated);
 
         return Redirect::route('warehouses.index');
     }
@@ -47,9 +47,9 @@ class WarehouseController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Warehouse $warehouse): Response
+    public function show(Entrepot $warehouse): Response
     {
-        return Inertia::render('Warehouses/Show', [
+        return Inertia::render('Entrepots/Show', [
             'warehouse' => $warehouse,
         ]);
     }
@@ -57,9 +57,9 @@ class WarehouseController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Warehouse $warehouse): Response
+    public function edit(Entrepot $warehouse): Response
     {
-        return Inertia::render('Warehouses/Edit', [
+        return Inertia::render('Entrepots/Edit', [
             'warehouse' => $warehouse,
         ]);
     }
@@ -67,12 +67,12 @@ class WarehouseController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Warehouse $warehouse)
+    public function update(Request $request, Entrepot $warehouse)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'code' => 'required|string|max:255|unique:warehouses,code,' . $warehouse->id,
-            'location' => 'nullable|string|max:255',
+            'ent_nom' => 'required|string|max:255',
+            'ent_code' => 'required|string|max:255|unique:entrepots,ent_code,' . $warehouse->getKey() . ',ent_id',
+            'ent_localisation' => 'nullable|string|max:255',
         ]);
 
         $warehouse->update($validated);
@@ -83,10 +83,11 @@ class WarehouseController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Warehouse $warehouse)
+    public function destroy(Entrepot $warehouse)
     {
         $warehouse->delete();
 
         return Redirect::route('warehouses.index');
     }
 }
+
