@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Item;
 use App\Models\Category;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
@@ -12,7 +13,10 @@ use Inertia\Response;
 class ItemController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Affiche la liste de tous les articles.
+     * Les catégories associées sont pré-chargées pour optimiser les performances.
+     *
+     * @return Response La vue Inertia avec la liste des articles.
      */
     public function index(): Response
     {
@@ -22,7 +26,10 @@ class ItemController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Affiche le formulaire de création d'un nouvel article.
+     * Fournit la liste des catégories pour le formulaire de sélection.
+     *
+     * @return Response La vue Inertia pour créer un article.
      */
     public function create(): Response
     {
@@ -32,9 +39,12 @@ class ItemController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Enregistre un nouvel article dans la base de données.
+     *
+     * @param  Request  $request Les données du formulaire de création.
+     * @return RedirectResponse Une redirection vers la liste des articles.
      */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'ref' => 'required|string|max:255|unique:items',
@@ -52,11 +62,14 @@ class ItemController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Affiche les détails d'un article spécifique.
+     *
+     * @param  Item  $item Le modèle de l'article à afficher.
+     * @return Response La vue Inertia avec les détails de l'article.
      */
     public function show(Item $item): Response
     {
-        // Eager load category for display
+        // Pré-charge la catégorie pour l'affichage
         $item->load('category');
         return Inertia::render('Items/Show', [
             'item' => $item,
@@ -64,7 +77,10 @@ class ItemController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Affiche le formulaire de modification d'un article existant.
+     *
+     * @param  Item  $item Le modèle de l'article à modifier.
+     * @return Response La vue Inertia pour modifier l'article.
      */
     public function edit(Item $item): Response
     {
@@ -75,9 +91,13 @@ class ItemController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Met à jour un article spécifique dans la base de données.
+     *
+     * @param  Request  $request Les nouvelles données du formulaire.
+     * @param  Item  $item Le modèle de l'article à mettre à jour.
+     * @return RedirectResponse Une redirection vers la liste des articles.
      */
-    public function update(Request $request, Item $item)
+    public function update(Request $request, Item $item): RedirectResponse
     {
         $validated = $request->validate([
             'ref' => 'required|string|max:255|unique:items,ref,' . $item->id,
@@ -95,9 +115,12 @@ class ItemController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Supprime un article spécifique de la base de données.
+     *
+     * @param  Item  $item Le modèle de l'article à supprimer.
+     * @return RedirectResponse Une redirection vers la liste des articles.
      */
-    public function destroy(Item $item)
+    public function destroy(Item $item): RedirectResponse
     {
         $item->delete();
 
