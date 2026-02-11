@@ -4,15 +4,6 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\ServiceController;
-use App\Http\Controllers\CategorieController;
-use App\Http\Controllers\EntrepotController;
-use App\Http\Controllers\FournisseurController;
-use App\Http\Controllers\ArticleController;
-use App\Http\Controllers\StockArticleController;
-use App\Http\Controllers\MouvementStockController;
-use App\Http\Controllers\DemandeSortieController;
-use App\Http\Controllers\LigneDemandeSortieController;
 
 Route::get('/', function () {
     return Inertia::render('Auth/Login', [
@@ -26,10 +17,10 @@ Route::get('/', function () {
 
 Route::get('/dashboardtest', function () {
     return Inertia::render('DashboardTest');
-})->name('dashboardtest'); 
+})->name('dashboardtest'); // <--- Ajoutez ceci !
 
 Route::get('/articles', function () {
-    return Inertia::render('Articles'); // Correspond Ã  Pages/Articles.vue
+    return Inertia::render('Articles'); // Correspond à Pages/Articles.vue
 })->name('articles.index');
 
 Route::get('/mouvements', function () {
@@ -56,18 +47,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-
-    Route::resource('services', ServiceController::class);
-    Route::resource('categories', CategorieController::class);
-    Route::resource('warehouses', EntrepotController::class);
-    Route::resource('suppliers', FournisseurController::class);
-    Route::resource('items', ArticleController::class);
-    Route::resource('item-stocks', StockArticleController::class);
-    Route::resource('stock-movements', MouvementStockController::class);
-    Route::resource('withdraw-requests', DemandeSortieController::class);
-    Route::resource('withdraw-request-lines', LigneDemandeSortieController::class);
 });
 
 require __DIR__.'/auth.php';
-
