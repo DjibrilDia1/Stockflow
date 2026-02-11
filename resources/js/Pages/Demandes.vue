@@ -2,6 +2,47 @@
 import { ref } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 
+
+
+const showAddDemandeModal = ref(false);
+
+const newDemande = ref({
+    ref: '', // Génère une ref simple
+    demandeur: 'Entrée',
+    entrepot: '',
+    date: new Date().toISOString().substr(0, 10), // Date du jour par défaut
+    statut: 'Brouillon',
+    detail: ''
+});
+
+const addDemande = () => {
+    const demandeToAdd = {
+        ...newDemande.value,
+        id: Date.now(),
+        // On définit la classe selon le statut par défaut
+        statutClass: 'bg-amber-100 text-amber-600' 
+    };
+    
+    demandes.value.push(demandeToAdd);
+    
+    // Fermeture et reset
+    showAddDemandeModal.value = false;
+    newDemande.value = {
+        ref: 'DREQ-' + Math.floor(Math.random() * 1000),
+        demandeur: 'Entrée',
+        entrepot: '',
+        date: new Date().toISOString().substr(0, 10),
+        statut: 'Brouillon',
+        detail: ''
+    };
+};
+
+const deleteDemandes = (id) => {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce mouvement ? Cette action est irréversible.')) {
+        mouvements.value = mouvements.value.filter(mvt => mvt.id !== id);
+    }
+};
+
 // Données fictives
 const demandes = ref([
     { id: 1, ref: 'DREQ-001', demandeur: 'Entrée', entrepot: 'Fournitures', date: '3/04/2024', statut: 'Brouillon', statutClass: 'bg-amber-100 text-amber-600', detail: '' },
@@ -17,7 +58,7 @@ const navigation = [
     { name: 'Demandes', route: 'demandes.index', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
     { name: 'Rapports',route:'rapports.index', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
     { name: 'Utilisateur',route:'utilisateurs.index', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
-    { name: 'Paramètres', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
+    { name: 'Services & Fournitures', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
 
 ];
 
@@ -98,9 +139,67 @@ const logout = () => {
                         <h2 class="text-2xl font-bold text-slate-900">Demandes de retrait</h2>
                         <p class="text-slate-500 mt-1">Gérer les demandes de retrait d'articles</p>
                     </div>
-                    <button class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 shadow-md transition-all">
-                        <span class="text-xl font-light">+</span> Nouvelle demande
-                    </button>
+                    <button @click="showAddDemandeModal = true" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-all shadow-sm">
+    <span class="text-xl font-light">+</span> Nouvelle demande
+</button>
+<div v-if="showAddDemandeModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showAddDemandeModal = false"></div>
+
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-fade-in">
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <h3 class="text-lg font-bold text-slate-800">Nouvelle demande de retrait</h3>
+            <button @click="showAddDemandeModal = false" class="text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
+        </div>
+
+        <form @submit.prevent="addDemande" class="p-6 space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Référence</label>
+                    <input v-model="newDemande.ref" type="text" class="w-full px-4 py-2 border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Date</label>
+                    <input v-model="newDemande.date" type="date" required class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Type (Demandeur)</label>
+                    <select v-model="newDemande.demandeur" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                        <option value="Entrée">Entrée</option>
+                        <option value="Sortie">Sortie</option>
+                        <option value="Transfert">Transfert</option>
+                        <option value="Ajustement">Ajustement</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Entrepôt</label>
+                    <select v-model="newDemande.entrepot" required class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                        <option value="" disabled>Choisir...</option>
+                        <option value="Fournitures">Fournitures</option>
+                        <option value="Mobilier">Mobilier</option>
+                        <option value="Informatique">Informatique</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Détails des articles</label>
+                <textarea v-model="newDemande.detail" rows="3" placeholder="Ex: Stylos noirs x 20, Rames de papier x 5..." class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none text-sm"></textarea>
+            </div>
+
+            <div class="pt-4 flex gap-3">
+                <button type="button" @click="showAddDemandeModal = false" class="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-semibold hover:bg-slate-50 transition-colors">
+                    Annuler
+                </button>
+                <button type="submit" class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition-colors shadow-md">
+                    Enregistrer la demande
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
                 </div>
 
                 <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap gap-4 items-center">
@@ -133,7 +232,7 @@ const logout = () => {
                                 <th class="px-6 py-4 text-center">Entrepot</th>
                                 <th class="px-6 py-4">Date</th>
                                 <th class="px-6 py-4">Statut</th>
-                                <th class="px-6 py-4 text-right">Actions</th>
+                                <th class="px-6 py-4 text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -154,11 +253,17 @@ const logout = () => {
                                         <span v-if="item.detail" class="text-xs text-teal-600 font-semibold italic">{{ item.detail }}</span>
                                     </div>
                                 </td>
-                                <td class="px-6 py-5 text-right">
-                                    <button class="text-red-400 hover:text-red-600 transition-colors">
-                                        <svg class="w-5 h-5 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                    </button>
-                                </td>
+                                <td class="px-6 py-4 text-center">
+    <button 
+        @click="deleteDemandes(item.id)" 
+        class="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition-colors"
+        title="Supprimer la demande"
+    >
+        <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+    </button>
+</td>
                             </tr>
                         </tbody>
                     </table>
