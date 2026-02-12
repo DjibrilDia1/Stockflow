@@ -20,7 +20,7 @@ class ArticleController extends Controller
      */
     public function index(): Response
     {
-        return Inertia::render('Articles/Index', [
+        return Inertia::render('Gestionnaire/Articles/Index', [
             'items' => Article::with('category')->get(),
         ]);
     }
@@ -33,7 +33,7 @@ class ArticleController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Articles/Create', [
+        return Inertia::render('Gestionnaire/Articles/Create', [
             'categories' => Categorie::all(['cat_id', 'cat_nom']),
         ]);
     }
@@ -71,7 +71,7 @@ class ArticleController extends Controller
     {
         // PrÃ©-charge la catÃ©gorie pour l'affichage
         $item->load('category');
-        return Inertia::render('Articles/Show', [
+        return Inertia::render('Gestionnaire/Articles/Show', [
             'item' => $item,
         ]);
     }
@@ -84,7 +84,7 @@ class ArticleController extends Controller
      */
     public function edit(Article $item): Response
     {
-        return Inertia::render('Articles/Edit', [
+        return Inertia::render('Gestionnaire/Articles/Edit', [
             'item' => $item,
             'categories' => Categorie::all(['cat_id', 'cat_nom']),
         ]);

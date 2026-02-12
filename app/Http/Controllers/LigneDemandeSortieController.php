@@ -18,7 +18,7 @@ class LigneDemandeSortieController extends Controller
      */
     public function index(): Response
     {
-        return Inertia::render('LigneDemandeSorties/Index', [
+        return Inertia::render('Gestionnaire/LigneDemandeSorties/Index', [
             'withdrawRequestLines' => LigneDemandeSortie::with(['withdrawRequest', 'item', 'warehouse'])->get(),
         ]);
     }
@@ -28,7 +28,7 @@ class LigneDemandeSortieController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('LigneDemandeSorties/Create', [
+        return Inertia::render('Gestionnaire/LigneDemandeSorties/Create', [
             'withdrawRequests' => DemandeSortie::all(['dso_id']), // Just ID for selection
             'items' => Article::all(['art_id', 'art_nom', 'art_reference']),
             'warehouses' => Entrepot::all(['ent_id', 'ent_nom']),
@@ -60,7 +60,7 @@ class LigneDemandeSortieController extends Controller
     public function show(LigneDemandeSortie $withdrawRequestLine): Response
     {
         $withdrawRequestLine->load(['withdrawRequest', 'item', 'warehouse']);
-        return Inertia::render('LigneDemandeSorties/Show', [
+        return Inertia::render('Gestionnaire/LigneDemandeSorties/Show', [
             'withdrawRequestLine' => $withdrawRequestLine,
         ]);
     }
@@ -70,7 +70,7 @@ class LigneDemandeSortieController extends Controller
      */
     public function edit(LigneDemandeSortie $withdrawRequestLine): Response
     {
-        return Inertia::render('LigneDemandeSorties/Edit', [
+        return Inertia::render('Gestionnaire/LigneDemandeSorties/Edit', [
             'withdrawRequestLine' => $withdrawRequestLine,
             'withdrawRequests' => DemandeSortie::all(['dso_id']),
             'items' => Article::all(['art_id', 'art_nom', 'art_reference']),

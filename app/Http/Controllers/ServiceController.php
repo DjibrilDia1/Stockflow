@@ -15,7 +15,7 @@ class ServiceController extends Controller
      */
     public function index(): Response
     {
-        return Inertia::render('Services/Index', [
+        return Inertia::render('Gestionnaire/Services/Index', [
             'services' => Service::all(),
         ]);
     }
@@ -25,7 +25,7 @@ class ServiceController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Services/Create');
+        return Inertia::render('Gestionnaire/Services/Create');
     }
 
     /**
@@ -49,7 +49,7 @@ class ServiceController extends Controller
      */
     public function show(Service $service): Response
     {
-        return Inertia::render('Services/Show', [
+        return Inertia::render('Gestionnaire/Services/Show', [
             'service' => $service,
         ]);
     }
@@ -59,7 +59,7 @@ class ServiceController extends Controller
      */
     public function edit(Service $service): Response
     {
-        return Inertia::render('Services/Edit', [
+        return Inertia::render('Gestionnaire/Services/Edit', [
             'service' => $service,
         ]);
     }

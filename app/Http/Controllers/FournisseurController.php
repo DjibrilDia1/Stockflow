@@ -15,7 +15,7 @@ class FournisseurController extends Controller
      */
     public function index(): Response
     {
-        return Inertia::render('Fournisseurs/Index', [
+        return Inertia::render('Gestionnaire/Fournisseurs/Index', [
             'suppliers' => Fournisseur::all(),
         ]);
     }
@@ -25,7 +25,7 @@ class FournisseurController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Fournisseurs/Create');
+        return Inertia::render('Gestionnaire/Fournisseurs/Create');
     }
 
     /**
@@ -51,7 +51,7 @@ class FournisseurController extends Controller
      */
     public function show(Fournisseur $supplier): Response
     {
-        return Inertia::render('Fournisseurs/Show', [
+        return Inertia::render('Gestionnaire/Fournisseurs/Show', [
             'supplier' => $supplier,
         ]);
     }
@@ -61,7 +61,7 @@ class FournisseurController extends Controller
      */
     public function edit(Fournisseur $supplier): Response
     {
-        return Inertia::render('Fournisseurs/Edit', [
+        return Inertia::render('Gestionnaire/Fournisseurs/Edit', [
             'supplier' => $supplier,
         ]);
     }

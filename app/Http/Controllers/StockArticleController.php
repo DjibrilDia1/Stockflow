@@ -18,7 +18,7 @@ class StockArticleController extends Controller
      */
     public function index(): Response
     {
-        return Inertia::render('StockArticles/Index', [
+        return Inertia::render('Gestionnaire/StockArticles/Index', [
             'itemStocks' => StockArticle::with(['item', 'warehouse'])->get(),
         ]);
     }
@@ -31,7 +31,7 @@ class StockArticleController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('StockArticles/Create', [
+        return Inertia::render('Gestionnaire/StockArticles/Create', [
             'message' => 'La crÃ©ation directe de stocks n\'est pas recommandÃ©e. Le stock est mis Ã  jour via les mouvements.',
         ]);
     }
@@ -59,7 +59,7 @@ class StockArticleController extends Controller
     public function show(StockArticle $itemStock): Response
     {
         $itemStock->load(['item', 'warehouse']); // PrÃ©-charge les relations pour l'Ã©lÃ©ment unique
-        return Inertia::render('StockArticles/Show', [
+        return Inertia::render('Gestionnaire/StockArticles/Show', [
             'itemStock' => $itemStock,
         ]);
     }
@@ -72,7 +72,7 @@ class StockArticleController extends Controller
      */
     public function edit(StockArticle $itemStock): Response
     {
-        return Inertia::render('StockArticles/Edit', [
+        return Inertia::render('Gestionnaire/StockArticles/Edit', [
             'itemStock' => $itemStock,
             'message' => 'La modification directe du stock n\'est pas recommandÃ©e. Le stock est mis Ã  jour via les mouvements.',
         ]);

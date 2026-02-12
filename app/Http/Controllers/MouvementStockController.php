@@ -21,7 +21,7 @@ class MouvementStockController extends Controller
      */
     public function index(): Response
     {
-        return Inertia::render('MouvementStocks/Index', [
+        return Inertia::render('Gestionnaire/MouvementStocks/Index', [
             'stockMovements' => MouvementStock::with(['item', 'warehouse', 'supplier', 'service', 'user'])->get(),
         ]);
     }
@@ -31,7 +31,7 @@ class MouvementStockController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('MouvementStocks/Create', [
+        return Inertia::render('Gestionnaire/MouvementStocks/Create', [
             'items' => Article::all(['art_id', 'art_nom', 'art_reference']),
             'warehouses' => Entrepot::all(['ent_id', 'ent_nom']),
             'suppliers' => Fournisseur::all(['fou_id', 'fou_nom']),
@@ -76,7 +76,7 @@ class MouvementStockController extends Controller
     public function show(MouvementStock $stockMovement): Response
     {
         $stockMovement->load(['item', 'warehouse', 'supplier', 'service', 'user']);
-        return Inertia::render('MouvementStocks/Show', [
+        return Inertia::render('Gestionnaire/MouvementStocks/Show', [
             'stockMovement' => $stockMovement,
         ]);
     }
@@ -87,7 +87,7 @@ class MouvementStockController extends Controller
      */
     public function edit(MouvementStock $stockMovement): Response
     {
-        return Inertia::render('MouvementStocks/Edit', [
+        return Inertia::render('Gestionnaire/MouvementStocks/Edit', [
             'stockMovement' => $stockMovement,
             'message' => 'Direct editing of stock movements is not recommended. Movements are historical records.',
         ]);
