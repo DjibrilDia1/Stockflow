@@ -18,7 +18,7 @@ class CategorieController extends Controller
      */
     public function index(): Response
     {
-        return Inertia::render('Categories/Index', [
+        return Inertia::render('Gestionnaire/Categories/Index', [
             'categories' => Categorie::all(),
         ]);
     }
@@ -30,7 +30,7 @@ class CategorieController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Categories/Create');
+        return Inertia::render('Gestionnaire/Categories/Create');
     }
 
     /**
@@ -60,7 +60,7 @@ class CategorieController extends Controller
      */
     public function show(Categorie $category): Response
     {
-        return Inertia::render('Categories/Show', [
+        return Inertia::render('Gestionnaire/Categories/Show', [
             'category' => $category,
         ]);
     }
@@ -73,7 +73,7 @@ class CategorieController extends Controller
      */
     public function edit(Categorie $category): Response
     {
-        return Inertia::render('Categories/Edit', [
+        return Inertia::render('Gestionnaire/Categories/Edit', [
             'category' => $category,
         ]);
     }

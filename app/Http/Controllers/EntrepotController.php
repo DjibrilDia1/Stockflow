@@ -15,7 +15,7 @@ class EntrepotController extends Controller
      */
     public function index(): Response
     {
-        return Inertia::render('Entrepots/Index', [
+        return Inertia::render('Gestionnaire/Entrepots/Index', [
             'warehouses' => Entrepot::all(),
         ]);
     }
@@ -25,7 +25,7 @@ class EntrepotController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Entrepots/Create');
+        return Inertia::render('Gestionnaire/Entrepots/Create');
     }
     
     /**
@@ -49,7 +49,7 @@ class EntrepotController extends Controller
      */
     public function show(Entrepot $warehouse): Response
     {
-        return Inertia::render('Entrepots/Show', [
+        return Inertia::render('Gestionnaire/Entrepots/Show', [
             'warehouse' => $warehouse,
         ]);
     }
@@ -59,7 +59,7 @@ class EntrepotController extends Controller
      */
     public function edit(Entrepot $warehouse): Response
     {
-        return Inertia::render('Entrepots/Edit', [
+        return Inertia::render('Gestionnaire/Entrepots/Edit', [
             'warehouse' => $warehouse,
         ]);
     }

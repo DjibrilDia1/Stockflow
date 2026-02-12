@@ -17,7 +17,7 @@ class DemandeSortieController extends Controller
      */
     public function index(): Response
     {
-        return Inertia::render('DemandeSorties/Index', [
+        return Inertia::render('Gestionnaire/DemandeSorties/Index', [
             'withdrawRequests' => DemandeSortie::with(['service', 'requester'])->get(),
         ]);
     }
@@ -27,7 +27,7 @@ class DemandeSortieController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('DemandeSorties/Create', [
+        return Inertia::render('Gestionnaire/DemandeSorties/Create', [
             'services' => Service::all(['ser_id', 'ser_nom']),
             'users' => User::all(['id', 'name']), // Assuming users can be chosen as requesters
             'statuses' => ['DRAFT', 'APPROVED', 'FULFILLED', 'REJECTED'],
@@ -56,7 +56,7 @@ class DemandeSortieController extends Controller
     public function show(DemandeSortie $withdrawRequest): Response
     {
         $withdrawRequest->load(['service', 'requester', 'lines.item', 'lines.warehouse']);
-        return Inertia::render('DemandeSorties/Show', [
+        return Inertia::render('Gestionnaire/DemandeSorties/Show', [
             'withdrawRequest' => $withdrawRequest,
         ]);
     }
@@ -66,7 +66,7 @@ class DemandeSortieController extends Controller
      */
     public function edit(DemandeSortie $withdrawRequest): Response
     {
-        return Inertia::render('DemandeSorties/Edit', [
+        return Inertia::render('Gestionnaire/DemandeSorties/Edit', [
             'withdrawRequest' => $withdrawRequest,
             'services' => Service::all(['ser_id', 'ser_nom']),
             'users' => User::all(['id', 'name']),
