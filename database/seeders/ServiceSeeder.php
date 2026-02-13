@@ -14,21 +14,21 @@ class ServiceSeeder extends Seeder
     public function run(): void
     {
         Service::create([
-            'name' => 'Service Commercial',
-            'code' => 'COM',
-            'type' => 'Administratif'
+            'ser_nom' => 'Service Commercial',
+            'ser_code' => 'COM',
+            'ser_type' => 'Administratif'
         ]);
 
         Service::create([
-            'name' => 'Service Technique',
-            'code' => 'TECH',
-            'type' => 'Opérationnel'
+            'ser_nom' => 'Service Technique',
+            'ser_code' => 'TECH',
+            'ser_type' => 'Opérationnel'
         ]);
 
         Service::create([
-            'name' => 'Service Production',
-            'code' => 'PROD',
-            'type' => 'Opérationnel'
+            'ser_nom' => 'Service Production',
+            'ser_code' => 'PROD',
+            'ser_type' => 'Opérationnel'
         ]);
     }
 }

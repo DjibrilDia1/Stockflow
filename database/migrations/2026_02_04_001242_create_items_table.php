@@ -11,16 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('items', function (Blueprint $table) {
-            $table->id();
-            $table->string('ref')->unique();
-            $table->string('name');
-            $table->string('unit');
-            $table->foreignId('category_id')->constrained()->restrictOnDelete();
-            $table->integer('low_threshold')->default(0);
-            $table->integer('safety_stock')->default(0);
-            $table->decimal('default_price', 10, 2)->nullable();
-            $table->timestamps();
+        Schema::create('articles', function (Blueprint $table) {
+            $table->id('art_id');
+            $table->string('art_reference')->unique();
+            $table->string('art_nom');
+            $table->string('art_unite');
+            $table->foreignId('art_cat_id')
+                ->constrained('categories', 'cat_id')
+                ->restrictOnDelete();
+            $table->integer('art_seuil_alerte')->default(0);
+            $table->integer('art_stock_securite')->default(0);
+            $table->decimal('art_prix_defaut', 10, 2)->nullable();
+            $table->timestamp('art_created_at')->nullable();
+            $table->timestamp('art_updated_at')->nullable();
         });
 
     }
@@ -30,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('items');
+        Schema::dropIfExists('articles');
     }
 };

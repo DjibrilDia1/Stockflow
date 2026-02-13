@@ -23,12 +23,13 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call([
-            CategorySeeder::class,
-            WarehouseSeeder::class,
-            SupplierSeeder::class,
+            CategorieSeeder::class,
+            EntrepotSeeder::class,
+            FournisseurSeeder::class,
             ServiceSeeder::class,
-            ItemSeeder::class,
-            ItemStockSeeder::class,
+            ArticleSeeder::class,
+            StockArticleSeeder::class,
         ]);
     }
 }
+

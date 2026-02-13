@@ -10,15 +10,20 @@ class Service extends Model
 {
     use HasFactory;
 
+    protected $primaryKey = 'ser_id';
+
+    public const CREATED_AT = 'ser_created_at';
+    public const UPDATED_AT = 'ser_updated_at';
+
     /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
-        'code',
-        'type',
+        'ser_nom',
+        'ser_code',
+        'ser_type',
     ];
 
     /**
@@ -26,7 +31,7 @@ class Service extends Model
      */
     public function stockMovements(): HasMany
     {
-        return $this->hasMany(StockMovement::class);
+        return $this->hasMany(MouvementStock::class, 'mvs_ser_id', 'ser_id');
     }
 
     /**
@@ -34,6 +39,7 @@ class Service extends Model
      */
     public function withdrawRequests(): HasMany
     {
-        return $this->hasMany(WithdrawRequest::class);
+        return $this->hasMany(DemandeSortie::class, 'dso_ser_id', 'ser_id');
     }
 }
+

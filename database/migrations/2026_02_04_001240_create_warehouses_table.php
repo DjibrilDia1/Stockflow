@@ -11,12 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('warehouses', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('code')->unique();
-            $table->string('location')->nullable();
-            $table->timestamps();
+        Schema::create('entrepots', function (Blueprint $table) {
+            $table->id('ent_id');
+            $table->string('ent_nom');
+            $table->string('ent_code')->unique();
+            $table->string('ent_localisation')->nullable();
+            $table->timestamp('ent_created_at')->nullable();
+            $table->timestamp('ent_updated_at')->nullable();
         });
 
     }
@@ -26,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('warehouses');
+        Schema::dropIfExists('entrepots');
     }
 };

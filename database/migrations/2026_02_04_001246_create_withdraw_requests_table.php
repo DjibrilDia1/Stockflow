@@ -11,12 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('withdraw_requests', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('service_id')->constrained()->restrictOnDelete();
-            $table->foreignId('requested_by')->constrained('users')->restrictOnDelete();
-            $table->enum('status', ['DRAFT', 'APPROVED', 'FULFILLED', 'REJECTED'])->default('DRAFT');
-            $table->timestamps();
+        Schema::create('demandes_sortie', function (Blueprint $table) {
+            $table->id('dso_id');
+            $table->foreignId('dso_ser_id')
+                ->constrained('services', 'ser_id')
+                ->restrictOnDelete();
+            $table->foreignId('dso_demandeur_id')
+                ->constrained('users', 'id')
+                ->restrictOnDelete();
+            $table->enum('dso_statut', ['DRAFT', 'APPROVED', 'FULFILLED', 'REJECTED'])->default('DRAFT');
+            $table->timestamp('dso_created_at')->nullable();
+            $table->timestamp('dso_updated_at')->nullable();
         });
 
     }
@@ -26,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('withdraw_requests');
+        Schema::dropIfExists('demandes_sortie');
     }
 };

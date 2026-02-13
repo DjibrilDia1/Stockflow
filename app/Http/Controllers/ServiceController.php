@@ -15,7 +15,7 @@ class ServiceController extends Controller
      */
     public function index(): Response
     {
-        return Inertia::render('Services/Index', [
+        return Inertia::render('Gestionnaire/Services/Index', [
             'services' => Service::all(),
         ]);
     }
@@ -25,7 +25,7 @@ class ServiceController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Services/Create');
+        return Inertia::render('Gestionnaire/Services/Create');
     }
 
     /**
@@ -34,9 +34,9 @@ class ServiceController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'code' => 'required|string|max:255|unique:services',
-            'type' => 'nullable|string|max:255',
+            'ser_nom' => 'required|string|max:255',
+            'ser_code' => 'required|string|max:255|unique:services,ser_code',
+            'ser_type' => 'nullable|string|max:255',
         ]);
 
         Service::create($validated);
@@ -49,7 +49,7 @@ class ServiceController extends Controller
      */
     public function show(Service $service): Response
     {
-        return Inertia::render('Services/Show', [
+        return Inertia::render('Gestionnaire/Services/Show', [
             'service' => $service,
         ]);
     }
@@ -59,7 +59,7 @@ class ServiceController extends Controller
      */
     public function edit(Service $service): Response
     {
-        return Inertia::render('Services/Edit', [
+        return Inertia::render('Gestionnaire/Services/Edit', [
             'service' => $service,
         ]);
     }
@@ -70,9 +70,9 @@ class ServiceController extends Controller
     public function update(Request $request, Service $service)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'code' => 'required|string|max:255|unique:services,code,' . $service->id,
-            'type' => 'nullable|string|max:255',
+            'ser_nom' => 'required|string|max:255',
+            'ser_code' => 'required|string|max:255|unique:services,ser_code,' . $service->getKey() . ',ser_id',
+            'ser_type' => 'nullable|string|max:255',
         ]);
 
         $service->update($validated);

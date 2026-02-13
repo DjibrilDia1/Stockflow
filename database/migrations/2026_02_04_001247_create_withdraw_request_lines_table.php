@@ -11,14 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('withdraw_request_lines', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('withdraw_request_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('item_id')->constrained()->restrictOnDelete();
-            $table->foreignId('warehouse_id')->constrained()->restrictOnDelete();
-            $table->integer('qty_requested');
-            $table->integer('qty_fulfilled')->default(0);
-            $table->text('note')->nullable();
+        Schema::create('lignes_demande_sortie', function (Blueprint $table) {
+            $table->id('lds_id');
+            $table->foreignId('lds_dso_id')
+                ->constrained('demandes_sortie', 'dso_id')
+                ->cascadeOnDelete();
+            $table->foreignId('lds_art_id')
+                ->constrained('articles', 'art_id')
+                ->restrictOnDelete();
+            $table->foreignId('lds_ent_id')
+                ->constrained('entrepots', 'ent_id')
+                ->restrictOnDelete();
+            $table->integer('lds_qte_demandee');
+            $table->integer('lds_qte_servie')->default(0);
+            $table->text('lds_note')->nullable();
         });
 
     }
@@ -28,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('withdraw_request_lines');
+        Schema::dropIfExists('lignes_demande_sortie');
     }
 };
