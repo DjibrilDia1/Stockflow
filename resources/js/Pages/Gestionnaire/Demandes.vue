@@ -86,6 +86,7 @@ const logout = () => {
                 <h1 class="text-2xl font-bold tracking-tight text-white">
                     <span class="text-blue-400">Stock</span><span class="text-teal-400">Flow</span>
                 </h1>
+                <p class="text-xs text-slate-300 mt-2">Espace Gestionnaire</p>
             </div>
 
             <nav class="px-3 py-6 space-y-1.5 flex-1 overflow-y-auto">
@@ -259,45 +260,41 @@ const logout = () => {
                                 <th class="px-6 py-4 text-center">Entrepot</th>
                                 <th class="px-6 py-4">Date</th>
                                 <th class="px-6 py-4">Statut</th>
+                                <th class="px-6 py-4">Details</th>
                                 <th class="px-6 py-4 text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
-                            <tr v-for="item in demandes" :key="item.id"
-                                class="hover:bg-slate-50 transition-colors group">
-                                <td class="px-6 py-5 text-sm font-medium text-blue-500 underline cursor-pointer">{{
-                                    item.ref }}</td>
-                                <td class="px-6 py-5">
-                                    <span :class="getTypeClass(item.demandeur)">
-                                        {{ item.demandeur }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-5 text-sm font-bold text-slate-700 text-center">{{ item.entrepot }}
-                                </td>
-                                <td class="px-6 py-5 text-sm text-slate-500">{{ item.date }}</td>
-                                <td class="px-6 py-5">
-                                    <div class="flex items-center gap-3">
-                                        <span
-                                            :class="['px-4 py-1.5 rounded-md text-xs font-bold block min-w-[100px] text-center', item.statutClass]">
-                                            {{ item.statut }}
-                                        </span>
-                                        <span v-if="item.detail" class="text-xs text-teal-600 font-semibold italic">{{
-                                            item.detail }}</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 text-center">
-                                    <button @click="deleteDemandes(item.id)"
-                                        class="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition-colors"
-                                        title="Supprimer la demande">
-                                        <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
+    <tr v-for="item in demandes" :key="item.id" class="hover:bg-slate-50 transition-colors group">
+        <td class="px-6 py-5 text-sm font-medium text-blue-500 underline cursor-pointer">{{ item.ref }}</td>
+        
+        <td class="px-6 py-5">
+            <span :class="getTypeClass(item.demandeur)">{{ item.demandeur }}</span>
+        </td>
+        
+        <td class="px-6 py-5 text-sm font-bold text-slate-700 text-center">{{ item.entrepot }}</td>
+        
+        <td class="px-6 py-5 text-sm text-slate-500">{{ item.date }}</td>
+        
+        <td class="px-6 py-5">
+            <span :class="['px-4 py-1.5 rounded-md text-xs font-bold block min-w-[100px] text-center', item.statutClass]">
+                {{ item.statut }}
+            </span>
+        </td>
+
+        <td class="px-6 py-5 text-xs text-teal-600 font-semibold italic">
+            {{ item.detail || '-' }}
+        </td>
+
+        <td class="px-6 py-4 text-center">
+            <button @click="deleteDemandes(item.id)" class="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition-colors">
+                <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+            </button>
+        </td>
+    </tr>
+</tbody>
                     </table>
 
                     <div class="px-8 py-5 flex flex-col items-center gap-2 bg-white border-t border-slate-100">

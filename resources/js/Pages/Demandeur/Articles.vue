@@ -29,9 +29,7 @@ const stockClass = (status) => {
 };
 
 const logout = () => {
-    if (confirm('Deconnexion ?')) {
-        router.post(route('logout'));
-    }
+    if (confirm('Déconnexion ?')) router.post(route('logout'));
 };
 </script>
 
@@ -62,25 +60,36 @@ const logout = () => {
             </nav>
 
             <div class="p-4 border-t border-slate-700/50">
-                <button
-                    @click="logout"
-                    class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-400 hover:bg-red-500/10 hover:text-red-400 rounded-lg transition-all"
-                >
-                    Deconnexion
+                <button @click="logout"
+                    class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-400 hover:bg-red-500/10 hover:text-red-400 rounded-lg transition-all group">
+                    <svg class="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    Déconnexion
                 </button>
             </div>
         </aside>
 
         <div class="ml-64 flex-1">
             <header class="bg-white border-b border-slate-200 sticky top-0 z-10 px-8 py-4 flex items-center justify-between">
-                <div>
-                    <h2 class="text-xl font-bold text-slate-800">Consultation des articles</h2>
-                    <p class="text-sm text-slate-500">Visualiser les articles disponibles avant une demande</p>
+                <div class="flex items-center gap-4 text-slate-500">
+                    <Link :href="route('demandeur.demandes.index')" class="text-slate-400 hover:text-teal-600 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </Link>
+                    <span class="font-medium">Consultation des articles</span>
                 </div>
                 <div class="text-sm font-medium text-slate-700">{{ userName }}</div>
             </header>
 
             <main class="p-8 space-y-6">
+                <div>
+                        <h2 class="text-2xl font-bold text-slate-900">Consultation des articles</h2>
+                        <p class="text-slate-500 mt-1">Visualiser les articles disponibles avant une demande</p>
+                    </div>
                 <section class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <input

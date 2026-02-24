@@ -94,6 +94,7 @@ const logout = () => {
                 <h1 class="text-2xl font-bold tracking-tight text-white">
                     <span class="text-blue-400">Stock</span><span class="text-teal-400">Flow</span>
                 </h1>
+                <p class="text-xs text-slate-300 mt-2">Espace Gestionnaire</p>
             </div>
             <nav class="px-3 py-6 space-y-1.5 flex-1">
                 <Link v-for="item in navigation" :key="item.name" :href="item.route ? route(item.route) : '#'"
