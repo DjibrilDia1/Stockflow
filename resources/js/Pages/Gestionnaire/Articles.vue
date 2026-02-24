@@ -1,6 +1,9 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { Link, router } from '@inertiajs/vue3';
+import { Link, router , usePage } from '@inertiajs/vue3';
+
+const page = usePage();
+const userName = computed(() => page.props.auth?.user?.name ?? 'Gestionnaire');
 
 const showAddModal = ref(false);
 const showEditModal = ref(false);
@@ -237,7 +240,7 @@ const addArticle = () => {
                     <span class="font-medium">Articles</span>
                 </div>
                 <div class="flex items-center gap-2 text-slate-700 hover:text-teal-600 cursor-pointer group">
-                        <span class="text-sm font-medium">Gestionnaire de compte</span>
+                        <div class="text-sm font-medium text-slate-700">{{ userName }}</div>
                         <div class="w-9 h-9 flex items-center justify-center bg-slate-100 rounded-full group-hover:bg-teal-50 transition-colors">
                              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                         </div>
