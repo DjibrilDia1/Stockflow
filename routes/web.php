@@ -67,7 +67,13 @@ Route::middleware(['auth', 'role:gestionnaire'])->prefix('gestionnaire')->name('
     Route::get('/utilisateurs', function () {
         return Inertia::render('Gestionnaire/Utilisateurs');
     })->name('utilisateurs.index');
+
+    Route::get('/services-fournisseurs', function () {
+        return Inertia::render('Gestionnaire/Services-Fournisseurs');
+    })->name('services-fournisseurs.index');
 });
+
+
 
 // Groupe pour le rôle RESPONSABLE
 Route::middleware(['auth', 'role:responsable'])->prefix('responsable')->name('responsable.')->group(function () {
@@ -75,7 +81,13 @@ Route::middleware(['auth', 'role:responsable'])->prefix('responsable')->name('re
         // Cette route rendra `resources/js/Pages/Responsable/Dashboard.vue`
         return Inertia::render('Responsable/Dashboard');
     })->name('dashboard');
+
+     Route::get('/rapports', function () {
+        // Cette route rendra `resources/js/Pages/Responsable/Rapports.vue`
+        return Inertia::render('Responsable/Rapports');
+    })->name('rapports.index');
 });
+
 
 // Groupe pour le rôle DEMANDEUR
 Route::middleware(['auth', 'role:demandeur'])->prefix('demandeur')->name('demandeur.')->group(function () {

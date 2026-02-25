@@ -6,9 +6,9 @@ const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? 'Demandeur');
 
 const stats = [
-    { label: 'Demandes en cours', value: 4, hint: '2 en validation, 2 en preparation' },
-    { label: 'Demandes traitees', value: 18, hint: 'sur les 30 derniers jours' },
-    { label: 'Demandes rejetees', value: 1, hint: 'necessite une correction' },
+    { label: 'Demandes en cours', value: 4,class:"card-hover bg-white rounded-xl p-6 shadow-md border border-slate-100 animate-fade-in" , style:"animation-delay: 0.1s" , hint: '2 en validation, 2 en preparation' },
+    { label: 'Demandes traitees', value: 18,class:"card-hover bg-white rounded-xl p-6 shadow-md border border-slate-100 animate-fade-in" , style:"animation-delay: 0.1s" , hint: 'sur les 30 derniers jours' },
+    { label: 'Demandes rejetees', value: 1,color:"text-4xl font-bold text-red-600 mb-1",class:"card-hover bg-white rounded-xl p-6 shadow-md border border-slate-100 animate-fade-in" , style:"animation-delay: 0.1s" , hint: 'necessite une correction' },
 ];
 
 const notifications = [
@@ -24,9 +24,9 @@ const recentRequests = [
 ];
 
 const menu = [
-    { name: 'Dashboard', route: 'demandeur.dashboard' },
-    { name: 'Demandes', route: 'demandeur.demandes.index' },
-    { name: 'Consultation articles', route: 'demandeur.articles.index' },
+    { name: 'Tableau de bord',icon:'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', route: 'demandeur.dashboard' },
+    { name: 'Demandes',icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', route: 'demandeur.demandes.index' },
+    { name: 'Consultation articles',icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', route: 'demandeur.articles.index' },
 ];
 
 const statusClass = (status) => {
@@ -50,44 +50,52 @@ const notifClass = (type) => {
 };
 
 const logout = () => {
-    if (confirm('Deconnexion ?')) {
-        router.post(route('logout'));
-    }
+    if (confirm('Déconnexion ?')) router.post(route('logout'));
 };
 </script>
 
 <template>
     <div class="min-h-screen bg-slate-50 flex">
         <!-- ==================================================  SECTION SIDEBAR =========================================================-->
-        <aside class="fixed left-0 top-0 h-screen w-64 bg-slate-800 shadow-2xl z-50 flex flex-col">
+        <aside class="fixed left-0 top-0 h-screen w-52 bg-slate-800 shadow-2xl z-50 flex flex-col">
             <div class="px-6 py-6 border-b border-slate-700/50">
                 <h1 class="text-2xl font-bold tracking-tight text-white">
                     <span class="text-blue-400">Stock</span><span class="text-teal-400">Flow</span>
                 </h1>
-                <p class="text-xs text-slate-300 mt-2">Espace demandeur</p>
+                <p class="text-xs text-slate-300 mt-2">Espace Demandeur</p>
             </div>
 
-            <nav class="px-3 py-6 space-y-1.5 flex-1 overflow-y-auto">
-                <Link v-for="item in menu" :key="item.name" :href="route(item.route)" :class="[
-                    route().current(item.route)
-                        ? 'bg-teal-600 text-white shadow-lg'
-                        : 'text-slate-300 hover:bg-slate-700 hover:text-white',
-                    'flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg transition-all'
-                ]">
+            <nav class="px-3 py-6 space-y-1.5 flex-1">
+                <Link v-for="item in menu" 
+                    :key="item.name" 
+                    :href="item.route ? route(item.route) : '#'"
+                    :class="[
+                        item.route && route().current(item.route) 
+                            ? 'bg-teal-600 text-white shadow-lg' 
+                            : 'text-slate-300 hover:bg-slate-700 hover:text-white', 
+                        'group flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg transition-all'
+                    ]"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.icon" />
+                    </svg>
                     {{ item.name }}
                 </Link>
             </nav>
 
             <div class="p-4 border-t border-slate-700/50">
-                <button @click="logout"
-                    class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-400 hover:bg-red-500/10 hover:text-red-400 rounded-lg transition-all">
-                    Deconnexion
+                <button @click="logout" 
+                    class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-400 hover:bg-red-500/10 hover:text-red-400 rounded-lg transition-all group">
+                    <svg class="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    Déconnexion
                 </button>
             </div>
         </aside>
 
         <!-- ==================================================  SECTION CONTENUE PRINCIPAL =========================================================-->
-        <div class="ml-64 flex-1">
+        <div class="ml-52 flex-1">
             <!-- ================================================== SECTION HEADER  =========================================================-->
             <header
                 class="bg-white border-b border-slate-200 sticky top-0 z-10 px-8 py-4 flex items-center justify-between">
@@ -95,19 +103,31 @@ const logout = () => {
                     <h2 class="text-xl font-bold text-slate-800">Dashboard</h2>
                     <p class="text-sm text-slate-500">Vue d'ensemble de vos demandes</p>
                 </div>
-                <div class="text-sm font-medium text-slate-700">{{ userName }}</div>
+                <div class="flex items-center gap-2 text-slate-700 hover:text-teal-600 cursor-pointer group">
+                        <div class="text-sm font-medium text-slate-700">{{ userName }}</div>
+                        <div class="w-9 h-9 flex items-center justify-center bg-slate-100 rounded-full group-hover:bg-teal-50 transition-colors">
+                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                        </div>
+                    </div>
             </header>
 
             <!-- ================================================== SECTION PRINCIPAL =========================================================-->
             <main class="p-8 space-y-8">
                 <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <article v-for="card in stats" :key="card.label"
-                        class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-                        <p class="text-sm text-slate-500">{{ card.label }}</p>
-                        <p class="text-3xl font-bold text-slate-900 mt-2">{{ card.value }}</p>
-                        <p class="text-xs text-slate-500 mt-1">{{ card.hint }}</p>
-                    </article>
-                </section>
+    <article v-for="card in stats" 
+        :key="card.label"
+        :class="card.class" 
+        :style="card.style"
+    >
+        <p class="text-sm text-slate-500">{{ card.label }}</p>
+        
+        <p :class="[card.color ? card.color : 'text-3xl font-bold text-slate-900 mt-2']">
+            {{ card.value }}
+        </p>
+        
+        <p class="text-xs text-slate-500 mt-1 italic">{{ card.hint }}</p>
+    </article>
+</section>
 
                 <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="bg-white rounded-xl border border-slate-200 shadow-sm lg:col-span-2">
@@ -152,7 +172,10 @@ const logout = () => {
                     <div class="space-y-4">
                         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
                             <h3 class="text-base font-semibold text-slate-800">Acces rapide</h3>
-                            <p class="text-sm text-slate-500 mt-1">Creer rapidement une nouvelle demande de retrait.</p>
+                            <Link :href="route('demandeur.demandes.index')" 
+      class="text-sm text-slate-500 mt-1 block hover:text-teal-600 transition-colors cursor-pointer">
+    Créer rapidement une nouvelle demande de retrait.
+</Link>
                             <Link :href="route('demandeur.demandes.index')"
                                 class="inline-flex items-center justify-center mt-4 w-full px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-lg transition-colors">
                                 Nouvelle demande
@@ -174,3 +197,43 @@ const logout = () => {
         </div>
     </div>
 </template>
+
+<style scoped>
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card-hover {
+    transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.progress-bar {
+    animation: growWidth 1s ease-out;
+}
+
+@keyframes growWidth {
+    from { width: 0; }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+</style>
