@@ -49,7 +49,7 @@ class CategorieController extends Controller
 
         Categorie::create($validated);
 
-        return Redirect::route('categories.index');
+        return Redirect::route('gestionnaire.articles.index');
     }
 
     /**
@@ -95,7 +95,7 @@ class CategorieController extends Controller
 
         $category->update($validated);
 
-        return Redirect::route('categories.index');
+        return Redirect::route('gestionnaire.articles.index');
     }
 
     /**
@@ -108,7 +108,7 @@ class CategorieController extends Controller
     {
         $category->delete();
 
-        return Redirect::route('categories.index');
+        return Redirect::route('gestionnaire.articles.index');
     }
 }
 

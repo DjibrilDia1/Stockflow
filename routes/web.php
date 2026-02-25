@@ -2,6 +2,9 @@
 
 use App\Enums\UserRole;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\MouvementStockController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -34,18 +37,23 @@ Route::middleware('auth')->get('/dashboard', function () {
 
 // Groupe pour le rôle GESTIONNAIRE
 Route::middleware(['auth', 'role:gestionnaire'])->prefix('gestionnaire')->name('gestionnaire.')->group(function () {
-    Route::get('/dashboard', function () {
-        // Cette route rendra `resources/js/Pages/Gestionnaire/Dashboard.vue`
-        return Inertia::render('Gestionnaire/Dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::get('/articles', function () {
-        return Inertia::render('Gestionnaire/Articles');
-    })->name('articles.index');
+    // Articles CRUD
+    Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');
+    Route::post('/articles', [ArticleController::class, 'store'])->name('articles.store');
+    Route::put('/articles/{item}', [ArticleController::class, 'update'])->name('articles.update');
+    Route::delete('/articles/{item}', [ArticleController::class, 'destroy'])->name('articles.destroy');
 
-    Route::get('/mouvements', function () {
-        return Inertia::render('Gestionnaire/Mouvements');
-    })->name('mouvements.index');
+    // Catégories CRUD
+    Route::post('/categories', [\App\Http\Controllers\CategorieController::class, 'store'])->name('categories.store');
+    Route::put('/categories/{category}', [\App\Http\Controllers\CategorieController::class, 'update'])->name('categories.update');
+    Route::delete('/categories/{category}', [\App\Http\Controllers\CategorieController::class, 'destroy'])->name('categories.destroy');
+
+    // Mouvements CRUD
+    Route::get('/mouvements', [MouvementStockController::class, 'index'])->name('mouvements.index');
+    Route::post('/mouvements', [MouvementStockController::class, 'store'])->name('mouvements.store');
+    Route::delete('/mouvements/{stockMovement}', [MouvementStockController::class, 'destroy'])->name('mouvements.destroy');
 
     Route::get('/demandes', function () {
         return Inertia::render('Gestionnaire/Demandes');

@@ -2,31 +2,17 @@
 import { ref, computed } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 
-// Props reçues du contrôleur Laravel (exemple)
+// Props reçues du contrôleur Laravel
 const props = defineProps({
-    stats: {
-        type: Object,
-        default: () => ({
-            underThreshold: 2,
-            totalArticles: 350,
-            movements: 124,
-            stockValue: 100000
-        })
-    },
-    stockAlerts: {
-        type: Array,
-        default: () => [
-            { id: 1, product: 'Papier A4', location: 'Magazin central', current: 2, threshold: 10 },
-            { id: 2, product: 'Stylos Noirs', location: 'Central A', current: 5, threshold: 15 },
-            { id: 3, product: 'Cartouches', location: 'Bâtiment B', current: 1, threshold: 5 },
-            { id: 4, product: 'Nettoyage Surface', location: 'Magazin central', current: 3, threshold: 8 }
-        ]
-    }
+    totalArticles: Number,
+    totalCategories: Number,
+    totalEntrepots: Number,
+    recentMovements: Array,
 });
 
 // État local
 const searchQuery = ref('');
-const currentPage = ref('Tableau de bord');
+// currentPage n'est plus utile ici car Inertia gère la navigation
 
 const navigation = [
     { name: 'Tableau de bord', route: 'gestionnaire.dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
@@ -36,21 +22,9 @@ const navigation = [
     { name: 'Rapports',route:'gestionnaire.rapports.index', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
     { name: 'Utilisateur',route:'gestionnaire.utilisateurs.index', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
     { name: 'Services & Fournitures', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
-
 ];
 
-const topArticles = [
-    { name: 'Feuilles A3', value: 85 , },
-    { name: 'Stylos Bleus', value: 60 },
-    { name: 'Cahier Spirales', value: 45 },
-    { name: 'Grant Laser', value: 25 }
-];
 
-const recentMovements = [
-    { id: 1, date: '24/04/2024', article: 'Papier A4', type: 'OUT', quantity: -50, warehouse: 'Campus A',entrepot:'Campus A', service: 'Service RH' },
-    { id: 2, date: '23/04/2024', article: 'Stylos Noirs', type: 'IN', quantity: 100, warehouse: 'Magasin central',entrepot:'Magasin central', service: 'Achat fournisseur' },
-    { id: 3, date: '22/04/2024', article: 'Toner Laser', type: 'Adjust', quantity: -5, warehouse: 'Bâtiment B',entrepot:'Bâtiment B', service: 'Correction stock' }
-];
 
 // Méthodes
 const formatCurrency = (value) => {
@@ -60,16 +34,17 @@ const formatCurrency = (value) => {
 const getAlertBadgeClass = (current, threshold) => {
     const ratio = current / threshold;
     // Moins de 20% du seuil = Rouge critique
-    if (ratio <= 0.2) return 'bg-red-500'; 
+    if (ratio <= 0.2) return 'bg-red-500';
     // Entre 20% et 40% = Orange attention
-    return 'bg-amber-600'; 
+    return 'bg-amber-600';
 };
 
 const getMovementTypeClass = (type) => {
     const classes = {
         'OUT': 'bg-red-100 text-red-700',
         'IN': 'bg-green-100 text-green-700',
-        'Adjust': 'bg-orange-100 text-orange-700'
+        'ADJUST': 'bg-orange-100 text-orange-700',
+        'TRANSFER': 'bg-blue-100 text-blue-700', // Added TRANSFER type
     };
     return classes[type] || 'bg-slate-100 text-slate-700';
 };
@@ -96,7 +71,7 @@ const logout = () => {
         :key="item.name"
         :href="item.route ? route(item.route) : '#'"
         :class="[
-            currentPage === item.name
+            item.route && route().current(item.route)
                 ? 'bg-teal-600 text-white shadow-lg shadow-teal-600/30'
                 : 'text-slate-300 hover:bg-slate-700/50 hover:text-white',
             'group flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200'
@@ -110,7 +85,7 @@ const logout = () => {
 </nav>
 
             <div class="absolute bottom-0 left-0 right-0 p-3 border-t border-slate-700/50">
-                <button @click="logout" 
+                <button @click="logout"
             class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-400 hover:bg-red-500/10 hover:text-red-400 rounded-lg transition-all group">
             <svg class="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -151,7 +126,7 @@ const logout = () => {
     </div>
 
     <div class="flex items-center gap-3">
-        <button 
+        <button
             @click="handleNewEntry"
             class="flex items-center gap-2 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-semibold shadow-sm transition-all active:scale-95"
         >
@@ -161,7 +136,7 @@ const logout = () => {
             <span>Nouvelle entrée</span>
         </button>
 
-        <button 
+        <button
             @click="handleNewExit"
             class="flex items-center gap-2 px-4 py-2.5 bg-white border border-teal-600 text-teal-600 hover:bg-teal-50 rounded-lg font-semibold shadow-sm transition-all active:scale-95"
         >
@@ -178,7 +153,7 @@ const logout = () => {
                         <h3 class="text-sm font-medium text-slate-500 mb-3">Articles sous seuil</h3>
                         <div class="flex items-end justify-between">
                             <div>
-                                <div class="text-4xl font-bold text-red-600 mb-1">{{ stats.underThreshold }}</div>
+                                <div class="text-4xl font-bold text-red-600 mb-1">{{ 0 }}</div> <!-- Keep static for now -->
                                 <span class="px-2 py-1 text-xs font-medium text-red-600 bg-red-50 rounded-md">En rupture</span>
                             </div>
                             <svg class="w-10 h-10 text-red-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
@@ -188,14 +163,14 @@ const logout = () => {
                     <div class="card-hover bg-white rounded-xl p-6 shadow-md border border-slate-100 animate-fade-in" style="animation-delay: 0.2s">
                         <h3 class="text-sm font-medium text-slate-500 mb-3">Total articles</h3>
                         <div class="flex items-end justify-between">
-                            <div class="text-2xl font-bold text-slate-800">{{ stats.totalArticles }}</div>
+                            <div class="text-2xl font-bold text-slate-800">{{ props.totalArticles }}</div>
                             <svg class="w-10 h-10 text-teal-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"></svg>
                         </div>
                     </div>
                     <div class="card-hover bg-white rounded-xl p-6 shadow-md border border-slate-100 animate-fade-in" style="animation-delay: 0.2s">
                         <h3 class="text-sm font-medium text-slate-500 mb-3">Mouvements</h3>
                         <div class="flex items-end justify-between">
-                            <div class="text-2xl font-bold text-slate-800">{{ (stats.movements) }}</div>
+                            <div class="text-2xl font-bold text-slate-800">{{ props.recentMovements.length }}</div>
                             <svg class="w-10 h-10 text-teal-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"> </svg>
                         </div>
                     </div>
@@ -203,79 +178,15 @@ const logout = () => {
                     <div class="card-hover bg-white rounded-xl p-6 shadow-md border border-slate-100 animate-fade-in" style="animation-delay: 0.2s">
                         <h3 class="text-sm font-medium text-slate-500 mb-3">Valeurs stocks</h3>
                         <div class="flex items-end justify-between">
-                            <div class="text-2xl font-bold text-slate-800">{{ formatCurrency(stats.stockValue) }}</div>
+                            <div class="text-2xl font-bold text-slate-800">{{ formatCurrency(0) }}</div> <!-- Keep static for now -->
                             <svg class="w-10 h-10 text-teal-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         </div>
                     </div>
-                    </div>  
-
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
-    
-    
-
-    <div class="bg-white rounded-xl shadow-md border border-slate-100 flex flex-col h-full overflow-hidden">
-    <div class="px-6 py-4 border-b border-slate-100">
-        <h3 class="text-lg font-semibold text-slate-800">Alertes Stock</h3>
-    </div>
-    
-    <div class="divide-y divide-slate-100 flex-1 flex flex-col">
-        <div v-for="alert in stockAlerts" 
-             :key="alert.id" 
-             class="flex items-center justify-between px-6 py-4 hover:bg-slate-50 transition-colors flex-1">
-            <div class="flex-1 min-w-0 pr-4">
-                <p class="text-sm font-bold text-slate-800 truncate">{{ alert.product }}</p>
-                <p class="text-xs text-slate-500 truncate">{{ alert.location }}</p>
-            </div>
-            <div class="flex-shrink-0">
-                <span :class="['px-3 py-1.5 rounded-lg text-sm font-bold text-white min-w-[75px] inline-block text-center shadow-sm', getAlertBadgeClass(alert.current, alert.threshold)]">
-                    {{ alert.current }} / {{ alert.threshold }}
-                </span>
-            </div>
-        </div>
-    </div>
-</div>
-
-    <div class="bg-white rounded-xl shadow-md border border-slate-100 overflow-hidden flex flex-col">
-    <div class="px-6 py-4 border-b border-slate-100">
-        <h3 class="text-lg font-semibold text-slate-800">Top 5 articles consommés</h3>
-    </div>
-    
-    <div class="p-6">
-    <div class="relative">
-        
-        <div class="absolute inset-0 flex justify-between pointer-events-none" style="margin-left: 8rem;">
-            <div v-for="i in 6" :key="i" class="h-full border-l border-slate-200 w-full last:border-r"></div>
-        </div>
-
-        <div class="relative z-10">
-            <div v-for="article in topArticles" :key="article.name" class="flex items-center group border-b border-slate-50 last:border-0">
-                <div class="w-32 py-4 pr-4 text-sm font-medium text-slate-700 truncate">
-                    {{ article.name }}
-                </div>
-                
-                <div class="flex-1 py-4">
-                    <div class="h-8 bg-teal-600 rounded-r-sm transition-all duration-1000 ease-out shadow-sm group-hover:bg-teal-500"
-                        :style="{ width: article.value + '%' }">
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-    <div class="p-4 mt-auto flex justify-end">
-        <button class="px-6 py-2 bg-teal-700 hover:bg-teal-800 text-white text-sm font-semibold rounded-lg transition-colors">
-            Voir rapports
-        </button>
-    </div>
-</div>
 
 
-    
 
-</div>
 
-                    
                 <div class="bg-white rounded-xl shadow-md border border-slate-100 overflow-hidden">
                     <div class="px-6 py-4 border-b border-slate-100">
                         <h3 class="text-lg font-semibold text-slate-800">Derniers Mouvements</h3>
@@ -293,19 +204,19 @@ const logout = () => {
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
-                                <tr v-for="m in recentMovements" :key="m.id" class="hover:bg-slate-50/50 transition-colors">
-                                    <td class="px-6 py-4 text-sm font-medium text-slate-800">{{ m.date }}</td>
-                                    <td class="px-6 py-4 text-sm font-medium text-slate-800">{{ m.article }}</td>
+                                <tr v-for="movement in props.recentMovements" :key="movement.mvs_id" class="hover:bg-slate-50/50 transition-colors">
+                                    <td class="px-6 py-4 text-sm font-medium text-slate-800">{{ new Date(movement.mvs_date_mouvement).toLocaleDateString('fr-FR') }}</td>
+                                    <td class="px-6 py-4 text-sm font-medium text-slate-800">{{ movement.item ? movement.item.art_nom : 'N/A' }}</td>
                                     <td class="px-6 py-4">
-                                        <span :class="['px-3 py-1 rounded-md text-xs font-semibold', getMovementTypeClass(m.type)]">
-                                            {{ m.type }}
+                                        <span :class="['px-3 py-1 rounded-md text-xs font-semibold', getMovementTypeClass(movement.mvs_type)]">
+                                            {{ movement.mvs_type }}
                                         </span>
                                     </td>
-                                    <td :class="['px-6 py-4 text-sm font-bold', m.quantity < 0 ? 'text-red-600' : 'text-teal-600']">
-                                        {{ m.quantity > 0 ? '+' : '' }}{{ m.quantity }}
+                                    <td :class="['px-6 py-4 text-sm font-bold', movement.mvs_quantite < 0 ? 'text-red-600' : 'text-teal-600']">
+                                        {{ movement.mvs_quantite > 0 ? '+' : '' }}{{ movement.mvs_quantite }}
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-slate-600">{{ m.entrepot }}</td>
-                                    <td class="px-6 py-4 text-sm text-slate-600">{{ m.service }}</td>
+                                    <td class="px-6 py-4 text-sm text-slate-600">{{ movement.warehouse ? movement.warehouse.ent_nom : 'N/A' }}</td>
+                                    <td class="px-6 py-4 text-sm text-slate-600">{{ movement.user ? movement.user.name : 'N/A' }}</td>
                                 </tr>
                             </tbody>
                         </table>

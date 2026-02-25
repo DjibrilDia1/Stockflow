@@ -20,8 +20,9 @@ class ArticleController extends Controller
      */
     public function index(): Response
     {
-        return Inertia::render('Gestionnaire/Articles/Index', [
-            'items' => Article::with('category')->get(),
+        return Inertia::render('Gestionnaire/Articles', [
+            'items' => Article::with(['category', 'itemStocks'])->paginate(3, ['*'], 'items'),
+            'categories' => Categorie::paginate(3, ['*'], 'categories'),
         ]);
     }
 
@@ -47,9 +48,9 @@ class ArticleController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'art_reference' => 'required|string|max:255|unique:articles,art_reference',
-            'art_nom' => 'required|string|max:255',
-            'art_unite' => 'required|string|max:255',
+            'art_reference' => 'required|string|max:255|unique:articles,art_reference|regex:/^(?![0-9]+$).+$/',
+            'art_nom' => 'required|string|max:255|regex:/^(?![0-9]+$).+$/',
+            'art_unite' => 'required|string|max:255|regex:/^[^0-9]+$/',
             'art_cat_id' => 'required|integer|exists:categories,cat_id',
             'art_seuil_alerte' => 'nullable|integer|min:0',
             'art_stock_securite' => 'nullable|integer|min:0',
@@ -58,7 +59,7 @@ class ArticleController extends Controller
 
         Article::create($validated);
 
-        return Redirect::route('items.index');
+        return Redirect::route('gestionnaire.articles.index');
     }
 
     /**
@@ -100,9 +101,9 @@ class ArticleController extends Controller
     public function update(Request $request, Article $item): RedirectResponse
     {
         $validated = $request->validate([
-            'art_reference' => 'required|string|max:255|unique:articles,art_reference,' . $item->getKey() . ',art_id',
-            'art_nom' => 'required|string|max:255',
-            'art_unite' => 'required|string|max:255',
+            'art_reference' => 'required|string|max:255|regex:/^(?![0-9]+$).+$/|unique:articles,art_reference,' . $item->getKey() . ',art_id',
+            'art_nom' => 'required|string|max:255|regex:/^(?![0-9]+$).+$/',
+            'art_unite' => 'required|string|max:255|regex:/^[^0-9]+$/',
             'art_cat_id' => 'required|integer|exists:categories,cat_id',
             'art_seuil_alerte' => 'nullable|integer|min:0',
             'art_stock_securite' => 'nullable|integer|min:0',
@@ -111,7 +112,7 @@ class ArticleController extends Controller
 
         $item->update($validated);
 
-        return Redirect::route('items.index');
+        return Redirect::route('gestionnaire.articles.index');
     }
 
     /**
@@ -124,7 +125,7 @@ class ArticleController extends Controller
     {
         $item->delete();
 
-        return Redirect::route('items.index');
+        return Redirect::route('gestionnaire.articles.index');
     }
 }
 
