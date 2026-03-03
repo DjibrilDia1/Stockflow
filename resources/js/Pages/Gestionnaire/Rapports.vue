@@ -5,12 +5,12 @@ import { Link, router ,usePage} from '@inertiajs/vue3';
 const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gestionnaire');
 
-// Données fictives
+// DonnÃ©es fictives
 const demandes = ref([
-    { id: 1, ref: 'DREQ-001', demandeur: 'Entrée', entrepot: 'Fournitures', date: '3/04/2024', statut: 'Brouillon', statutClass: 'bg-amber-100 text-amber-600', detail: '' },
-    { id: 2, ref: 'DREQ-002', demandeur: 'Transfert', entrepot: 'Fournitures', date: '13/04/2024', statut: 'Validée', statutClass: 'bg-teal-600 text-white', detail: '+ Stylos noirs x 20' },
+    { id: 1, ref: 'DREQ-001', demandeur: 'EntrÃ©e', entrepot: 'Fournitures', date: '3/04/2024', statut: 'Brouillon', statutClass: 'bg-amber-100 text-amber-600', detail: '' },
+    { id: 2, ref: 'DREQ-002', demandeur: 'Transfert', entrepot: 'Fournitures', date: '13/04/2024', statut: 'ValidÃ©e', statutClass: 'bg-teal-600 text-white', detail: '+ Stylos noirs x 20' },
     { id: 3, ref: 'DREQ-003', demandeur: 'Ajustement', entrepot: 'Mobilier', date: '15/04/2024', statut: 'Servie', statutClass: 'bg-emerald-500 text-white', detail: '+ Cartouches dâ€™encre x 10' },
-    { id: 4, ref: 'DREQ-004', demandeur: 'Sortie', entrepot: 'Mobilier', date: '15/04/2024', statut: 'Rejetée', statutClass: 'bg-red-500 text-white', detail: '+ Besoin non justifiée' },
+    { id: 4, ref: 'DREQ-004', demandeur: 'Sortie', entrepot: 'Mobilier', date: '15/04/2024', statut: 'RejetÃ©e', statutClass: 'bg-red-500 text-white', detail: '+ Besoin non justifiÃ©e' },
 ]);
 
 const navigation = [
@@ -25,7 +25,7 @@ const navigation = [
 ];
 
 const logout = () => {
-    if (confirm('Déconnexion ?')) router.post(route('logout'));
+    if (confirm('DÃ©connexion ?')) router.post(route('logout'));
 };
 </script>
 
@@ -63,7 +63,7 @@ const logout = () => {
                     <svg class="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
-                    Déconnexion
+                    DÃ©connexion
                 </button>
             </div>
         </aside>
@@ -87,12 +87,12 @@ const logout = () => {
             <main class="p-8 space-y-6">
                 <div class="flex justify-between items-center">
                     <div>
-                        <h2 class="text-2xl font-bold text-slate-800">Gerer vos rapports</h2>
-                        <p class="text-slate-500 text-sm">Analyser la consommation et lâ€™état de vos stocks</p>
+                        <h2 class="text-2xl font-bold text-slate-800">GÃ©rer vos rapports</h2>
+                        <p class="text-slate-500 text-sm">Analyser la consommation et lâ€™Ã©tat de vos stocks</p>
                     </div>
                     <button class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-all shadow-sm">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-                        Générer rapport
+                        GÃ©nÃ©rer rapport
                     </button>
                 </div>
 
@@ -130,7 +130,7 @@ const logout = () => {
             
             <div>
                 <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-tight">Consommation par service</h3>
-                <p class="text-sm text-slate-700 font-bold mt-1">Analyser les articles consommés par service</p>
+                <p class="text-sm text-slate-700 font-bold mt-1">Analyser les articles consommÃ©s par service</p>
             </div>
         </div>
 
