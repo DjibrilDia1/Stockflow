@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { Link, router , usePage } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 
 const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gestionnaire');
@@ -109,7 +109,7 @@ const navigation = [
     { name: 'Demandes', route: 'gestionnaire.demandes.index', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
     { name: 'Rapports', route: 'gestionnaire.rapports.index', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
     { name: 'Utilisateur', route: 'gestionnaire.utilisateurs.index', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
-    { name: 'Services & Fournisseurs',route:'gestionnaire.services-fournisseurs.index', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
+    { name: 'Services & Fournisseurs', route: 'gestionnaire.services-fournisseurs.index', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
 
 ];
 
@@ -176,54 +176,79 @@ const addArticle = () => {
             </div>
         </aside>
 
-
-        <div v-if="showAddCategoryModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showAddCategoryModal = false"></div>
-            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
-                <h3 class="text-lg font-bold mb-4">Nouvelle Catégorie</h3>
-                <form @submit.prevent="addCategory" class="space-y-4">
-                    <input v-model="newCategory.reference" placeholder="Référence"
-                        class="w-full border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-teal-500 outline-none"
-                        required>
-                    <input v-model="newCategory.name" placeholder="Nom"
-                        class="w-full border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-teal-500 outline-none"
-                        required>
-                    <textarea v-model="newCategory.description" placeholder="Description"
-                        class="w-full border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-teal-500 outline-none"
-                        rows="3"></textarea>
-                    <div class="flex gap-2">
-                        <button type="button" @click="showAddCategoryModal = false"
-                            class="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-semibold hover:bg-slate-50 transition-colors">
-                            Annuler
-                        </button>
-                        <button type="submit"
-                            class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition-colors">
-                            Enregistrer
-                        </button>
-                    </div>
-                </form>
-            </div>
+<div v-if="showAddCategoryModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showAddCategoryModal = false"></div>
+    
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
+        
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <h3 class="text-lg font-bold text-slate-800">Nouvelle Catégorie</h3>
+            <button @click="showAddCategoryModal = false" 
+                class="text-slate-400 hover:text-slate-600 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
         </div>
+
+        <form @submit.prevent="addCategory" class="p-6 space-y-4">
+            <input v-model="newCategory.reference" placeholder="Référence"
+                class="w-full border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-teal-500 outline-none"
+                required>
+            
+            <input v-model="newCategory.name" placeholder="Nom"
+                class="w-full border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-teal-500 outline-none"
+                required>
+            
+            <textarea v-model="newCategory.description" placeholder="Description"
+                class="w-full border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-teal-500 outline-none"
+                rows="3"></textarea>
+
+            <div class="flex gap-3 pt-2">
+                <button type="button" @click="showAddCategoryModal = false"
+                    class="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-semibold hover:bg-slate-50 transition-colors">
+                    Annuler
+                </button>
+                <button type="submit"
+                    class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition-colors shadow-md">
+                    Enregistrer
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
         <div v-if="showEditCategoryModal && editingCategory"
             class="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showEditCategoryModal = false"></div>
             <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
-                <h3 class="text-lg font-bold mb-4">Modifier la Catégorie</h3>
+                <button @click="showEditCategoryModal = false"
+                    class="absolute top-3 right-5 text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
+                <div>
+
+                    <h3 class="text-lg font-bold mb-4">Modifier la Catégorie</h3>
+                </div>
                 <form @submit.prevent="updateCategory" class="space-y-4">
                     <label class="block text-sm font-medium">Référence</label>
-                    <input v-model="editingCategory.reference" class="w-full border p-2 rounded" required>
+                    <input v-model="editingCategory.reference"
+                        class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+                        required>
 
                     <label class="block text-sm font-medium">Nom</label>
-                    <input v-model="editingCategory.name" class="w-full border p-2 rounded" required>
+                    <input v-model="editingCategory.name"
+                        class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+                        required>
 
                     <label class="block text-sm font-medium">Description</label>
-                    <textarea v-model="editingCategory.description" class="w-full border p-2 rounded"></textarea>
+                    <textarea v-model="editingCategory.description"
+                        class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"></textarea>
 
                     <div class="flex gap-2">
                         <button type="button" @click="showEditCategoryModal = false"
-                            class="flex-1 py-2 border rounded">Annuler</button>
-                        <button type="submit" class="flex-1 py-2 bg-teal-600 text-white rounded">Mettre à jour</button>
+                            class="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-semibold hover:bg-slate-50 transition-colors">Annuler</button>
+                        <button type="submit"
+                            class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700">Mettre
+                            à jour</button>
                     </div>
                 </form>
             </div>
@@ -240,11 +265,15 @@ const addArticle = () => {
                     <span class="font-medium">Articles</span>
                 </div>
                 <div class="flex items-center gap-2 text-slate-700 hover:text-teal-600 cursor-pointer group">
-                        <div class="text-sm font-medium text-slate-700">{{ userName }}</div>
-                        <div class="w-9 h-9 flex items-center justify-center bg-slate-100 rounded-full group-hover:bg-teal-50 transition-colors">
-                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                        </div>
+                    <div class="text-sm font-medium text-slate-700">{{ userName }}</div>
+                    <div
+                        class="w-9 h-9 flex items-center justify-center bg-slate-100 rounded-full group-hover:bg-teal-50 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
                     </div>
+                </div>
             </header>
 
             <main class="p-8 space-y-6">
@@ -272,9 +301,10 @@ const addArticle = () => {
                         <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
                             <div
                                 class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-blue-50">
-                                <h3 class="text-lg font-bold text-slate-800">Modifier l'article</h3>
                                 <button @click="showEditModal = false"
-                                    class="text-slate-400 hover:text-slate-600">&times;</button>
+                                    class="absolute top-3 right-5 text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
+                                <h3 class="text-lg font-bold text-slate-800">Modifier l'article</h3>
+
                             </div>
 
                             <form @submit.prevent="updateArticle" class="p-6 space-y-4">
@@ -282,19 +312,19 @@ const addArticle = () => {
                                     <label class="block text-sm font-semibold text-slate-700 mb-1">Nom de
                                         l'article</label>
                                     <input v-model="editingArticle.name" type="text" required
-                                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                                        class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
                                 </div>
 
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-semibold text-slate-700 mb-1">Catégorie</label>
                                         <input v-model="editingArticle.category" type="text"
-                                            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                                            class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
                                     </div>
                                     <div>
                                         <label class="block text-sm font-semibold text-slate-700 mb-1">Statut</label>
                                         <input v-model="editingArticle.status" type="text"
-                                            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                                            class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
                                     </div>
                                 </div>
 
@@ -302,13 +332,13 @@ const addArticle = () => {
                                     <div>
                                         <label class="block text-sm font-semibold text-slate-700 mb-1">Stock</label>
                                         <input v-model="editingArticle.stock" type="number"
-                                            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                                            class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
                                     </div>
                                     <div>
                                         <label class="block text-sm font-semibold text-slate-700 mb-1">Seuil
                                             (Lieu)</label>
                                         <input v-model="editingArticle.threshold" type="text"
-                                            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                                            class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
                                     </div>
                                 </div>
 
@@ -332,7 +362,7 @@ const addArticle = () => {
                                 class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                                 <h3 class="text-lg font-bold text-slate-800">Ajouter un nouvel article</h3>
                                 <button @click="showAddModal = false"
-                                    class="text-slate-400 hover:text-slate-600">&times;</button>
+                                    class="text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
                             </div>
 
                             <form @submit.prevent="addArticle" class="p-6 space-y-4">
@@ -468,17 +498,15 @@ const addArticle = () => {
                         </tbody>
                     </table>
 
-                    <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-col items-center gap-3">
-                        <div class="px-8 py-5 flex flex-col items-center gap-2 bg-white border-t border-slate-100">
-                            <div class="flex items-center gap-2">
-                                <button class="text-slate-400 hover:text-teal-600 font-bold">&lt;</button>
-                                <button
-                                    class="w-8 h-8 bg-teal-600 text-white rounded flex items-center justify-center text-sm font-bold">1</button>
-                                <button class="text-slate-400 hover:text-teal-600 font-bold">&gt;</button>
+                    <div class="px-8 py-5 flex flex-col items-center gap-2 bg-white border-t border-slate-100">
+                                <div class="flex items-center gap-2">
+                                    <button class="text-slate-400 hover:text-teal-600 font-bold">&lt;</button>
+                                    <button
+                                        class="w-8 h-8 bg-teal-600 text-white rounded flex items-center justify-center text-sm font-bold">1</button>
+                                    <button class="text-slate-400 hover:text-teal-600 font-bold">&gt;</button>
+                                </div>
+                                <span class="text-xs text-slate-500">1-3 Sur 3</span>
                             </div>
-                            <span class="text-xs text-slate-500">1-3 Sur 3</span>
-                        </div>
-                    </div>
                 </div>
 
                 <main class="p-8 space-y-6">
@@ -494,7 +522,9 @@ const addArticle = () => {
                                     d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                             </svg>
                             Nouvelle Catégorie
+
                         </button>
+
                     </div>
 
                     <div
@@ -561,9 +591,7 @@ const addArticle = () => {
                             </tbody>
                         </table>
 
-                        <div
-                            class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-col items-center gap-3">
-                            <div class="px-8 py-5 flex flex-col items-center gap-2 bg-white border-t border-slate-100">
+                           <div class="px-8 py-5 flex flex-col items-center gap-2 bg-white border-t border-slate-100">
                                 <div class="flex items-center gap-2">
                                     <button class="text-slate-400 hover:text-teal-600 font-bold">&lt;</button>
                                     <button
@@ -573,7 +601,6 @@ const addArticle = () => {
                                 <span class="text-xs text-slate-500">1-3 Sur 3</span>
                             </div>
                         </div>
-                    </div>
                 </main>
 
             </main>

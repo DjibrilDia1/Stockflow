@@ -1,8 +1,16 @@
 <script setup>
-import { ref,computed } from 'vue';
-import { Link, router , usePage } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
+import { Link, router, usePage } from '@inertiajs/vue3';
 
 const page = usePage();
+const showDetailModal = ref(false);
+const selectedDetail = ref('');
+
+
+const openDetail = (detail) => {
+    selectedDetail.value = detail;
+    showDetailModal.value = true;
+};
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gestionnaire');
 
 
@@ -48,7 +56,7 @@ const deleteDemandes = (id) => {
 
 // Données fictives
 const demandes = ref([
-    { id: 1, ref: 'DREQ-001', demandeur: 'Entrée', entrepot: 'Fournitures', date: '3/04/2024', statut: 'Brouillon', statutClass: 'bg-amber-100 text-amber-600', detail: '' },
+    { id: 1, ref: 'DREQ-001', demandeur: 'Entrée', entrepot: 'Fournitures', date: '3/04/2024', statut: 'Brouillon', statutClass: 'bg-amber-100 text-amber-600', detail: 'dsfdsfdsfsfdsfffffffffffffffffffffffffdsfdsfdsfsfdsfdsfdsfdsfdsfdsfsdfsdsfdsfdsfdsfdsfdsfdsfdsfdsfs' },
     { id: 2, ref: 'DREQ-002', demandeur: 'Transfert', entrepot: 'Fournitures', date: '13/04/2024', statut: 'Validée', statutClass: 'bg-teal-600 text-white', detail: '+ Stylos noirs x 20' },
     { id: 3, ref: 'DREQ-003', demandeur: 'Ajustement', entrepot: 'Mobilier', date: '15/04/2024', statut: 'Servie', statutClass: 'bg-emerald-500 text-white', detail: '+ Cartouches d’encre x 10' },
     { id: 4, ref: 'DREQ-004', demandeur: 'Sortie', entrepot: 'Mobilier', date: '15/04/2024', statut: 'Rejetée', statutClass: 'bg-red-500 text-white', detail: '+ Besoin non justifiée' },
@@ -61,7 +69,7 @@ const navigation = [
     { name: 'Demandes', route: 'gestionnaire.demandes.index', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
     { name: 'Rapports', route: 'gestionnaire.rapports.index', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
     { name: 'Utilisateur', route: 'gestionnaire.utilisateurs.index', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
-    { name: 'Services & Fournisseurs',route:'gestionnaire.services-fournisseurs.index', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
+    { name: 'Services & Fournisseurs', route: 'gestionnaire.services-fournisseurs.index', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
 
 ];
 
@@ -123,7 +131,8 @@ const logout = () => {
             <header
                 class="bg-white border-b border-slate-200 sticky top-0 z-10 px-8 py-4 flex items-center justify-between">
                 <div class="flex items-center gap-4 text-slate-500">
-                    <Link :href="route('gestionnaire.mouvements.index')" class="text-slate-400 hover:text-teal-600 transition-colors">
+                    <Link :href="route('gestionnaire.mouvements.index')"
+                        class="text-slate-400 hover:text-teal-600 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                         </svg>
@@ -131,11 +140,15 @@ const logout = () => {
                     <span class="font-medium">Demandes</span>
                 </div>
                 <div class="flex items-center gap-2 text-slate-700 hover:text-teal-600 cursor-pointer group">
-                        <div class="text-sm font-medium text-slate-700">{{ userName }}</div>
-                        <div class="w-9 h-9 flex items-center justify-center bg-slate-100 rounded-full group-hover:bg-teal-50 transition-colors">
-                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                        </div>
+                    <div class="text-sm font-medium text-slate-700">{{ userName }}</div>
+                    <div
+                        class="w-9 h-9 flex items-center justify-center bg-slate-100 rounded-full group-hover:bg-teal-50 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
                     </div>
+                </div>
             </header>
 
             <main class="p-10 space-y-8">
@@ -268,36 +281,51 @@ const logout = () => {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
-    <tr v-for="item in demandes" :key="item.id" class="hover:bg-slate-50 transition-colors group">
-        <td class="px-6 py-5 text-sm font-medium text-blue-500 underline cursor-pointer">{{ item.ref }}</td>
-        
-        <td class="px-6 py-5">
-            <span :class="getTypeClass(item.demandeur)">{{ item.demandeur }}</span>
-        </td>
-        
-        <td class="px-6 py-5 text-sm font-bold text-slate-700 text-center">{{ item.entrepot }}</td>
-        
-        <td class="px-6 py-5 text-sm text-slate-500">{{ item.date }}</td>
-        
-        <td class="px-6 py-5">
-            <span :class="['px-4 py-1.5 rounded-md text-xs font-bold block min-w-[100px] text-center', item.statutClass]">
-                {{ item.statut }}
-            </span>
-        </td>
+                            <tr v-for="item in demandes" :key="item.id"
+                                class="hover:bg-slate-50 transition-colors group">
+                                <td class="px-6 py-5 text-sm font-medium text-blue-500 underline cursor-pointer">{{
+                                    item.ref }}</td>
 
-        <td class="px-6 py-5 text-xs text-teal-600 font-semibold italic">
-            {{ item.detail || '-' }}
-        </td>
+                                <td class="px-6 py-5">
+                                    <span :class="getTypeClass(item.demandeur)">{{ item.demandeur }}</span>
+                                </td>
 
-        <td class="px-6 py-4 text-center">
-            <button @click="deleteDemandes(item.id)" class="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition-colors">
-                <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-            </button>
-        </td>
-    </tr>
-</tbody>
+                                <td class="px-6 py-5 text-sm font-bold text-slate-700 text-center">{{ item.entrepot }}
+                                </td>
+
+                                <td class="px-6 py-5 text-sm text-slate-500">{{ item.date }}</td>
+
+                                <td class="px-6 py-5">
+                                    <span
+                                        :class="['px-4 py-1.5 rounded-md text-xs font-bold block min-w-[100px] text-center', item.statutClass]">
+                                        {{ item.statut }}
+                                    </span>
+                                </td>
+
+                                <td class="px-6 py-5">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xs text-slate-600 line-clamp-1 italic max-w-[150px] pr-1">
+                                            {{ item.detail || 'Aucun détail' }}
+                                        </span>
+                                        <button v-if="item.detail" @click="openDetail(item.detail)"
+                                            class="text-[11px] font-bold text-teal-600 hover:text-teal-700 underline whitespace-nowrap">
+                                            Voir plus
+                                        </button>
+                                    </div>
+                                </td>
+
+                                <td class="px-6 py-4 text-center">
+                                    <button @click="deleteDemandes(item.id)"
+                                        class="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition-colors">
+                                        <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
                     </table>
 
                     <div class="px-8 py-5 flex flex-col items-center gap-2 bg-white border-t border-slate-100">
@@ -309,6 +337,44 @@ const logout = () => {
                         </div>
                         <span class="text-xs text-slate-500">1-3 Sur 3</span>
                     </div>
+                </div>
+                <div v-if="showDetailModal" class="fixed inset-0 z-[110] flex items-center justify-center p-4">
+                    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" @click="showDetailModal = false">
+                    </div>
+
+                    <Teleport to="body">
+                        <div v-if="showDetailModal" class="fixed inset-0 z-[999] flex items-center justify-center p-4">
+                            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+                                @click="showDetailModal = false"></div>
+
+                            <div
+                                class="relative bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
+                                <div
+                                    class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-teal-50">
+                                    <h3 class="text-sm font-bold text-teal-800 uppercase tracking-wider">
+                                        Détails de l'article
+                                    </h3>
+                                    <button @click="showDetailModal = false"
+                                        class="text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
+                                </div>
+
+                                <div class="p-6">
+                                    <div class="max-h-[60vh] overflow-y-auto pr-2">
+                                        <p class="text-slate-700 whitespace-pre-line leading-relaxed break-words">
+                                            {{ selectedDetail }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="p-4 bg-slate-50 border-t border-slate-100 text-right">
+                                    <button @click="showDetailModal = false"
+                                        class="px-4 py-2 bg-slate-800 text-white text-sm rounded-lg font-semibold hover:bg-slate-700 transition-colors">
+                                        Fermer
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </Teleport>
                 </div>
             </main>
         </div>
