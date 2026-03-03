@@ -20,7 +20,7 @@ class DemandeSortieController extends Controller
         return Inertia::render('Gestionnaire/Demandes', [
             'withdrawRequests' => DemandeSortie::with(['service', 'requester', 'lines.item'])
                 ->latest()
-                ->paginate(10),
+                ->paginate(3),
         ]);
     }
 
