@@ -13,7 +13,7 @@ const props = defineProps({
 const showAddDemandeModal = ref(false);
 
 const deleteDemandes = (id) => {
-    if (confirm('àŠtes-vous sà»r de vouloir supprimer cette demande ? Cette action est irréversible.')) {
+    if (confirm('ÃŠtes-vous sÃ»r de vouloir supprimer cette demande ? Cette action est irrÃ©versible.')) {
         router.delete(route('gestionnaire.demandes.destroy', id));
     }
 };
@@ -47,10 +47,10 @@ const navigation = [
 ];
 
 const getTypeClass = (type) => {
-    // Classes de base identiques pour un design cohérent
+    // Classes de base identiques pour un design cohÃ©rent
     const baseClass = "px-3 py-1.5 rounded-md text-xs font-bold uppercase block text-center mx-auto max-w-[120px] border";
 
-    if (type === 'Entrée') return `${baseClass} bg-teal-50 text-teal-700 border-teal-100`;
+    if (type === 'EntrÃ©e') return `${baseClass} bg-teal-50 text-teal-700 border-teal-100`;
     if (type === 'Transfert') return `${baseClass} bg-blue-50 text-blue-700 border-blue-100`;
     if (type === 'Ajustement') return `${baseClass} bg-orange-50 text-orange-700 border-orange-100`;
     if (type === 'Sortie') return `${baseClass} bg-red-50 text-red-700 border-red-100`;
@@ -59,7 +59,7 @@ const getTypeClass = (type) => {
 };
 
 const logout = () => {
-    if (confirm('Déconnexion ?')) router.post(route('logout'));
+    if (confirm('DÃ©connexion ?')) router.post(route('logout'));
 };
 </script>
 
@@ -95,7 +95,7 @@ const logout = () => {
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
-                    Déconnexion
+                    DÃ©connexion
                 </button>
             </div>
         </aside>
@@ -123,7 +123,7 @@ const logout = () => {
                 <div class="flex justify-between items-start">
                     <div>
                         <h2 class="text-2xl font-bold text-slate-900">Demandes de retrait</h2>
-                        <p class="text-slate-500 mt-1">Gérer les demandes de retrait d'articles</p>
+                        <p class="text-slate-500 mt-1">GÃ©rer les demandes de retrait d'articles</p>
                     </div>
                     <button @click="showAddDemandeModal = true"
                         class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-all shadow-sm">
@@ -145,7 +145,7 @@ const logout = () => {
                             <form @submit.prevent="addDemande" class="p-6 space-y-4">
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-sm font-semibold text-slate-700 mb-1">Référence</label>
+                                        <label class="block text-sm font-semibold text-slate-700 mb-1">RÃ©fÃ©rence</label>
                                         <input v-model="newDemande.ref" type="text"
                                             class="w-full px-4 py-2 border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
                                     </div>
@@ -162,14 +162,14 @@ const logout = () => {
                                             (Demandeur)</label>
                                         <select v-model="newDemande.demandeur"
                                             class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
-                                            <option value="Entrée">Entrée</option>
+                                            <option value="EntrÃ©e">EntrÃ©e</option>
                                             <option value="Sortie">Sortie</option>
                                             <option value="Transfert">Transfert</option>
                                             <option value="Ajustement">Ajustement</option>
                                         </select>
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-semibold text-slate-700 mb-1">Entrepôt</label>
+                                        <label class="block text-sm font-semibold text-slate-700 mb-1">EntrepÃ´t</label>
                                         <select v-model="newDemande.entrepot" required
                                             class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
                                             <option value="" disabled>Choisir...</option>
@@ -181,7 +181,7 @@ const logout = () => {
                                 </div>
 
                                 <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-1">Détails des
+                                    <label class="block text-sm font-semibold text-slate-700 mb-1">DÃ©tails des
                                         articles</label>
                                     <textarea v-model="newDemande.detail" rows="3"
                                         placeholder="Ex: Stylos noirs x 20, Rames de papier x 5..."
@@ -242,7 +242,7 @@ const logout = () => {
                                 <th class="px-6 py-4">ID</th>
                                 <th class="px-6 py-4">Demandeur / Service</th>
                                 <th class="px-6 py-4">Articles</th>
-                                <th class="px-6 py-4">Quantité</th>
+                                <th class="px-6 py-4">QuantitÃ©</th>
                                 <th class="px-6 py-4">Date</th>
                                 <th class="px-6 py-4">Statut</th>
                                 <th class="px-6 py-4 text-center">Actions</th>

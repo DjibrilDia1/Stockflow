@@ -44,7 +44,7 @@ const addMouvement = () => {
 };
 
 const deleteMouvement = (id) => {
-    if (confirm('àŠtes-vous sà»r de vouloir supprimer ce mouvement ? Cette action est irréversible.')) {
+    if (confirm('ÃŠtes-vous sÃ»r de vouloir supprimer ce mouvement ? Cette action est irrÃ©versible.')) {
         router.delete(route('gestionnaire.mouvements.destroy', id));
     }
 };
@@ -119,7 +119,7 @@ const getTypeClass = (type) => {
 const logout = () => {
 
 
-    if (confirm('Déconnexion ?')) router.post(route('logout'));
+    if (confirm('DÃ©connexion ?')) router.post(route('logout'));
 
 
 };
@@ -136,7 +136,7 @@ const logout = () => {
 
             <nav class="px-3 py-6 space-y-1.5 flex-1">
                 <Link v-for="item in navigation" :key="item.name" :href="item.route ? route(item.route) : '#'" :class="[
-                    /* On vérifie si la route actuelle correspond à l'item */
+                    /* On vÃ©rifie si la route actuelle correspond Ã  l'item */
                     item.route && route().current(item.route)
                         ? 'bg-teal-600 text-white shadow-lg'
                         : 'text-slate-300 hover:bg-slate-700 hover:text-white',
@@ -157,7 +157,7 @@ const logout = () => {
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
-                    Déconnexion
+                    DÃ©connexion
                 </button>
             </div>
         </aside>
@@ -188,7 +188,7 @@ const logout = () => {
                 <div class="flex justify-between items-center">
                     <div>
                         <h2 class="text-2xl font-bold text-slate-800">Gestion des mouvements</h2>
-                        <p class="text-slate-500 text-sm">Gérer les entrées, sorties et ajustements de stock</p>
+                        <p class="text-slate-500 text-sm">GÃ©rer les entrÃ©es, sorties et ajustements de stock</p>
                     </div>
                     <button @click="showAddMouvementModal = true"
                         class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-all shadow-sm">
@@ -228,7 +228,7 @@ const logout = () => {
                                         <select v-model="movementForm.mvs_type"
                                             class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none text-sm"
                                             :class="{'border-red-500': movementForm.errors.mvs_type}">
-                                            <option value="IN">Entrée</option>
+                                            <option value="IN">EntrÃ©e</option>
                                             <option value="OUT">Sortie</option>
                                             <option value="TRANSFER">Transfert</option>
                                             <option value="ADJUST">Ajustement</option>
@@ -242,7 +242,7 @@ const logout = () => {
                                     <select v-model="movementForm.mvs_art_id"
                                         class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none text-sm"
                                         :class="{'border-red-500': movementForm.errors.mvs_art_id}">
-                                        <option value="" disabled>Sélectionner un article</option>
+                                        <option value="" disabled>SÃ©lectionner un article</option>
                                         <option v-for="art in articles" :key="art.art_id" :value="art.art_id">
                                             {{ art.art_nom }} ({{ art.art_reference }})
                                         </option>
@@ -253,12 +253,12 @@ const logout = () => {
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-semibold text-slate-700 mb-1">
-                                            {{ movementForm.mvs_type === 'TRANSFER' ? 'Entrepôt Source' : 'Entrepôt / Lieu' }}
+                                            {{ movementForm.mvs_type === 'TRANSFER' ? 'EntrepÃ´t Source' : 'EntrepÃ´t / Lieu' }}
                                         </label>
                                         <select v-model="movementForm.mvs_ent_id"
                                             class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none text-sm"
                                             :class="{'border-red-500': movementForm.errors.mvs_ent_id}">
-                                            <option value="" disabled>Sélectionner</option>
+                                            <option value="" disabled>SÃ©lectionner</option>
                                             <option v-for="ent in warehouses" :key="ent.ent_id" :value="ent.ent_id">
                                                 {{ ent.ent_nom }}
                                             </option>
@@ -266,11 +266,11 @@ const logout = () => {
                                         <div v-if="movementForm.errors.mvs_ent_id" class="text-red-500 text-xs mt-1">{{ movementForm.errors.mvs_ent_id }}</div>
                                     </div>
                                     <div v-if="movementForm.mvs_type === 'TRANSFER'">
-                                        <label class="block text-sm font-semibold text-slate-700 mb-1">Entrepôt Destination</label>
+                                        <label class="block text-sm font-semibold text-slate-700 mb-1">EntrepÃ´t Destination</label>
                                         <select v-model="movementForm.mvs_ent_dest_id"
                                             class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none text-sm"
                                             :class="{'border-red-500': movementForm.errors.mvs_ent_dest_id}">
-                                            <option value="" disabled>Sélectionner</option>
+                                            <option value="" disabled>SÃ©lectionner</option>
                                             <option v-for="ent in warehouses" :key="ent.ent_id" :value="ent.ent_id">
                                                 {{ ent.ent_nom }}
                                             </option>
@@ -278,7 +278,7 @@ const logout = () => {
                                         <div v-if="movementForm.errors.mvs_ent_dest_id" class="text-red-500 text-xs mt-1">{{ movementForm.errors.mvs_ent_dest_id }}</div>
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-semibold text-slate-700 mb-1">Quantité</label>
+                                        <label class="block text-sm font-semibold text-slate-700 mb-1">QuantitÃ©</label>
                                         <input v-model.number="movementForm.mvs_quantite" type="number"
                                             class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
                                             :class="{'border-red-500': movementForm.errors.mvs_quantite}">
@@ -290,7 +290,7 @@ const logout = () => {
                                     <label class="block text-sm font-semibold text-slate-700 mb-1">Motif /
                                         Raison</label>
                                     <textarea v-model="movementForm.mvs_motif" rows="2"
-                                        placeholder="Ex: Réapprovisionnement mensuel"
+                                        placeholder="Ex: RÃ©approvisionnement mensuel"
                                         class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none text-sm"
                                         :class="{'border-red-500': movementForm.errors.mvs_motif}"></textarea>
                                     <div v-if="movementForm.errors.mvs_motif" class="text-red-500 text-xs mt-1">{{ movementForm.errors.mvs_motif }}</div>
@@ -349,7 +349,7 @@ const logout = () => {
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <button @click="openModal('IN')"
                         class="flex items-center justify-center gap-2 p-3 bg-teal-50 text-teal-700 rounded-lg font-semibold hover:bg-teal-100 transition-colors border border-teal-100">
-                        <span class="text-xl">+</span> Entrée
+                        <span class="text-xl">+</span> EntrÃ©e
                     </button>
 
                     <button @click="openModal('OUT')"
@@ -378,8 +378,8 @@ const logout = () => {
                                         <th class="px-6 py-4">Date</th>
                                         <th class="px-6 py-4 text-center">Type</th>
                                         <th class="px-6 py-4">Article</th>
-                                        <th class="px-6 py-4">Entrepôt</th>
-                                        <th class="px-6 py-4">Quantité</th>
+                                        <th class="px-6 py-4">EntrepÃ´t</th>
+                                        <th class="px-6 py-4">QuantitÃ©</th>
                                         <th class="px-6 py-4">Motif</th>
                                         <th class="px-6 py-4 text-center">Actions</th>
                                     </tr>

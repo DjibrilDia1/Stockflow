@@ -17,7 +17,7 @@ const newUser = ref({
     statut: 'Actif'
 });
 
-// Données fictives initiales
+// DonnÃ©es fictives initiales
 const utilisateurs = ref([
     { id: 1, nom: 'Amadou Diallo', initials: 'AM', email: 'a.diallo@stockflow.sn', role: 'Gestionnaire', roleClass: 'bg-teal-100 text-teal-700', service: 'Logistique', date: '15/01/2024', statut: 'Actif' },
     { id: 2, nom: 'Fatou Sarr', initials: 'FS', email: 'F.Sarr@stockflow.sn', role: 'Demandeur', roleClass: 'bg-blue-100 text-blue-700', service: 'RH', date: '15/01/2024', statut: 'Actif' },
@@ -80,13 +80,13 @@ const navigation = [
     { name: 'Articles', route: 'gestionnaire.articles.index', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
     { name: 'Mouvements', route: 'gestionnaire.mouvements.index', icon: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' },
     { name: 'Demandes', route: 'gestionnaire.demandes.index', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
-    { name: 'Rapports', route: 'gestionnaire.rapports.index', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0_8 -8' },
+    { name: 'Rapports', route: 'gestionnaire.rapports.index', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
     { name: 'Utilisateur', route: 'gestionnaire.utilisateurs.index', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
     { name: 'Services & Fournisseurs',route:'gestionnaire.services-fournisseurs.index', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
 ];
 
 const logout = () => {
-    if (confirm('Déconnexion ?')) router.post(route('logout'));
+    if (confirm('DÃ©connexion ?')) router.post(route('logout'));
 };
 </script>
 
@@ -116,7 +116,7 @@ const logout = () => {
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
-                    Déconnexion
+                    DÃ©connexion
                 </button>
             </div>
         </aside>
@@ -144,7 +144,7 @@ const logout = () => {
                 <div class="flex justify-between items-center">
                     <div>
                         <h2 class="text-2xl font-bold text-slate-800">Gestion des utilisateurs</h2>
-                        <p class="text-slate-500 text-sm">Gérer les comptes et les accès du systèmes</p>
+                        <p class="text-slate-500 text-sm">GÃ©rer les comptes et les accÃ¨s du systÃ¨mes</p>
                     </div>
                     <button @click="showAddUserModal = true"
                         class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-all shadow-sm">
@@ -186,7 +186,7 @@ const logout = () => {
 
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-sm font-semibold text-slate-700 mb-1">Rôle</label>
+                                        <label class="block text-sm font-semibold text-slate-700 mb-1">RÃ´le</label>
                                         <select v-model="newUser.role"
                                             class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
                                             <option value="Gestionnaire">Gestionnaire</option>
@@ -206,7 +206,7 @@ const logout = () => {
 
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-700 mb-1">Service</label>
-                                    <input v-model="newUser.service" type="text" placeholder="Ex: Comptabilité" required
+                                    <input v-model="newUser.service" type="text" placeholder="Ex: ComptabilitÃ©" required
                                         class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
                                 </div>
 
@@ -217,7 +217,7 @@ const logout = () => {
                                     </button>
                                     <button type="submit"
                                         class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition-colors shadow-md">
-                                        {{ isEditing ? 'Mettre à jour' : 'Créer le compte' }}
+                                        {{ isEditing ? 'Mettre Ã  jour' : 'CrÃ©er le compte' }}
                                     </button>
                                 </div>
                             </form>
@@ -236,7 +236,7 @@ const logout = () => {
                             class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none">
                     </div>
                     <select class="bg-slate-50 border border-slate-200 rounded-lg px-10 py-2 text-sm outline-none">
-                        <option>Rôle tous</option>
+                        <option>RÃ´le tous</option>
                     </select>
                     <select class="bg-slate-50 border border-slate-200 rounded-lg px-10 py-2 text-sm outline-none">
                         <option>Service Tous</option>
@@ -251,12 +251,12 @@ const logout = () => {
                                     complet</th>
                                 <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                                     Email</th>
-                                <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Rôle
+                                <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">RÃ´le
                                 </th>
                                 <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                                     Service</th>
                                 <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Date
-                                    de création</th>
+                                    de crÃ©ation</th>
                                 <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                                     Statut</th>
                                 <th

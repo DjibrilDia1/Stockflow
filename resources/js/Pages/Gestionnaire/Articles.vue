@@ -16,7 +16,7 @@ const articleForm = useForm({
     art_id: null,
     art_reference: '',
     art_nom: '',
-    art_unite: 'unité',
+    art_unite: 'unitÃ©',
     art_cat_id: '',
     art_seuil_alerte: 0,
     art_stock_securite: 0,
@@ -63,12 +63,12 @@ const updateArticle = () => {
 };
 
 const deleteArticle = (id) => {
-    if (confirm('àŠtes-vous sà»r de vouloir supprimer cet article ?')) {
+    if (confirm('ÃŠtes-vous sÃ»r de vouloir supprimer cet article ?')) {
         router.delete(route('gestionnaire.articles.destroy', id));
     }
 };
 
-// --- CATà‰GORIES ---
+// --- CATÃ‰GORIES ---
 const showAddCategoryModal = ref(false);
 const showEditCategoryModal = ref(false);
 
@@ -100,7 +100,7 @@ const updateCategory = () => {
 };
 
 const deleteCategory = (id) => {
-    if (confirm('Supprimer cette catégorie ?')) {
+    if (confirm('Supprimer cette catÃ©gorie ?')) {
         router.delete(route('gestionnaire.categories.destroy', id));
     }
 };
@@ -116,7 +116,7 @@ const navigation = [
 ];
 
 const logout = () => {
-    if (confirm('Déconnexion ?')) router.post(route('logout'));
+    if (confirm('DÃ©connexion ?')) router.post(route('logout'));
 };
 </script>
 
@@ -152,7 +152,7 @@ const logout = () => {
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
-                    Déconnexion
+                    DÃ©connexion
                 </button>
             </div>
         </aside>
@@ -166,7 +166,7 @@ const logout = () => {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                         </svg>
                     </Link>
-                    <span class="font-medium">Articles & Catégories</span>
+                    <span class="font-medium">Articles & CatÃ©gories</span>
                 </div>
                 <div class="flex items-center gap-2 text-slate-700">
                     <span class="text-sm font-medium">Gestionnaire</span>
@@ -208,9 +208,9 @@ const logout = () => {
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-slate-50 border-b border-slate-100 text-slate-600 text-xs uppercase font-semibold">
-                                    <th class="px-6 py-4">Référence</th>
+                                    <th class="px-6 py-4">RÃ©fÃ©rence</th>
                                     <th class="px-6 py-4">Nom</th>
-                                    <th class="px-6 py-4">Catégorie</th>
+                                    <th class="px-6 py-4">CatÃ©gorie</th>
                                     <th class="px-6 py-4">Stock Total</th>
                                     <th class="px-6 py-4">Seuil</th>
                                     <th class="px-6 py-4 text-center">Actions</th>
@@ -259,11 +259,11 @@ const logout = () => {
                     </div>
                 </section>
 
-                <!-- SECTION CATà‰GORIES -->
+                <!-- SECTION CATÃ‰GORIES -->
                 <section class="space-y-6">
                     <div class="flex justify-between items-center">
                         <div>
-                            <h2 class="text-2xl font-bold text-slate-800">Gestion des catégories</h2>
+                            <h2 class="text-2xl font-bold text-slate-800">Gestion des catÃ©gories</h2>
                             <p class="text-slate-500 text-sm">Organisez vos articles par types</p>
                         </div>
                         <button @click="showAddCategoryModal = true; categoryForm.reset(); categoryForm.clearErrors();"
@@ -271,7 +271,7 @@ const logout = () => {
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                             </svg>
-                            Nouvelle Catégorie
+                            Nouvelle CatÃ©gorie
                         </button>
                     </div>
 
@@ -307,14 +307,14 @@ const logout = () => {
                                 </tr>
                             </tbody>
                         </table>
-                        <!-- Pagination Catégories -->
+                        <!-- Pagination CatÃ©gories -->
                         <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-col items-center gap-2">
                             <div class="flex items-center gap-1">
                                 <Link v-for="(link, k) in categories.links" :key="k" :href="link.url || '#'" v-html="link.label"
                                     class="px-3 py-1 text-sm rounded transition-all"
                                     :class="{'bg-teal-600 text-white font-bold': link.active, 'text-slate-400 hover:text-teal-600': !link.active && link.url, 'text-slate-300 cursor-not-allowed': !link.url}" />
                             </div>
-                            <span class="text-xs text-slate-500">{{ categories.from }}-{{ categories.to }} sur {{ categories.total }} catégories</span>
+                            <span class="text-xs text-slate-500">{{ categories.from }}-{{ categories.to }} sur {{ categories.total }} catÃ©gories</span>
                         </div>
                     </div>
                 </section>
@@ -324,14 +324,14 @@ const logout = () => {
         <!-- MODAL AJOUT ARTICLE -->
         <div v-if="showAddModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showAddModal = false"></div>
-            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
+            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-md overflow-hidden animate-fade-in">
                 <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                     <h3 class="text-lg font-bold text-slate-800">Ajouter un article</h3>
                     <button @click="showAddModal = false" class="text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
                 </div>
                 <form @submit.prevent="addArticle" class="p-6 space-y-4">
                     <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1">Référence</label>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">RÃ©fÃ©rence</label>
                         <input v-model="articleForm.art_reference" type="text"
                             class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
                             :class="{'border-red-500': articleForm.errors.art_reference}">
@@ -346,16 +346,16 @@ const logout = () => {
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Catégorie</label>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">CatÃ©gorie</label>
                             <select v-model="articleForm.art_cat_id" class="w-full px-4 py-2 border rounded-lg outline-none text-sm"
                                 :class="{'border-red-500': articleForm.errors.art_cat_id}">
-                                <option value="" disabled>Sélectionner</option>
+                                <option value="" disabled>SÃ©lectionner</option>
                                 <option v-for="cat in categories_all" :key="cat.cat_id" :value="cat.cat_id">{{ cat.cat_nom }}</option>
                             </select>
                             <div v-if="articleForm.errors.art_cat_id" class="text-red-500 text-xs mt-1">{{ articleForm.errors.art_cat_id }}</div>
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Unité</label>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">UnitÃ©</label>
                             <input v-model="articleForm.art_unite" type="text"
                                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
                                 :class="{'border-red-500': articleForm.errors.art_unite}">
@@ -370,7 +370,7 @@ const logout = () => {
                             <div v-if="articleForm.errors.art_seuil_alerte" class="text-red-500 text-xs mt-1">{{ articleForm.errors.art_seuil_alerte }}</div>
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Prix par défaut</label>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Prix par dÃ©faut</label>
                             <input v-model="articleForm.art_prix_defaut" type="number" step="0.01" class="w-full px-4 py-2 border rounded-lg outline-none"
                                 :class="{'border-red-500': articleForm.errors.art_prix_defaut}">
                             <div v-if="articleForm.errors.art_prix_defaut" class="text-red-500 text-xs mt-1">{{ articleForm.errors.art_prix_defaut }}</div>
@@ -396,7 +396,7 @@ const logout = () => {
                 </div>
                 <form @submit.prevent="updateArticle" class="p-6 space-y-4">
                     <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1">Référence</label>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">RÃ©fÃ©rence</label>
                         <input v-model="articleForm.art_reference" type="text"
                             class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
                             :class="{'border-red-500': articleForm.errors.art_reference}">
@@ -411,7 +411,7 @@ const logout = () => {
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Catégorie</label>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">CatÃ©gorie</label>
                             <select v-model="articleForm.art_cat_id" class="w-full px-4 py-2 border rounded-lg outline-none text-sm"
                                 :class="{'border-red-500': articleForm.errors.art_cat_id}">
                                 <option v-for="cat in categories_all" :key="cat.cat_id" :value="cat.cat_id">{{ cat.cat_nom }}</option>
@@ -419,7 +419,7 @@ const logout = () => {
                             <div v-if="articleForm.errors.art_cat_id" class="text-red-500 text-xs mt-1">{{ articleForm.errors.art_cat_id }}</div>
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Unité</label>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">UnitÃ©</label>
                             <input v-model="articleForm.art_unite" type="text"
                                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
                                 :class="{'border-red-500': articleForm.errors.art_unite}">
@@ -434,7 +434,7 @@ const logout = () => {
                             <div v-if="articleForm.errors.art_seuil_alerte" class="text-red-500 text-xs mt-1">{{ articleForm.errors.art_seuil_alerte }}</div>
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Prix par défaut</label>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Prix par dÃ©faut</label>
                             <input v-model="articleForm.art_prix_defaut" type="number" step="0.01" class="w-full px-4 py-2 border rounded-lg outline-none"
                                 :class="{'border-red-500': articleForm.errors.art_prix_defaut}">
                             <div v-if="articleForm.errors.art_prix_defaut" class="text-red-500 text-xs mt-1">{{ articleForm.errors.art_prix_defaut }}</div>
@@ -443,21 +443,21 @@ const logout = () => {
                     <div class="pt-4 flex gap-3">
                         <button type="button" @click="showEditModal = false" class="flex-1 px-4 py-2 border rounded-lg">Annuler</button>
                         <button type="submit" class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-bold hover:bg-teal-700 shadow-md transition-all" :disabled="articleForm.processing">
-                            {{ articleForm.processing ? 'Mise à jour...' : 'Mettre à jour' }}
+                            {{ articleForm.processing ? 'Mise Ã  jour...' : 'Mettre Ã  jour' }}
                         </button>
                     </div>
                 </form>
             </div>
         </div>
 
-        <!-- MODAL AJOUT CATà‰GORIE -->
+        <!-- MODAL AJOUT CATÃ‰GORIE -->
         <div v-if="showAddCategoryModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showAddCategoryModal = false"></div>
             <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 overflow-hidden animate-fade-in">
-                <h3 class="text-lg font-bold mb-4 text-slate-800 border-b pb-2">Nouvelle Catégorie</h3>
+                <h3 class="text-lg font-bold mb-4 text-slate-800 border-b pb-2">Nouvelle CatÃ©gorie</h3>
                 <form @submit.prevent="addCategory" class="space-y-4">
                     <div>
-                        <input v-model="categoryForm.cat_code" placeholder="Référence (Code)"
+                        <input v-model="categoryForm.cat_code" placeholder="RÃ©fÃ©rence (Code)"
                             class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-teal-500 outline-none"
                             :class="{'border-red-500': categoryForm.errors.cat_code}">
                         <div v-if="categoryForm.errors.cat_code" class="text-red-500 text-xs mt-1">{{ categoryForm.errors.cat_code }}</div>
@@ -482,11 +482,11 @@ const logout = () => {
             </div>
         </div>
 
-        <!-- MODAL MODIFICATION CATà‰GORIE -->
+        <!-- MODAL MODIFICATION CATÃ‰GORIE -->
         <div v-if="showEditCategoryModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showEditCategoryModal = false"></div>
             <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 overflow-hidden animate-fade-in">
-                <h3 class="text-lg font-bold mb-4 text-slate-800 border-b pb-2">Modifier la catégorie</h3>
+                <h3 class="text-lg font-bold mb-4 text-slate-800 border-b pb-2">Modifier la catÃ©gorie</h3>
                 <form @submit.prevent="updateCategory" class="space-y-4">
                     <div>
                         <label class="text-xs font-bold text-slate-500 uppercase">Code</label>
@@ -511,7 +511,7 @@ const logout = () => {
                     </div>
                     <div class="flex gap-2 pt-2">
                         <button type="button" @click="showEditCategoryModal = false" class="flex-1 px-4 py-2 border rounded-lg">Annuler</button>
-                        <button type="submit" class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-bold hover:bg-teal-700" :disabled="categoryForm.processing">Mettre à jour</button>
+                        <button type="submit" class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-bold hover:bg-teal-700" :disabled="categoryForm.processing">Mettre Ã  jour</button>
                     </div>
                 </form>
             </div>
