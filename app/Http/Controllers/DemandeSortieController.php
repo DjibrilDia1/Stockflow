@@ -25,7 +25,7 @@ class DemandeSortieController extends Controller
     }
 
     /**
-     * Affiche les demandes du demandeur connecté.
+     * Affiche les demandes du demandeur connectÃ©.
      */
     public function demandeurIndex(): Response
     {
@@ -81,17 +81,23 @@ class DemandeSortieController extends Controller
             'motif' => 'nullable|string',
         ]);
 
-        // Vérification de sécurité du stock disponible
+        // VÃ©rification de sÃ©curitÃ© du stock disponible
         $stock = \App\Models\StockArticle::where('sta_art_id', $validated['article_id'])
             ->where('sta_ent_id', $validated['entrepot_id'])
             ->first();
 
         if (!$stock || $stock->sta_quantite < $validated['quantite']) {
-            return Redirect::back()->with('error', 'La quantité demandée dépasse le stock disponible dans cet entrepôt.');
+            return Redirect::back()->with('error', 'La quantitÃ© demandÃ©e dÃ©passe le stock disponible dans cet entrepÃ´t.');
         }
 
-        // On prend le premier service par défaut
-        $serviceId = \App\Models\Service::first()->ser_id;
+        // RÃ©cupÃ©ration du service de l'utilisateur connectÃ©
+        $serviceId = auth()->user()->ser_id;
+
+        // Si l'utilisateur n'a pas de service, on prend le premier par dÃ©faut (sÃ©curitÃ©)
+        if (!$serviceId) {
+            $service = \App\Models\Service::first();
+            $serviceId = $service ? $service->ser_id : null;
+        }
 
         $demande = DemandeSortie::create([
             'dso_ser_id' => $serviceId,
@@ -118,7 +124,7 @@ class DemandeSortieController extends Controller
             'status' => 'required|in:APPROVED,REJECTED',
         ]);
 
-        // Si on approuve, on déduit le stock
+        // Si on approuve, on dÃ©duit le stock
         if ($validated['status'] === 'APPROVED' && $demande->dso_statut === 'DRAFT') {
             foreach ($demande->lines as $line) {
                 $stock = \App\Models\StockArticle::where('sta_art_id', $line->lds_art_id)
@@ -128,7 +134,7 @@ class DemandeSortieController extends Controller
                 if ($stock && $stock->sta_quantite >= $line->lds_qte_demandee) {
                     $stock->decrement('sta_quantite', $line->lds_qte_demandee);
                     
-                    // On crée aussi un mouvement de stock de type "OUT"
+                    // On crÃ©e aussi un mouvement de stock de type "OUT"
                     \App\Models\MouvementStock::create([
                         'mvs_art_id' => $line->lds_art_id,
                         'mvs_ent_id' => $line->lds_ent_id,
@@ -139,7 +145,7 @@ class DemandeSortieController extends Controller
                         'mvs_date_mouvement' => now(),
                     ]);
                 } else {
-                    return Redirect::back()->with('error', 'Stock insuffisant dans l\'entrepôt choisi.');
+                    return Redirect::back()->with('error', 'Stock insuffisant dans l\'entrepÃ´t choisi.');
                 }
             }
         }
@@ -148,7 +154,7 @@ class DemandeSortieController extends Controller
             'dso_statut' => $validated['status'],
         ]);
 
-        return Redirect::back()->with('success', 'La demande a été ' . ($validated['status'] === 'APPROVED' ? 'approuvée et le stock a été mis à jour.' : 'rejetée.'));
+        return Redirect::back()->with('success', 'La demande a Ã©tÃ© ' . ($validated['status'] === 'APPROVED' ? 'approuvÃ©e et le stock a Ã©tÃ© mis Ã  jour.' : 'rejetÃ©e.'));
     }
 
     /**
@@ -158,7 +164,7 @@ class DemandeSortieController extends Controller
     {
         return Inertia::render('Gestionnaire/DemandeSorties/Create', [
             'services' => Service::all(['ser_id', 'ser_nom']),
-            'users' => User::all(['id', 'name']), // Assuming users can be chosen as requesters
+            'users' => User::all(['id', 'name']), 
             'statuses' => ['DRAFT', 'APPROVED', 'FULFILLED', 'REJECTED'],
         ]);
     }
@@ -229,4 +235,3 @@ class DemandeSortieController extends Controller
         return Redirect::route('gestionnaire.demandes.index');
     }
 }
-

@@ -7,6 +7,7 @@ const props = defineProps({
     stockMovements: Object,
     articles: Array,
     warehouses: Array,
+    suppliers: Array,
 });
 
 const showAddMouvementModal = ref(false);
@@ -17,6 +18,7 @@ const movementForm = useForm({
     mvs_art_id: '',
     mvs_ent_id: '',
     mvs_ent_dest_id: '', // Pour les transferts
+    mvs_fou_id: '', // Pour les entrées
     mvs_quantite: 1,
     mvs_motif: ''
 });
@@ -276,6 +278,16 @@ const logout = () => {
                                             </option>
                                         </select>
                                         <div v-if="movementForm.errors.mvs_ent_dest_id" class="text-red-500 text-xs mt-1">{{ movementForm.errors.mvs_ent_dest_id }}</div>
+                                    </div>
+                                    <div v-if="movementForm.mvs_type === 'IN'">
+                                        <label class="block text-sm font-semibold text-slate-700 mb-1">Fournisseur (Optionnel)</label>
+                                        <select v-model="movementForm.mvs_fou_id"
+                                            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none text-sm">
+                                            <option value="">Aucun</option>
+                                            <option v-for="fou in suppliers" :key="fou.fou_id" :value="fou.fou_id">
+                                                {{ fou.fou_nom }}
+                                            </option>
+                                        </select>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-semibold text-slate-700 mb-1">Quantité</label>

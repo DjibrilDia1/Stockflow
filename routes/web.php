@@ -65,13 +65,19 @@ Route::middleware(['auth', 'role:gestionnaire'])->prefix('gestionnaire')->name('
         return Inertia::render('Gestionnaire/Rapports');
     })->name('rapports.index');
 
-    Route::get('/utilisateurs', function () {
-        return Inertia::render('Gestionnaire/Utilisateurs');
-    })->name('utilisateurs.index');
+    // Utilisateurs CRUD
+    Route::get('/utilisateurs', [\App\Http\Controllers\UserController::class, 'index'])->name('utilisateurs.index');
+    Route::post('/utilisateurs', [\App\Http\Controllers\UserController::class, 'store'])->name('utilisateurs.store');
+    Route::put('/utilisateurs/{user}', [\App\Http\Controllers\UserController::class, 'update'])->name('utilisateurs.update');
+    Route::delete('/utilisateurs/{user}', [\App\Http\Controllers\UserController::class, 'destroy'])->name('utilisateurs.destroy');
 
-    Route::get('/services-fournisseurs', function () {
-        return Inertia::render('Gestionnaire/Services-Fournisseurs');
-    })->name('services-fournisseurs.index');
+    Route::get('/services-fournisseurs', [\App\Http\Controllers\ServiceFournisseurController::class, 'index'])->name('services-fournisseurs.index');
+    Route::post('/services', [\App\Http\Controllers\ServiceFournisseurController::class, 'storeService'])->name('services.store');
+    Route::put('/services/{service}', [\App\Http\Controllers\ServiceFournisseurController::class, 'updateService'])->name('services.update');
+    Route::delete('/services/{service}', [\App\Http\Controllers\ServiceFournisseurController::class, 'destroyService'])->name('services.destroy');
+    Route::post('/fournisseurs', [\App\Http\Controllers\ServiceFournisseurController::class, 'storeFournisseur'])->name('fournisseurs.store');
+    Route::put('/fournisseurs/{fournisseur}', [\App\Http\Controllers\ServiceFournisseurController::class, 'updateFournisseur'])->name('fournisseurs.update');
+    Route::delete('/fournisseurs/{fournisseur}', [\App\Http\Controllers\ServiceFournisseurController::class, 'destroyFournisseur'])->name('fournisseurs.destroy');
 });
 
 

@@ -240,7 +240,7 @@ const logout = () => {
                         <thead>
                             <tr class="bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-wider">
                                 <th class="px-6 py-4">ID</th>
-                                <th class="px-6 py-4">Demandeur / Service</th>
+                                <th class="px-6 py-4">Service / Demandeur</th>
                                 <th class="px-6 py-4">Articles</th>
                                 <th class="px-6 py-4">Quantité</th>
                                 <th class="px-6 py-4">Date</th>
@@ -253,8 +253,8 @@ const logout = () => {
         <td class="px-6 py-5 text-sm font-medium text-blue-500 underline cursor-pointer">#{{ item.dso_id }}</td>
         
         <td class="px-6 py-5">
-            <div class="text-sm font-bold text-slate-700">{{ item.requester?.name || 'N/A' }}</div>
-            <div class="text-xs text-slate-500">{{ item.service?.ser_nom || 'N/A' }}</div>
+            <div class="text-sm font-bold text-slate-700">{{ item.service?.ser_nom || 'Sans Service' }}</div>
+            <div class="text-xs text-slate-500">Demandeur: {{ item.requester?.name || 'N/A' }}</div>
         </td>
         
         <td class="px-6 py-5 text-sm text-slate-600">

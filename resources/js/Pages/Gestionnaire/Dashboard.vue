@@ -5,7 +5,7 @@ import { Link, router , usePage } from '@inertiajs/vue3';
 const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gestionnaire');
 
-// Props reà§ues du contrôleur Laravel
+// Props reÃ§ues du contrÃ´leur Laravel
 const props = defineProps({
     stats: Object,
     stockAlerts: Array,
@@ -13,7 +13,7 @@ const props = defineProps({
     topArticles: Array,
 });
 
-// à‰tat local
+// Ã‰tat local
 const searchQuery = ref('');
 const currentPage = ref('Tableau de bord');
 
@@ -27,7 +27,7 @@ const navigation = [
     {name: 'Services & Fournisseurs',route:'gestionnaire.services-fournisseurs.index', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
 ];
 
-// Méthodes
+// MÃ©thodes
 const maxTopArticleValue = computed(() => {
     if (!props.topArticles || props.topArticles.length === 0) return 1;
     return Math.max(...props.topArticles.map(a => a.value));
@@ -59,7 +59,7 @@ const getMovementTypeClass = (type) => {
 };
 
 const logout = () => {
-    if (confirm('Déconnexion ?')) {
+    if (confirm('DÃ©connexion ?')) {
         router.post(route('logout'));
     }
 };
@@ -112,7 +112,7 @@ const handleNewExit = () => {
             <svg class="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
-            Déconnexion
+            DÃ©connexion
         </button>
             </div>
         </aside>
@@ -155,7 +155,7 @@ const handleNewExit = () => {
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
-            <span>Nouvelle entrée</span>
+            <span>Nouvelle entrÃ©e</span>
         </button>
 
         <button 
@@ -234,7 +234,7 @@ const handleNewExit = () => {
 
     <div class="bg-white rounded-xl shadow-md border border-slate-100 overflow-hidden flex flex-col">
     <div class="px-6 py-4 border-b border-slate-100">
-        <h3 class="text-lg font-semibold text-slate-800">Top 5 articles consommés</h3>
+        <h3 class="text-lg font-semibold text-slate-800">Top 5 articles consommÃ©s</h3>
     </div>
     
     <div class="p-6">
@@ -284,7 +284,7 @@ const handleNewExit = () => {
                                     <th class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Date</th>
                                     <th class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Article</th>
                                     <th class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Type</th>
-                                    <th class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Quantité</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">QuantitÃ©</th>
                                     <th class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Entrepot</th>
                                     <th class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Service</th>
                                 </tr>
