@@ -176,47 +176,48 @@ const addArticle = () => {
             </div>
         </aside>
 
-<div v-if="showAddCategoryModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showAddCategoryModal = false"></div>
-    
-    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
-        
-        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-            <h3 class="text-lg font-bold text-slate-800">Nouvelle Catégorie</h3>
-            <button @click="showAddCategoryModal = false" 
-                class="text-slate-400 hover:text-slate-600 transition-colors">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
+        <div v-if="showAddCategoryModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showAddCategoryModal = false"></div>
 
-        <form @submit.prevent="addCategory" class="p-6 space-y-4">
-            <input v-model="newCategory.reference" placeholder="Référence"
-                class="w-full border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-teal-500 outline-none"
-                required>
-            
-            <input v-model="newCategory.name" placeholder="Nom"
-                class="w-full border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-teal-500 outline-none"
-                required>
-            
-            <textarea v-model="newCategory.description" placeholder="Description"
-                class="w-full border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-teal-500 outline-none"
-                rows="3"></textarea>
+            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
 
-            <div class="flex gap-3 pt-2">
-                <button type="button" @click="showAddCategoryModal = false"
-                    class="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-semibold hover:bg-slate-50 transition-colors">
-                    Annuler
-                </button>
-                <button type="submit"
-                    class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition-colors shadow-md">
-                    Enregistrer
-                </button>
+                <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                    <h3 class="text-lg font-bold text-slate-800">Nouvelle Catégorie</h3>
+                    <button @click="showAddCategoryModal = false"
+                        class="text-slate-400 hover:text-slate-600 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <form @submit.prevent="addCategory" class="p-6 space-y-4">
+                    <input v-model="newCategory.reference" placeholder="Référence"
+                        class="w-full border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-teal-500 outline-none"
+                        required>
+
+                    <input v-model="newCategory.name" placeholder="Nom"
+                        class="w-full border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-teal-500 outline-none"
+                        required>
+
+                    <textarea v-model="newCategory.description" placeholder="Description"
+                        class="w-full border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-teal-500 outline-none"
+                        rows="3"></textarea>
+
+                    <div class="flex gap-3 pt-2">
+                        <button type="button" @click="showAddCategoryModal = false"
+                            class="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-semibold hover:bg-slate-50 transition-colors">
+                            Annuler
+                        </button>
+                        <button type="submit"
+                            class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition-colors shadow-md">
+                            Enregistrer
+                        </button>
+                    </div>
+                </form>
             </div>
-        </form>
-    </div>
-</div>
+        </div>
 
         <div v-if="showEditCategoryModal && editingCategory"
             class="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -499,14 +500,14 @@ const addArticle = () => {
                     </table>
 
                     <div class="px-8 py-5 flex flex-col items-center gap-2 bg-white border-t border-slate-100">
-                                <div class="flex items-center gap-2">
-                                    <button class="text-slate-400 hover:text-teal-600 font-bold">&lt;</button>
-                                    <button
-                                        class="w-8 h-8 bg-teal-600 text-white rounded flex items-center justify-center text-sm font-bold">1</button>
-                                    <button class="text-slate-400 hover:text-teal-600 font-bold">&gt;</button>
-                                </div>
-                                <span class="text-xs text-slate-500">1-3 Sur 3</span>
-                            </div>
+                        <div class="flex items-center gap-2">
+                            <button class="text-slate-400 hover:text-teal-600 font-bold">&lt;</button>
+                            <button
+                                class="w-8 h-8 bg-teal-600 text-white rounded flex items-center justify-center text-sm font-bold">1</button>
+                            <button class="text-slate-400 hover:text-teal-600 font-bold">&gt;</button>
+                        </div>
+                        <span class="text-xs text-slate-500">1-3 Sur 3</span>
+                    </div>
                 </div>
 
                 <main class="p-8 space-y-6">
@@ -591,16 +592,16 @@ const addArticle = () => {
                             </tbody>
                         </table>
 
-                           <div class="px-8 py-5 flex flex-col items-center gap-2 bg-white border-t border-slate-100">
-                                <div class="flex items-center gap-2">
-                                    <button class="text-slate-400 hover:text-teal-600 font-bold">&lt;</button>
-                                    <button
-                                        class="w-8 h-8 bg-teal-600 text-white rounded flex items-center justify-center text-sm font-bold">1</button>
-                                    <button class="text-slate-400 hover:text-teal-600 font-bold">&gt;</button>
-                                </div>
-                                <span class="text-xs text-slate-500">1-3 Sur 3</span>
+                        <div class="px-8 py-5 flex flex-col items-center gap-2 bg-white border-t border-slate-100">
+                            <div class="flex items-center gap-2">
+                                <button class="text-slate-400 hover:text-teal-600 font-bold">&lt;</button>
+                                <button
+                                    class="w-8 h-8 bg-teal-600 text-white rounded flex items-center justify-center text-sm font-bold">1</button>
+                                <button class="text-slate-400 hover:text-teal-600 font-bold">&gt;</button>
                             </div>
+                            <span class="text-xs text-slate-500">1-3 Sur 3</span>
                         </div>
+                    </div>
                 </main>
 
             </main>
