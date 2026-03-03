@@ -5,35 +5,35 @@ import { Link, router ,usePage} from '@inertiajs/vue3';
 const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gestionnaire');
 
-// Ã‰tat pour basculer entre les deux onglets
+// à‰tat pour basculer entre les deux onglets
 const activeTab = ref('services'); // 'services' ou 'fournisseurs'
 
 const showModal = ref(false);
 const isEditing = ref(false);
 
-// Formulaire gÃ©nÃ©rique qui s'adapte selon l'onglet
+// Formulaire générique qui s'adapte selon l'onglet
 const formData = ref({
     id: null,
     nom: '',
     contact: '',
     email: '',
     adresse: '',
-    responsable: '', // SpÃ©cifique Service
-    categorie: 'Fournitures de bureau' ,// SpÃ©cifique Fournisseur
+    responsable: '', // Spécifique Service
+    categorie: 'Fournitures de bureau' ,// Spécifique Fournisseur
     etage: '',  
     effectif: 0
 });
 
-// DonnÃ©es fictives
+// Données fictives
 const services = ref([
     { id: 1, nom: 'Logistique', responsable: 'Amadou Diallo', effectif: 12, etage: 'RDC' },
-    { id: 2, nom: 'Ressources Humaines', responsable: 'Fatou Sarr', effectif: 5, etage: '2Ã¨me' },
-    { id: 3, nom: 'Direction GÃ©nÃ©rale', responsable: 'Ibrahim Sow', effectif: 3, etage: '4Ã¨me' },
+    { id: 2, nom: 'Ressources Humaines', responsable: 'Fatou Sarr', effectif: 5, etage: '2ème' },
+    { id: 3, nom: 'Direction Générale', responsable: 'Ibrahim Sow', effectif: 3, etage: '4ème' },
 ]);
 
 const fournisseurs = ref([
-    { id: 1, nom: 'Bureau VallÃ©e', contact: '77 123 45 67', email: 'contact@bvallee.sn', categorie: 'Fournitures' },
-    { id: 2, nom: 'Senelec', contact: '33 800 00 00', email: 'pro@senelec.sn', categorie: 'Ã‰nergie' },
+    { id: 1, nom: 'Bureau Vallée', contact: '77 123 45 67', email: 'contact@bvallee.sn', categorie: 'Fournitures' },
+    { id: 2, nom: 'Senelec', contact: '33 800 00 00', email: 'pro@senelec.sn', categorie: 'à‰nergie' },
     { id: 3, nom: 'Top Informatique', contact: '70 987 65 43', email: 'sales@topinfo.sn', categorie: 'Informatique' },
 ]);
 
@@ -75,7 +75,7 @@ const saveEntry = () => {
         if (activeTab.value === 'services') {
             const index = services.value.findIndex(s => s.id === formData.value.id);
             if (index !== -1) {
-                // On remplace l'Ã©lÃ©ment Ã  l'index donnÃ© par les nouvelles donnÃ©es
+                // On remplace l'élément à l'index donné par les nouvelles données
                 services.value.splice(index, 1, { ...formData.value });
             }
         } else {
@@ -138,7 +138,7 @@ const navigation = [
                     <svg class="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
-                    DÃ©connexion
+                    Déconnexion
                 </button>
             </div>
         </aside>
@@ -151,7 +151,7 @@ const navigation = [
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                         </svg>
                     </Link>
-                    <span class="font-medium">RÃ©fÃ©rentiel</span>
+                    <span class="font-medium">Référentiel</span>
                 </div>
             </header>
 
@@ -159,7 +159,7 @@ const navigation = [
                 <div class="flex justify-between items-end">
                     <div>
                         <h2 class="text-2xl font-bold text-slate-800">Services & Fournisseurs</h2>
-                        <p class="text-slate-500 text-sm">GÃ©rez les entitÃ©s internes et vos partenaires externes</p>
+                        <p class="text-slate-500 text-sm">Gérez les entités internes et vos partenaires externes</p>
                     </div>
                     <button @click="openAddModal" class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-sm">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
@@ -221,7 +221,7 @@ const navigation = [
         <thead class="bg-slate-50 border-b border-slate-100 text-xs font-semibold text-slate-500 uppercase">
             <tr>
                 <th class="px-6 py-4">Raison Sociale</th>
-                <th class="px-6 py-4">CatÃ©gorie</th>
+                <th class="px-6 py-4">Catégorie</th>
                 <th class="px-6 py-4">Contact</th>
                 <th class="px-6 py-4">Email</th>
                 <th class="px-6 py-4 text-right">Actions</th>
@@ -278,8 +278,8 @@ const navigation = [
 
     <div class="grid grid-cols-2 gap-4">
         <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-1">Localisation (Ã‰tage)</label>
-            <input v-model="formData.etage" type="text" placeholder="ex: 2Ã¨me Ã©tage" class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500">
+            <label class="block text-sm font-semibold text-slate-700 mb-1">Localisation (à‰tage)</label>
+            <input v-model="formData.etage" type="text" placeholder="ex: 2ème étage" class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500">
         </div>
         <div>
             <label class="block text-sm font-semibold text-slate-700 mb-1">Effectif</label>
@@ -289,18 +289,18 @@ const navigation = [
 </div>
 <div v-if="activeTab === 'fournisseurs'" class="space-y-4">
     <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-1">CatÃ©gorie d'activitÃ©</label>
+        <label class="block text-sm font-semibold text-slate-700 mb-1">Catégorie d'activité</label>
         <input 
             v-model="formData.categorie" 
             type="text" 
-            placeholder="ex: Plomberie, SÃ©curitÃ©, etc."
+            placeholder="ex: Plomberie, Sécurité, etc."
             class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500"
         >
     </div>
 
     <div class="grid grid-cols-2 gap-4">
         <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-1">TÃ©lÃ©phone</label>
+            <label class="block text-sm font-semibold text-slate-700 mb-1">Téléphone</label>
             <input v-model="formData.contact" type="text" class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500">
         </div>
         <div>
@@ -312,7 +312,7 @@ const navigation = [
 
                         <div class="pt-4 flex gap-3">
                             <button type="button" @click="showModal = false" class="flex-1 py-2 border border-slate-200 rounded-lg font-semibold text-slate-600">Annuler</button>
-                            <button type="submit" class="flex-1 py-2 bg-teal-600 text-white rounded-lg font-semibold shadow-md">{{ isEditing ? 'Mettre Ã  jour' : 'Enregistrer' }}</button>
+                            <button type="submit" class="flex-1 py-2 bg-teal-600 text-white rounded-lg font-semibold shadow-md">{{ isEditing ? 'Mettre à jour' : 'Enregistrer' }}</button>
                         </div>
                     </form>
                 </div>

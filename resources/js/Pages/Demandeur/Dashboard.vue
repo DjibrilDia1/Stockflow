@@ -5,23 +5,17 @@ import { Link, router, usePage } from '@inertiajs/vue3';
 const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? 'Demandeur');
 
-const stats = [
-    { label: 'Demandes en cours', value: 4,class:"card-hover bg-white rounded-xl p-6 shadow-md border border-slate-100 animate-fade-in" , style:"animation-delay: 0.1s" , hint: '2 en validation, 2 en preparation' },
-    { label: 'Demandes traitees', value: 18,class:"card-hover bg-white rounded-xl p-6 shadow-md border border-slate-100 animate-fade-in" , style:"animation-delay: 0.1s" , hint: 'sur les 30 derniers jours' },
-    { label: 'Demandes rejetees', value: 1,color:"text-4xl font-bold text-red-600 mb-1",class:"card-hover bg-white rounded-xl p-6 shadow-md border border-slate-100 animate-fade-in" , style:"animation-delay: 0.1s" , hint: 'necessite une correction' },
-];
+const props = defineProps({
+    stats: Object,
+    recentRequests: Array,
+    notifications: Array,
+});
 
-const notifications = [
-    { id: 1, message: 'La demande DR-2026-021 est en cours de validation.', type: 'info' },
-    { id: 2, message: 'La demande DR-2026-019 est prete pour retrait.', type: 'success' },
-    { id: 3, message: 'La demande DR-2026-017 a ete rejetee.', type: 'warning' },
-];
-
-const recentRequests = [
-    { id: 1, ref: 'DR-2026-021', service: 'Service RH', date: '12/02/2026', status: 'En validation' },
-    { id: 2, ref: 'DR-2026-020', service: 'Service Finance', date: '10/02/2026', status: 'En preparation' },
-    { id: 3, ref: 'DR-2026-019', service: 'Service Pedagogique', date: '08/02/2026', status: 'Prete' },
-];
+const statsCards = computed(() => [
+    { label: 'Demandes en cours', value: props.stats.inProgress, class: "card-hover bg-white rounded-xl p-6 shadow-md border border-slate-100 animate-fade-in", style: "animation-delay: 0.1s", hint: 'En validation ou préparation' },
+    { label: 'Demandes traitées', value: props.stats.processed, class: "card-hover bg-white rounded-xl p-6 shadow-md border border-slate-100 animate-fade-in", style: "animation-delay: 0.2s", hint: 'Terminées avec succès' },
+    { label: 'Demandes rejetées', value: props.stats.rejected, color: "text-4xl font-bold text-red-600 mb-1", class: "card-hover bg-white rounded-xl p-6 shadow-md border border-slate-100 animate-fade-in", style: "animation-delay: 0.3s", hint: 'Nécessitent une correction' },
+]);
 
 const menu = [
     { name: 'Tableau de bord',icon:'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', route: 'demandeur.dashboard' },
@@ -114,7 +108,7 @@ const logout = () => {
             <!-- ================================================== SECTION PRINCIPAL =========================================================-->
             <main class="p-8 space-y-8">
                 <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <article v-for="card in stats" 
+    <article v-for="card in statsCards" 
         :key="card.label"
         :class="card.class" 
         :style="card.style"
@@ -153,7 +147,7 @@ const logout = () => {
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
-                                    <tr v-for="request in recentRequests" :key="request.id">
+                                    <tr v-for="request in props.recentRequests" :key="request.id">
                                         <td class="px-6 py-4 text-sm font-medium text-blue-600">{{ request.ref }}</td>
                                         <td class="px-6 py-4 text-sm text-slate-700">{{ request.service }}</td>
                                         <td class="px-6 py-4 text-sm text-slate-500">{{ request.date }}</td>
@@ -164,6 +158,11 @@ const logout = () => {
                                             </span>
                                         </td>
                                     </tr>
+                                    <tr v-if="props.recentRequests.length === 0">
+                                        <td colspan="4" class="px-6 py-10 text-center text-slate-500">
+                                            Aucune demande récente.
+                                        </td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -171,14 +170,13 @@ const logout = () => {
 
                     <div class="space-y-4">
                         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-                            <h3 class="text-base font-semibold text-slate-800">Acces rapide</h3>
-                            <Link :href="route('demandeur.demandes.index')" 
-      class="text-sm text-slate-500 mt-1 block hover:text-teal-600 transition-colors cursor-pointer">
-    Créer rapidement une nouvelle demande de retrait.
-</Link>
+                            <h3 class="text-base font-semibold text-slate-800">Actions rapides</h3>
+                            <p class="text-sm text-slate-500 mt-1">
+                                Besoin d'un article ? Créez une demande en quelques clics.
+                            </p>
                             <Link :href="route('demandeur.demandes.index')"
-                                class="inline-flex items-center justify-center mt-4 w-full px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-lg transition-colors">
-                                Nouvelle demande
+                                class="inline-flex items-center justify-center mt-4 w-full px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold rounded-lg transition-all shadow-lg hover:shadow-teal-200">
+                                <span class="mr-2 text-lg">+</span> Faire une demande
                             </Link>
                         </div>
 

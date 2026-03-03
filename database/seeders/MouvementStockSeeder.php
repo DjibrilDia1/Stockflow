@@ -19,18 +19,18 @@ class MouvementStockSeeder extends Seeder
         $entrepots = Entrepot::all();
 
         if ($articles->isEmpty() || $entrepots->isEmpty()) {
-            echo "Attention: Aucun article ou entrepÃ´t trouvÃ© pour les mouvements de stock.
+            echo "Attention: Aucun article ou entrepôt trouvé pour les mouvements de stock.
 ";
             return;
         }
 
-        // Mouvements d'entrÃ©e
+        // Mouvements d'entrée
         MouvementStock::create([
             'mvs_art_id' => $articles->random()->art_id,
             'mvs_ent_id' => $entrepots->random()->ent_id,
             'mvs_type' => 'IN',
             'mvs_quantite' => 50,
-            'mvs_motif' => 'RÃ©approvisionnement fournisseur',
+            'mvs_motif' => 'Réapprovisionnement fournisseur',
             'mvs_date_mouvement' => now()->subDays(5),
         ]);
 
@@ -49,7 +49,7 @@ class MouvementStockSeeder extends Seeder
             'mvs_art_id' => $articles->random()->art_id,
             'mvs_ent_id' => $entrepots->random()->ent_id,
             'mvs_type' => 'ADJUST',
-            'mvs_quantite' => -5, // Ajustement nÃ©gatif
+            'mvs_quantite' => -5, // Ajustement négatif
             'mvs_motif' => 'Inventaire : article manquant',
             'mvs_date_mouvement' => now()->subDays(2),
         ]);
@@ -60,17 +60,17 @@ class MouvementStockSeeder extends Seeder
             'mvs_ent_id' => $entrepots->random()->ent_id,
             'mvs_type' => 'TRANSFER',
             'mvs_quantite' => 20,
-            'mvs_motif' => 'Transfert vers un autre entrepÃ´t',
+            'mvs_motif' => 'Transfert vers un autre entrepôt',
             'mvs_date_mouvement' => now()->subDays(1),
         ]);
 
-        // Exemple supplÃ©mentaire
+        // Exemple supplémentaire
         MouvementStock::create([
             'mvs_art_id' => $articles->random()->art_id,
             'mvs_ent_id' => $entrepots->random()->ent_id,
             'mvs_type' => 'IN',
             'mvs_quantite' => 100,
-            'mvs_motif' => 'Nouvelle rÃ©ception',
+            'mvs_motif' => 'Nouvelle réception',
             'mvs_date_mouvement' => now(),
         ]);
     }

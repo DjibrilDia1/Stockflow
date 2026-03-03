@@ -55,9 +55,10 @@ Route::middleware(['auth', 'role:gestionnaire'])->prefix('gestionnaire')->name('
     Route::post('/mouvements', [MouvementStockController::class, 'store'])->name('mouvements.store');
     Route::delete('/mouvements/{stockMovement}', [MouvementStockController::class, 'destroy'])->name('mouvements.destroy');
 
-    Route::get('/demandes', function () {
-        return Inertia::render('Gestionnaire/Demandes');
-    })->name('demandes.index');
+    // Demandes
+    Route::get('/demandes', [\App\Http\Controllers\DemandeSortieController::class, 'index'])->name('demandes.index');
+    Route::post('/demandes/{demande}/validate', [\App\Http\Controllers\DemandeSortieController::class, 'validateRequest'])->name('demandes.validate');
+    Route::delete('/demandes/{withdrawRequest}', [\App\Http\Controllers\DemandeSortieController::class, 'destroy'])->name('demandes.destroy');
 
 
     Route::get('/rapports', function () {
@@ -91,18 +92,12 @@ Route::middleware(['auth', 'role:responsable'])->prefix('responsable')->name('re
 
 // Groupe pour le rôle DEMANDEUR
 Route::middleware(['auth', 'role:demandeur'])->prefix('demandeur')->name('demandeur.')->group(function () {
-    Route::get('/dashboard', function () {
-        // Cette route rendra `resources/js/Pages/Demandeur/Dashboard.vue`
-        return Inertia::render('Demandeur/Dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'demandeurDashboard'])->name('dashboard');
 
-    Route::get('/demandes', function () {
-        return Inertia::render('Demandeur/Demandes');
-    })->name('demandes.index');
+    Route::get('/demandes', [\App\Http\Controllers\DemandeSortieController::class, 'demandeurIndex'])->name('demandes.index');
+    Route::post('/demandes', [\App\Http\Controllers\DemandeSortieController::class, 'demandeurStore'])->name('demandes.store');
 
-    Route::get('/articles', function () {
-        return Inertia::render('Demandeur/Articles');
-    })->name('articles.index');
+    Route::get('/articles', [ArticleController::class, 'demandeurIndex'])->name('articles.index');
 });
 
 

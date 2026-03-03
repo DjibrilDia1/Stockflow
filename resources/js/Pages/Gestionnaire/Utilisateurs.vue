@@ -17,7 +17,7 @@ const newUser = ref({
     statut: 'Actif'
 });
 
-// DonnÃ©es fictives initiales
+// Données fictives initiales
 const utilisateurs = ref([
     { id: 1, nom: 'Amadou Diallo', initials: 'AM', email: 'a.diallo@stockflow.sn', role: 'Gestionnaire', roleClass: 'bg-teal-100 text-teal-700', service: 'Logistique', date: '15/01/2024', statut: 'Actif' },
     { id: 2, nom: 'Fatou Sarr', initials: 'FS', email: 'F.Sarr@stockflow.sn', role: 'Demandeur', roleClass: 'bg-blue-100 text-blue-700', service: 'RH', date: '15/01/2024', statut: 'Actif' },
@@ -86,7 +86,7 @@ const navigation = [
 ];
 
 const logout = () => {
-    if (confirm('DÃ©connexion ?')) router.post(route('logout'));
+    if (confirm('Déconnexion ?')) router.post(route('logout'));
 };
 </script>
 
@@ -116,7 +116,7 @@ const logout = () => {
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
-                    DÃ©connexion
+                    Déconnexion
                 </button>
             </div>
         </aside>
@@ -144,7 +144,7 @@ const logout = () => {
                 <div class="flex justify-between items-center">
                     <div>
                         <h2 class="text-2xl font-bold text-slate-800">Gestion des utilisateurs</h2>
-                        <p class="text-slate-500 text-sm">GÃ©rer les comptes et les accÃ¨s du systÃ¨mes</p>
+                        <p class="text-slate-500 text-sm">Gérer les comptes et les accès du systèmes</p>
                     </div>
                     <button @click="showAddUserModal = true"
                         class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-all shadow-sm">
@@ -186,7 +186,7 @@ const logout = () => {
 
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-sm font-semibold text-slate-700 mb-1">RÃ´le</label>
+                                        <label class="block text-sm font-semibold text-slate-700 mb-1">Rôle</label>
                                         <select v-model="newUser.role"
                                             class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
                                             <option value="Gestionnaire">Gestionnaire</option>
@@ -206,7 +206,7 @@ const logout = () => {
 
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-700 mb-1">Service</label>
-                                    <input v-model="newUser.service" type="text" placeholder="Ex: ComptabilitÃ©" required
+                                    <input v-model="newUser.service" type="text" placeholder="Ex: Comptabilité" required
                                         class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
                                 </div>
 
@@ -217,7 +217,7 @@ const logout = () => {
                                     </button>
                                     <button type="submit"
                                         class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition-colors shadow-md">
-                                        {{ isEditing ? 'Mettre Ã  jour' : 'CrÃ©er le compte' }}
+                                        {{ isEditing ? 'Mettre à jour' : 'Créer le compte' }}
                                     </button>
                                 </div>
                             </form>
@@ -236,7 +236,7 @@ const logout = () => {
                             class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none">
                     </div>
                     <select class="bg-slate-50 border border-slate-200 rounded-lg px-10 py-2 text-sm outline-none">
-                        <option>RÃ´le tous</option>
+                        <option>Rôle tous</option>
                     </select>
                     <select class="bg-slate-50 border border-slate-200 rounded-lg px-10 py-2 text-sm outline-none">
                         <option>Service Tous</option>
@@ -251,12 +251,12 @@ const logout = () => {
                                     complet</th>
                                 <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                                     Email</th>
-                                <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">RÃ´le
+                                <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Rôle
                                 </th>
                                 <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                                     Service</th>
                                 <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Date
-                                    de crÃ©ation</th>
+                                    de création</th>
                                 <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                                     Statut</th>
                                 <th

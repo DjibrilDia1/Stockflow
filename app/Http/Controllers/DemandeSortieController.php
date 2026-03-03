@@ -17,9 +17,138 @@ class DemandeSortieController extends Controller
      */
     public function index(): Response
     {
-        return Inertia::render('Gestionnaire/DemandeSorties/Index', [
-            'withdrawRequests' => DemandeSortie::with(['service', 'requester'])->get(),
+        return Inertia::render('Gestionnaire/Demandes', [
+            'withdrawRequests' => DemandeSortie::with(['service', 'requester', 'lines.item'])
+                ->latest()
+                ->paginate(10),
         ]);
+    }
+
+    /**
+     * Affiche les demandes du demandeur connecté.
+     */
+    public function demandeurIndex(): Response
+    {
+        return Inertia::render('Demandeur/Demandes', [
+            'requests' => DemandeSortie::where('dso_demandeur_id', auth()->id())
+                ->with(['lines.item'])
+                ->latest()
+                ->get()
+                ->map(function($d) {
+                    return [
+                        'id' => $d->dso_id,
+                        'ref' => 'DSO-' . str_pad($d->dso_id, 5, '0', STR_PAD_LEFT),
+                        'type' => 'Retrait',
+                        'article' => $d->lines->first()->item->art_nom ?? 'Multiples',
+                        'qty' => $d->lines->sum('lds_qte_demandee'),
+                        'date' => $d->dso_created_at->format('d/m/Y'),
+                        'status' => match($d->dso_statut) {
+                            'DRAFT' => 'En validation',
+                            'APPROVED' => 'En preparation',
+                            'FULFILLED' => 'Prete',
+                            'REJECTED' => 'Rejetee',
+                            default => $d->dso_statut
+                        },
+                    ];
+                }),
+            'articlesDisponibles' => \App\Models\Article::with(['itemStocks.warehouse'])
+                ->get()
+                ->map(function($article) {
+                    return [
+                        'id' => $article->art_id,
+                        'nom' => $article->art_nom,
+                        'warehouses' => $article->itemStocks->map(function($stock) {
+                            return [
+                                'id' => $stock->sta_ent_id,
+                                'name' => $stock->warehouse->ent_nom ?? 'N/A',
+                                'qty' => $stock->sta_quantite,
+                            ];
+                        })->values()
+                    ];
+                }),
+        ]);
+    }
+
+    /**
+     * Enregistre une nouvelle demande du demandeur.
+     */
+    public function demandeurStore(Request $request)
+    {
+        $validated = $request->validate([
+            'article_id' => 'required|exists:articles,art_id',
+            'entrepot_id' => 'required|exists:entrepots,ent_id',
+            'quantite' => 'required|integer|min:1',
+            'motif' => 'nullable|string',
+        ]);
+
+        // Vérification de sécurité du stock disponible
+        $stock = \App\Models\StockArticle::where('sta_art_id', $validated['article_id'])
+            ->where('sta_ent_id', $validated['entrepot_id'])
+            ->first();
+
+        if (!$stock || $stock->sta_quantite < $validated['quantite']) {
+            return Redirect::back()->with('error', 'La quantité demandée dépasse le stock disponible dans cet entrepôt.');
+        }
+
+        // On prend le premier service par défaut
+        $serviceId = \App\Models\Service::first()->ser_id;
+
+        $demande = DemandeSortie::create([
+            'dso_ser_id' => $serviceId,
+            'dso_demandeur_id' => auth()->id(),
+            'dso_statut' => 'DRAFT',
+        ]);
+
+        $demande->lines()->create([
+            'lds_art_id' => $validated['article_id'],
+            'lds_ent_id' => $validated['entrepot_id'],
+            'lds_qte_demandee' => $validated['quantite'],
+            'lds_note' => $validated['motif'],
+        ]);
+
+        return Redirect::route('demandeur.demandes.index');
+    }
+
+    /**
+     * Valide ou rejette une demande (pour le gestionnaire).
+     */
+    public function validateRequest(Request $request, DemandeSortie $demande)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:APPROVED,REJECTED',
+        ]);
+
+        // Si on approuve, on déduit le stock
+        if ($validated['status'] === 'APPROVED' && $demande->dso_statut === 'DRAFT') {
+            foreach ($demande->lines as $line) {
+                $stock = \App\Models\StockArticle::where('sta_art_id', $line->lds_art_id)
+                    ->where('sta_ent_id', $line->lds_ent_id)
+                    ->first();
+
+                if ($stock && $stock->sta_quantite >= $line->lds_qte_demandee) {
+                    $stock->decrement('sta_quantite', $line->lds_qte_demandee);
+                    
+                    // On crée aussi un mouvement de stock de type "OUT"
+                    \App\Models\MouvementStock::create([
+                        'mvs_art_id' => $line->lds_art_id,
+                        'mvs_ent_id' => $line->lds_ent_id,
+                        'mvs_ser_id' => $demande->dso_ser_id,
+                        'mvs_usr_id' => auth()->id(),
+                        'mvs_quantite' => $line->lds_qte_demandee,
+                        'mvs_type' => 'OUT',
+                        'mvs_date_mouvement' => now(),
+                    ]);
+                } else {
+                    return Redirect::back()->with('error', 'Stock insuffisant dans l\'entrepôt choisi.');
+                }
+            }
+        }
+
+        $demande->update([
+            'dso_statut' => $validated['status'],
+        ]);
+
+        return Redirect::back()->with('success', 'La demande a été ' . ($validated['status'] === 'APPROVED' ? 'approuvée et le stock a été mis à jour.' : 'rejetée.'));
     }
 
     /**
@@ -47,7 +176,7 @@ class DemandeSortieController extends Controller
 
         DemandeSortie::create($validated);
 
-        return Redirect::route('withdraw-requests.index');
+        return Redirect::route('gestionnaire.demandes.index');
     }
 
     /**
@@ -87,7 +216,7 @@ class DemandeSortieController extends Controller
 
         $withdrawRequest->update($validated);
 
-        return Redirect::route('withdraw-requests.index');
+        return Redirect::route('gestionnaire.demandes.index');
     }
 
     /**
@@ -97,7 +226,7 @@ class DemandeSortieController extends Controller
     {
         $withdrawRequest->delete();
 
-        return Redirect::route('withdraw-requests.index');
+        return Redirect::route('gestionnaire.demandes.index');
     }
 }
 

@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { Link, router } from '@inertiajs/vue3';
+import { Link, router, useForm } from '@inertiajs/vue3';
 
 
 const props = defineProps({
@@ -11,38 +11,40 @@ const props = defineProps({
 
 const showAddMouvementModal = ref(false);
 
-const newMouvement = ref({
+const movementForm = useForm({
     mvs_date_mouvement: new Date().toISOString().slice(0, 10),
     mvs_type: 'IN',
     mvs_art_id: '',
     mvs_ent_id: '',
+    mvs_ent_dest_id: '', // Pour les transferts
     mvs_quantite: 1,
     mvs_motif: ''
 });
 
 const openModal = (type = 'IN') => {
-    newMouvement.value = {
-        mvs_date_mouvement: new Date().toISOString().slice(0, 10),
-        mvs_type: type,
-        mvs_art_id: '',
-        mvs_ent_id: '',
-        mvs_quantite: 1,
-        mvs_motif: ''
-    };
+    movementForm.clearErrors();
+    movementForm.mvs_date_mouvement = new Date().toISOString().slice(0, 10);
+    movementForm.mvs_type = type;
+    movementForm.mvs_art_id = '';
+    movementForm.mvs_ent_id = '';
+    movementForm.mvs_ent_dest_id = '';
+    movementForm.mvs_quantite = 1;
+    movementForm.mvs_motif = '';
     showAddMouvementModal.value = true;
 };
 
 // --- ACTION D'AJOUT ---
 const addMouvement = () => {
-    router.post(route('gestionnaire.mouvements.store'), newMouvement.value, {
+    movementForm.post(route('gestionnaire.mouvements.store'), {
         onSuccess: () => {
             showAddMouvementModal.value = false;
+            movementForm.reset();
         }
     });
 };
 
 const deleteMouvement = (id) => {
-    if (confirm('√ätes-vous s√ªr de vouloir supprimer ce mouvement ? Cette action est irr√©versible.')) {
+    if (confirm('‡ätes-vous s‡ªr de vouloir supprimer ce mouvement ? Cette action est irrÈversible.')) {
         router.delete(route('gestionnaire.mouvements.destroy', id));
     }
 };
@@ -117,7 +119,7 @@ const getTypeClass = (type) => {
 const logout = () => {
 
 
-    if (confirm('D√©connexion ?')) router.post(route('logout'));
+    if (confirm('DÈconnexion ?')) router.post(route('logout'));
 
 
 };
@@ -134,7 +136,7 @@ const logout = () => {
 
             <nav class="px-3 py-6 space-y-1.5 flex-1">
                 <Link v-for="item in navigation" :key="item.name" :href="item.route ? route(item.route) : '#'" :class="[
-                    /* On v√©rifie si la route actuelle correspond √† l'item */
+                    /* On vÈrifie si la route actuelle correspond ‡ l'item */
                     item.route && route().current(item.route)
                         ? 'bg-teal-600 text-white shadow-lg'
                         : 'text-slate-300 hover:bg-slate-700 hover:text-white',
@@ -155,7 +157,7 @@ const logout = () => {
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
-                    D√©connexion
+                    DÈconnexion
                 </button>
             </div>
         </aside>
@@ -186,7 +188,7 @@ const logout = () => {
                 <div class="flex justify-between items-center">
                     <div>
                         <h2 class="text-2xl font-bold text-slate-800">Gestion des mouvements</h2>
-                        <p class="text-slate-500 text-sm">G√©rer les entr√©es, sorties et ajustements de stock</p>
+                        <p class="text-slate-500 text-sm">GÈrer les entrÈes, sorties et ajustements de stock</p>
                     </div>
                     <button @click="showAddMouvementModal = true"
                         class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-all shadow-sm">
@@ -215,58 +217,83 @@ const logout = () => {
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-semibold text-slate-700 mb-1">Date</label>
-                                        <input v-model="newMouvement.mvs_date_mouvement" type="date" required
-                                            class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                                        <input v-model="movementForm.mvs_date_mouvement" type="date"
+                                            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+                                            :class="{'border-red-500': movementForm.errors.mvs_date_mouvement}">
+                                        <div v-if="movementForm.errors.mvs_date_mouvement" class="text-red-500 text-xs mt-1">{{ movementForm.errors.mvs_date_mouvement }}</div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-semibold text-slate-700 mb-1">Type de
                                             mouvement</label>
-                                        <select v-model="newMouvement.mvs_type"
-                                            class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none text-sm">
-                                            <option value="IN">Entr√©e</option>
+                                        <select v-model="movementForm.mvs_type"
+                                            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none text-sm"
+                                            :class="{'border-red-500': movementForm.errors.mvs_type}">
+                                            <option value="IN">EntrÈe</option>
                                             <option value="OUT">Sortie</option>
                                             <option value="TRANSFER">Transfert</option>
                                             <option value="ADJUST">Ajustement</option>
                                         </select>
+                                        <div v-if="movementForm.errors.mvs_type" class="text-red-500 text-xs mt-1">{{ movementForm.errors.mvs_type }}</div>
                                     </div>
                                 </div>
 
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-700 mb-1">Article</label>
-                                    <select v-model="newMouvement.mvs_art_id" required
-                                        class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none text-sm">
-                                        <option value="" disabled>S√©lectionner un article</option>
+                                    <select v-model="movementForm.mvs_art_id"
+                                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none text-sm"
+                                        :class="{'border-red-500': movementForm.errors.mvs_art_id}">
+                                        <option value="" disabled>SÈlectionner un article</option>
                                         <option v-for="art in articles" :key="art.art_id" :value="art.art_id">
                                             {{ art.art_nom }} ({{ art.art_reference }})
                                         </option>
                                     </select>
+                                    <div v-if="movementForm.errors.mvs_art_id" class="text-red-500 text-xs mt-1">{{ movementForm.errors.mvs_art_id }}</div>
                                 </div>
 
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-sm font-semibold text-slate-700 mb-1">Entrep√¥t /
-                                            Lieu</label>
-                                        <select v-model="newMouvement.mvs_ent_id" required
-                                            class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none text-sm">
-                                            <option value="" disabled>S√©lectionner</option>
+                                        <label class="block text-sm font-semibold text-slate-700 mb-1">
+                                            {{ movementForm.mvs_type === 'TRANSFER' ? 'EntrepÙt Source' : 'EntrepÙt / Lieu' }}
+                                        </label>
+                                        <select v-model="movementForm.mvs_ent_id"
+                                            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none text-sm"
+                                            :class="{'border-red-500': movementForm.errors.mvs_ent_id}">
+                                            <option value="" disabled>SÈlectionner</option>
                                             <option v-for="ent in warehouses" :key="ent.ent_id" :value="ent.ent_id">
                                                 {{ ent.ent_nom }}
                                             </option>
                                         </select>
+                                        <div v-if="movementForm.errors.mvs_ent_id" class="text-red-500 text-xs mt-1">{{ movementForm.errors.mvs_ent_id }}</div>
+                                    </div>
+                                    <div v-if="movementForm.mvs_type === 'TRANSFER'">
+                                        <label class="block text-sm font-semibold text-slate-700 mb-1">EntrepÙt Destination</label>
+                                        <select v-model="movementForm.mvs_ent_dest_id"
+                                            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none text-sm"
+                                            :class="{'border-red-500': movementForm.errors.mvs_ent_dest_id}">
+                                            <option value="" disabled>SÈlectionner</option>
+                                            <option v-for="ent in warehouses" :key="ent.ent_id" :value="ent.ent_id">
+                                                {{ ent.ent_nom }}
+                                            </option>
+                                        </select>
+                                        <div v-if="movementForm.errors.mvs_ent_dest_id" class="text-red-500 text-xs mt-1">{{ movementForm.errors.mvs_ent_dest_id }}</div>
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-semibold text-slate-700 mb-1">Quantit√©</label>
-                                        <input v-model.number="newMouvement.mvs_quantite" type="number" required min="1"
-                                            class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                                        <label class="block text-sm font-semibold text-slate-700 mb-1">QuantitÈ</label>
+                                        <input v-model.number="movementForm.mvs_quantite" type="number"
+                                            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+                                            :class="{'border-red-500': movementForm.errors.mvs_quantite}">
+                                        <div v-if="movementForm.errors.mvs_quantite" class="text-red-500 text-xs mt-1">{{ movementForm.errors.mvs_quantite }}</div>
                                     </div>
                                 </div>
 
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-700 mb-1">Motif /
                                         Raison</label>
-                                    <textarea v-model="newMouvement.mvs_motif" rows="2"
-                                        placeholder="Ex: R√©approvisionnement mensuel"
-                                        class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none text-sm"></textarea>
+                                    <textarea v-model="movementForm.mvs_motif" rows="2"
+                                        placeholder="Ex: RÈapprovisionnement mensuel"
+                                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none text-sm"
+                                        :class="{'border-red-500': movementForm.errors.mvs_motif}"></textarea>
+                                    <div v-if="movementForm.errors.mvs_motif" class="text-red-500 text-xs mt-1">{{ movementForm.errors.mvs_motif }}</div>
                                 </div>
 
                                 <div class="pt-4 flex gap-3">
@@ -275,8 +302,9 @@ const logout = () => {
                                         Annuler
                                     </button>
                                     <button type="submit"
-                                        class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition-colors shadow-md">
-                                        Confirmer le mouvement
+                                        class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition-colors shadow-md"
+                                        :disabled="movementForm.processing">
+                                        {{ movementForm.processing ? 'Traitement...' : 'Confirmer le mouvement' }}
                                     </button>
                                 </div>
                             </form>
@@ -319,22 +347,22 @@ const logout = () => {
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <button @click="openModal('Entr√©e')"
+                    <button @click="openModal('IN')"
                         class="flex items-center justify-center gap-2 p-3 bg-teal-50 text-teal-700 rounded-lg font-semibold hover:bg-teal-100 transition-colors border border-teal-100">
-                        <span class="text-xl">+</span> Entr√©e
+                        <span class="text-xl">+</span> EntrÈe
                     </button>
 
-                    <button @click="openModal('Sortie')"
+                    <button @click="openModal('OUT')"
                         class="flex items-center justify-center gap-2 p-3 bg-red-50 text-red-700 rounded-lg font-semibold hover:bg-red-100 transition-colors border border-red-100">
                         <span class="text-xl">-</span> Sortie
                     </button>
 
-                    <button @click="openModal('Ajustement')"
+                    <button @click="openModal('ADJUST')"
                         class="flex items-center justify-center gap-2 p-3 bg-orange-50 text-orange-700 rounded-lg font-semibold hover:bg-orange-100 transition-colors border border-orange-100">
                         <span class="text-sm">‚ö†Ô∏è</span> Ajustement
                     </button>
 
-                    <button @click="openModal('Transfert')"
+                    <button @click="openModal('TRANSFER')"
                         class="flex items-center justify-center gap-2 p-3 bg-blue-50 text-blue-700 rounded-lg font-semibold hover:bg-blue-100 transition-colors border border-blue-100">
                         <span class="text-sm">üîÑ</span> Transfert
                     </button>
@@ -350,8 +378,8 @@ const logout = () => {
                                         <th class="px-6 py-4">Date</th>
                                         <th class="px-6 py-4 text-center">Type</th>
                                         <th class="px-6 py-4">Article</th>
-                                        <th class="px-6 py-4">Entrep√¥t</th>
-                                        <th class="px-6 py-4">Quantit√©</th>
+                                        <th class="px-6 py-4">EntrepÙt</th>
+                                        <th class="px-6 py-4">QuantitÈ</th>
                                         <th class="px-6 py-4">Motif</th>
                                         <th class="px-6 py-4 text-center">Actions</th>
                                     </tr>

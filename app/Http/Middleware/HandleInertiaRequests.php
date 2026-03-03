@@ -37,6 +37,10 @@ class HandleInertiaRequests extends Middleware
                     'last_name' => explode(' ', $request->user()->name, 2)[1] ?? '',
                 ]) : null,
             ],
+            'flash' => [
+                'success' => $request->session()->get('success'),
+                'error' => $request->session()->get('error'),
+            ],
         ];
     }
 }

@@ -6,53 +6,34 @@ const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gestionnaire');
 
 
-const showAddDemandeModal = ref(false);
-
-const newDemande = ref({
-    ref: '', // GÃ©nÃ¨re une ref simple
-    demandeur: 'EntrÃ©e',
-    entrepot: '',
-    date: new Date().toISOString().substr(0, 10), // Date du jour par dÃ©faut
-    statut: 'Brouillon',
-    detail: ''
+const props = defineProps({
+    withdrawRequests: Object,
 });
 
-const addDemande = () => {
-    const demandeToAdd = {
-        ...newDemande.value,
-        id: Date.now(),
-        // On dÃ©finit la classe selon le statut par dÃ©faut
-        statutClass: 'bg-amber-100 text-amber-600'
-    };
-
-    demandes.value.push(demandeToAdd);
-
-    // Fermeture et reset
-    showAddDemandeModal.value = false;
-    newDemande.value = {
-        ref: 'DREQ-' + Math.floor(Math.random() * 1000),
-        demandeur: 'EntrÃ©e',
-        entrepot: '',
-        date: new Date().toISOString().substr(0, 10),
-        statut: 'Brouillon',
-        detail: ''
-    };
-};
+const showAddDemandeModal = ref(false);
 
 const deleteDemandes = (id) => {
-    if (confirm('ÃŠtes-vous sÃ»r de vouloir supprimer cette demande ? Cette action est irrÃ©versible.')) {
-        // On cible 'demandes.value' et non 'mouvements.value'
-        demandes.value = demandes.value.filter(item => item.id !== id);
+    if (confirm('àŠtes-vous sà»r de vouloir supprimer cette demande ? Cette action est irréversible.')) {
+        router.delete(route('gestionnaire.demandes.destroy', id));
     }
 };
 
-// DonnÃ©es fictives
-const demandes = ref([
-    { id: 1, ref: 'DREQ-001', demandeur: 'EntrÃ©e', entrepot: 'Fournitures', date: '3/04/2024', statut: 'Brouillon', statutClass: 'bg-amber-100 text-amber-600', detail: '' },
-    { id: 2, ref: 'DREQ-002', demandeur: 'Transfert', entrepot: 'Fournitures', date: '13/04/2024', statut: 'ValidÃ©e', statutClass: 'bg-teal-600 text-white', detail: '+ Stylos noirs x 20' },
-    { id: 3, ref: 'DREQ-003', demandeur: 'Ajustement', entrepot: 'Mobilier', date: '15/04/2024', statut: 'Servie', statutClass: 'bg-emerald-500 text-white', detail: '+ Cartouches dâ€™encre x 10' },
-    { id: 4, ref: 'DREQ-004', demandeur: 'Sortie', entrepot: 'Mobilier', date: '15/04/2024', statut: 'RejetÃ©e', statutClass: 'bg-red-500 text-white', detail: '+ Besoin non justifiÃ©e' },
-]);
+const validateRequest = (id, status) => {
+    const action = status === 'APPROVED' ? 'approuver' : 'rejeter';
+    if (confirm(`Voulez-vous vraiment ${action} cette demande ?`)) {
+        router.post(route('gestionnaire.demandes.validate', id), {
+            status: status
+        });
+    }
+};
+
+const getStatusClass = (status) => {
+    if (status === 'DRAFT') return 'bg-amber-100 text-amber-600';
+    if (status === 'APPROVED') return 'bg-teal-600 text-white';
+    if (status === 'FULFILLED') return 'bg-emerald-500 text-white';
+    if (status === 'REJECTED') return 'bg-red-500 text-white';
+    return 'bg-slate-100 text-slate-600';
+};
 
 const navigation = [
     { name: 'Tableau de bord', route: 'gestionnaire.dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
@@ -66,10 +47,10 @@ const navigation = [
 ];
 
 const getTypeClass = (type) => {
-    // Classes de base identiques pour un design cohÃ©rent
+    // Classes de base identiques pour un design cohérent
     const baseClass = "px-3 py-1.5 rounded-md text-xs font-bold uppercase block text-center mx-auto max-w-[120px] border";
 
-    if (type === 'EntrÃ©e') return `${baseClass} bg-teal-50 text-teal-700 border-teal-100`;
+    if (type === 'Entrée') return `${baseClass} bg-teal-50 text-teal-700 border-teal-100`;
     if (type === 'Transfert') return `${baseClass} bg-blue-50 text-blue-700 border-blue-100`;
     if (type === 'Ajustement') return `${baseClass} bg-orange-50 text-orange-700 border-orange-100`;
     if (type === 'Sortie') return `${baseClass} bg-red-50 text-red-700 border-red-100`;
@@ -78,7 +59,7 @@ const getTypeClass = (type) => {
 };
 
 const logout = () => {
-    if (confirm('DÃ©connexion ?')) router.post(route('logout'));
+    if (confirm('Déconnexion ?')) router.post(route('logout'));
 };
 </script>
 
@@ -114,7 +95,7 @@ const logout = () => {
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
-                    DÃ©connexion
+                    Déconnexion
                 </button>
             </div>
         </aside>
@@ -142,7 +123,7 @@ const logout = () => {
                 <div class="flex justify-between items-start">
                     <div>
                         <h2 class="text-2xl font-bold text-slate-900">Demandes de retrait</h2>
-                        <p class="text-slate-500 mt-1">GÃ©rer les demandes de retrait d'articles</p>
+                        <p class="text-slate-500 mt-1">Gérer les demandes de retrait d'articles</p>
                     </div>
                     <button @click="showAddDemandeModal = true"
                         class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-all shadow-sm">
@@ -164,7 +145,7 @@ const logout = () => {
                             <form @submit.prevent="addDemande" class="p-6 space-y-4">
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-sm font-semibold text-slate-700 mb-1">RÃ©fÃ©rence</label>
+                                        <label class="block text-sm font-semibold text-slate-700 mb-1">Référence</label>
                                         <input v-model="newDemande.ref" type="text"
                                             class="w-full px-4 py-2 border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
                                     </div>
@@ -181,14 +162,14 @@ const logout = () => {
                                             (Demandeur)</label>
                                         <select v-model="newDemande.demandeur"
                                             class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
-                                            <option value="EntrÃ©e">EntrÃ©e</option>
+                                            <option value="Entrée">Entrée</option>
                                             <option value="Sortie">Sortie</option>
                                             <option value="Transfert">Transfert</option>
                                             <option value="Ajustement">Ajustement</option>
                                         </select>
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-semibold text-slate-700 mb-1">EntrepÃ´t</label>
+                                        <label class="block text-sm font-semibold text-slate-700 mb-1">Entrepôt</label>
                                         <select v-model="newDemande.entrepot" required
                                             class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
                                             <option value="" disabled>Choisir...</option>
@@ -200,7 +181,7 @@ const logout = () => {
                                 </div>
 
                                 <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-1">DÃ©tails des
+                                    <label class="block text-sm font-semibold text-slate-700 mb-1">Détails des
                                         articles</label>
                                     <textarea v-model="newDemande.detail" rows="3"
                                         placeholder="Ex: Stylos noirs x 20, Rames de papier x 5..."
@@ -258,56 +239,73 @@ const logout = () => {
                     <table class="w-full text-left">
                         <thead>
                             <tr class="bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-wider">
-                                <th class="px-6 py-4">Reference</th>
-                                <th class="px-6 py-4 text-center">Type</th>
-                                <th class="px-6 py-4 text-center">Entrepot</th>
+                                <th class="px-6 py-4">ID</th>
+                                <th class="px-6 py-4">Demandeur / Service</th>
+                                <th class="px-6 py-4">Articles</th>
+                                <th class="px-6 py-4">Quantité</th>
                                 <th class="px-6 py-4">Date</th>
                                 <th class="px-6 py-4">Statut</th>
-                                <th class="px-6 py-4">Details</th>
                                 <th class="px-6 py-4 text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
-    <tr v-for="item in demandes" :key="item.id" class="hover:bg-slate-50 transition-colors group">
-        <td class="px-6 py-5 text-sm font-medium text-blue-500 underline cursor-pointer">{{ item.ref }}</td>
+    <tr v-for="item in props.withdrawRequests.data" :key="item.dso_id" class="hover:bg-slate-50 transition-colors group">
+        <td class="px-6 py-5 text-sm font-medium text-blue-500 underline cursor-pointer">#{{ item.dso_id }}</td>
         
         <td class="px-6 py-5">
-            <span :class="getTypeClass(item.demandeur)">{{ item.demandeur }}</span>
+            <div class="text-sm font-bold text-slate-700">{{ item.requester?.name || 'N/A' }}</div>
+            <div class="text-xs text-slate-500">{{ item.service?.ser_nom || 'N/A' }}</div>
         </td>
         
-        <td class="px-6 py-5 text-sm font-bold text-slate-700 text-center">{{ item.entrepot }}</td>
+        <td class="px-6 py-5 text-sm text-slate-600">
+            <div v-for="line in item.lines" :key="line.lds_id">
+                â€¢ {{ line.item?.art_nom || 'Article inconnu' }}
+            </div>
+        </td>
+
+        <td class="px-6 py-5 text-sm text-slate-600">
+             <div v-for="line in item.lines" :key="line.lds_id">
+                {{ line.lds_qte_demandee }}
+            </div>
+        </td>
         
-        <td class="px-6 py-5 text-sm text-slate-500">{{ item.date }}</td>
+        <td class="px-6 py-5 text-sm text-slate-500">{{ new Date(item.dso_created_at || Date.now()).toLocaleDateString('fr-FR') }}</td>
         
         <td class="px-6 py-5">
-            <span :class="['px-4 py-1.5 rounded-md text-xs font-bold block min-w-[100px] text-center', item.statutClass]">
-                {{ item.statut }}
+            <span :class="['px-3 py-1.5 rounded-md text-[10px] font-bold block min-w-[90px] text-center', getStatusClass(item.dso_statut)]">
+                {{ item.dso_statut }}
             </span>
         </td>
 
-        <td class="px-6 py-5 text-xs text-teal-600 font-semibold italic">
-            {{ item.detail || '-' }}
-        </td>
-
-        <td class="px-6 py-4 text-center">
-            <button @click="deleteDemandes(item.id)" class="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition-colors">
-                <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-            </button>
+        <td class="px-6 py-4">
+            <div class="flex items-center justify-center gap-2">
+                <template v-if="item.dso_statut === 'DRAFT'">
+                    <button @click="validateRequest(item.dso_id, 'APPROVED')" 
+                        class="p-1.5 bg-teal-50 text-teal-600 hover:bg-teal-600 hover:text-white rounded-lg transition-all title='Approuver'">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                    </button>
+                    <button @click="validateRequest(item.dso_id, 'REJECTED')" 
+                        class="p-1.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-lg transition-all" title="Rejeter">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </template>
+                <button @click="deleteDemandes(item.dso_id)" class="p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                </button>
+            </div>
         </td>
     </tr>
 </tbody>
                     </table>
 
+                    <!-- Pagination Dynamique -->
                     <div class="px-8 py-5 flex flex-col items-center gap-2 bg-white border-t border-slate-100">
                         <div class="flex items-center gap-2">
-                            <button class="text-slate-400 hover:text-teal-600 font-bold">&lt;</button>
-                            <button
-                                class="w-8 h-8 bg-teal-600 text-white rounded flex items-center justify-center text-sm font-bold">1</button>
-                            <button class="text-slate-400 hover:text-teal-600 font-bold">&gt;</button>
+                            <Link v-for="(link, k) in props.withdrawRequests.links" :key="k" :href="link.url || '#'" v-html="link.label"
+                                class="px-3 py-1 text-sm rounded transition-all"
+                                :class="{'bg-teal-600 text-white font-bold': link.active, 'text-slate-400 hover:text-teal-600': !link.active && link.url, 'text-slate-300 cursor-not-allowed': !link.url}" />
                         </div>
-                        <span class="text-xs text-slate-500">1-3 Sur 3</span>
+                        <span class="text-xs text-slate-500">{{ props.withdrawRequests.from }}-{{ props.withdrawRequests.to }} sur {{ props.withdrawRequests.total }}</span>
                     </div>
                 </div>
             </main>
