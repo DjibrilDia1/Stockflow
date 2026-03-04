@@ -6,7 +6,7 @@ const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gestionnaire');
 
 const props = defineProps({
-    users: Array,
+    users: Object,
     services: Array,
 });
 
@@ -250,7 +250,7 @@ const logout = () => {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-50">
-                            <tr v-for="user in props.users" :key="user.id"
+                            <tr v-for="user in props.users.data" :key="user.id"
                                 class="hover:bg-slate-50/80 transition-colors">
                                 <td class="px-6 py-4">
                                     <div class="flex flex-col">
@@ -292,6 +292,16 @@ const logout = () => {
                             </tr>
                         </tbody>
                     </table>
+
+                    <!-- Pagination -->
+                    <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-col items-center gap-2">
+                        <div class="flex items-center gap-1">
+                            <Link v-for="(link, k) in props.users.links" :key="k" :href="link.url || '#'" v-html="link.label"
+                                class="px-3 py-1 text-sm rounded transition-all"
+                                :class="{'bg-teal-600 text-white font-bold': link.active, 'text-slate-400 hover:text-teal-600': !link.active && link.url, 'text-slate-300 cursor-not-allowed': !link.url}" />
+                        </div>
+                        <span class="text-xs text-slate-500">{{ props.users.from }}-{{ props.users.to }} sur {{ props.users.total }} utilisateurs</span>
+                    </div>
                 </div>
             </main>
         </div>
