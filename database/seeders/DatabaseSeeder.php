@@ -17,10 +17,10 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Moussa Fall',
-            'email' => 'moussa.fall@example.com',
-        ]);
+        // User::factory()->create([
+        //     'name' => 'Moussa Fall',
+        //     'email' => 'moussa.fall@example.com',
+        // ]);
 
         $this->call([
             CategorieSeeder::class,
@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             ServiceSeeder::class,
             ArticleSeeder::class,
             StockArticleSeeder::class,
+            MouvementStockSeeder::class,
         ]);
     }
 }

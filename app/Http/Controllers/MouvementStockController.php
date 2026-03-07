@@ -12,37 +12,27 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Validation\Rule; // Added this line
+use Illuminate\Validation\Rule;
 
 class MouvementStockController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Affiche la liste des mouvements de stock avec pagination.
      */
     public function index(): Response
     {
-        return Inertia::render('Gestionnaire/MouvementStocks/Index', [
-            'stockMovements' => MouvementStock::with(['item', 'warehouse', 'supplier', 'service', 'user'])->get(),
-        ]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create(): Response
-    {
-        return Inertia::render('Gestionnaire/MouvementStocks/Create', [
-            'items' => Article::all(['art_id', 'art_nom', 'art_reference']),
+        return Inertia::render('Gestionnaire/Mouvements', [
+            'stockMovements' => MouvementStock::with(['item', 'warehouse', 'supplier', 'service', 'user'])
+                ->latest('mvs_date_mouvement')
+                ->paginate(3),
+            'articles' => Article::all(['art_id', 'art_nom', 'art_reference']),
             'warehouses' => Entrepot::all(['ent_id', 'ent_nom']),
             'suppliers' => Fournisseur::all(['fou_id', 'fou_nom']),
-            'services' => Service::all(['ser_id', 'ser_nom']),
-            'users' => User::all(['id', 'name']),
-            'movementTypes' => ['IN', 'OUT', 'ADJUST', 'TRANSFER'],
         ]);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Enregistre un nouveau mouvement de stock.
      */
     public function store(Request $request)
     {
@@ -52,63 +42,64 @@ class MouvementStockController extends Controller
             'mvs_type' => 'required|in:IN,OUT,ADJUST,TRANSFER',
             'mvs_quantite' => 'required|integer|min:1',
             'mvs_motif' => 'nullable|string|max:255',
-            'mvs_fou_id' => 'nullable|exists:fournisseurs,fou_id',
-            'mvs_ser_id' => 'nullable|exists:services,ser_id',
-            'mvs_usr_id' => ['nullable', Rule::exists('users', 'id')],
-            'mvs_transfer_id' => ['nullable', Rule::exists('mouvements_stock', 'mvs_id')],
-            'mvs_piece_jointe_url' => 'nullable|url|max:255',
             'mvs_date_mouvement' => 'required|date',
+            'mvs_ent_dest_id' => 'required_if:mvs_type,TRANSFER|nullable|exists:entrepots,ent_id',
+            'mvs_fou_id' => 'nullable|exists:fournisseurs,fou_id',
         ]);
 
-        // Default user_id to current authenticated user if not provided
         if (!isset($validated['mvs_usr_id'])) {
             $validated['mvs_usr_id'] = $request->user()->id;
         }
 
-        MouvementStock::create($validated);
+        \Illuminate\Support\Facades\DB::transaction(function () use ($validated) {
+            // 1. Enregistrer le mouvement
+            $movement = MouvementStock::create($validated);
 
-        return Redirect::route('stock-movements.index');
+            // 2. Mettre à jour le stock dans l'entrepôt source
+            $stockSource = \App\Models\StockArticle::firstOrCreate(
+                ['sta_art_id' => $validated['mvs_art_id'], 'sta_ent_id' => $validated['mvs_ent_id']],
+                ['sta_quantite' => 0]
+            );
+
+            if ($validated['mvs_type'] === 'IN' || $validated['mvs_type'] === 'ADJUST') {
+                $stockSource->sta_quantite += $validated['mvs_quantite'];
+            } elseif ($validated['mvs_type'] === 'OUT' || $validated['mvs_type'] === 'TRANSFER') {
+                $stockSource->sta_quantite -= $validated['mvs_quantite'];
+            }
+            $stockSource->save();
+
+            // 3. Si c'est un transfert, ajouter dans l'entrepôt de destination
+            if ($validated['mvs_type'] === 'TRANSFER' && isset($validated['mvs_ent_dest_id'])) {
+                $stockDest = \App\Models\StockArticle::firstOrCreate(
+                    ['sta_art_id' => $validated['mvs_art_id'], 'sta_ent_id' => $validated['mvs_ent_dest_id']],
+                    ['sta_quantite' => 0]
+                );
+                $stockDest->sta_quantite += $validated['mvs_quantite'];
+                $stockDest->save();
+
+                // On crée un deuxième mouvement de type "IN" pour la destination
+                MouvementStock::create([
+                    'mvs_art_id' => $validated['mvs_art_id'],
+                    'mvs_ent_id' => $validated['mvs_ent_dest_id'],
+                    'mvs_type' => 'IN',
+                    'mvs_quantite' => $validated['mvs_quantite'],
+                    'mvs_motif' => "Transfert depuis l'entrepôt ID: " . $validated['mvs_ent_id'] . ". " . ($validated['mvs_motif'] ?? ''),
+                    'mvs_date_mouvement' => $validated['mvs_date_mouvement'],
+                    'mvs_usr_id' => $validated['mvs_usr_id'],
+                    'mvs_transfer_id' => $movement->mvs_id,
+                ]);
+            }
+        });
+
+        return Redirect::route('gestionnaire.mouvements.index')->with('success', 'Mouvement enregistré.');
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(MouvementStock $stockMovement): Response
-    {
-        $stockMovement->load(['item', 'warehouse', 'supplier', 'service', 'user']);
-        return Inertia::render('Gestionnaire/MouvementStocks/Show', [
-            'stockMovement' => $stockMovement,
-        ]);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     * Direct editing of MouvementStock records is not typically done.
-     */
-    public function edit(MouvementStock $stockMovement): Response
-    {
-        return Inertia::render('Gestionnaire/MouvementStocks/Edit', [
-            'stockMovement' => $stockMovement,
-            'message' => 'Direct editing of stock movements is not recommended. Movements are historical records.',
-        ]);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, MouvementStock $stockMovement)
-    {
-        // Direct updating of MouvementStock records is not typically done.
-        return Redirect::route('stock-movements.index')->with('error', 'Direct update of stock movement is not allowed.');
-    }
-
-    /**
-     * Remove the specified resource from storage.
+     * Supprime un mouvement de stock.
      */
     public function destroy(MouvementStock $stockMovement)
     {
-        // Direct deletion of MouvementStock records is not typically done.
-        return Redirect::route('stock-movements.index')->with('error', 'Direct deletion of stock movement is not allowed.');
+        $stockMovement->delete();
+        return Redirect::route('gestionnaire.mouvements.index')->with('success', 'Mouvement supprimé.');
     }
 }
-

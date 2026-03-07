@@ -5,26 +5,12 @@ import { Link, router, usePage } from '@inertiajs/vue3';
 const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gestionnaire');
 
-// Props reçues du contrôleur Laravel (exemple)
+// Props reçues du contrôleur Laravel
 const props = defineProps({
-    stats: {
-        type: Object,
-        default: () => ({
-            underThreshold: 2,
-            totalArticles: 350,
-            movements: 124,
-            stockValue: 100000
-        })
-    },
-    stockAlerts: {
-        type: Array,
-        default: () => [
-            { id: 1, product: 'Papier A4', location: 'Magazin central', current: 2, threshold: 10 },
-            { id: 2, product: 'Stylos Noirs', location: 'Central A', current: 5, threshold: 15 },
-            { id: 3, product: 'Cartouches', location: 'Bâtiment B', current: 1, threshold: 5 },
-            { id: 4, product: 'Nettoyage Surface', location: 'Magazin central', current: 3, threshold: 8 }
-        ]
-    }
+    stats: Object,
+    stockAlerts: Array,
+    recentMovements: Array,
+    topArticles: Array,
 });
 
 // État local
@@ -39,23 +25,18 @@ const navigation = [
     { name: 'Rapports', route: 'gestionnaire.rapports.index', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
     { name: 'Utilisateur', route: 'gestionnaire.utilisateurs.index', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
     { name: 'Services & Fournisseurs', route: 'gestionnaire.services-fournisseurs.index', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
-
-];
-
-const topArticles = [
-    { name: 'Feuilles A3', value: 85, },
-    { name: 'Stylos Bleus', value: 60 },
-    { name: 'Cahier Spirales', value: 45 },
-    { name: 'Grant Laser', value: 25 }
-];
-
-const recentMovements = [
-    { id: 1, date: '24/04/2024', article: 'Papier A4', type: 'OUT', quantity: -50, warehouse: 'Campus A', entrepot: 'Campus A', service: 'Service RH' },
-    { id: 2, date: '23/04/2024', article: 'Stylos Noirs', type: 'IN', quantity: 100, warehouse: 'Magasin central', entrepot: 'Magasin central', service: 'Achat fournisseur' },
-    { id: 3, date: '22/04/2024', article: 'Toner Laser', type: 'Adjust', quantity: -5, warehouse: 'Bâtiment B', entrepot: 'Bâtiment B', service: 'Correction stock' }
 ];
 
 // Méthodes
+const maxTopArticleValue = computed(() => {
+    if (!props.topArticles || props.topArticles.length === 0) return 1;
+    return Math.max(...props.topArticles.map(a => a.value));
+});
+
+const getBarWidth = (value) => {
+    return (value / maxTopArticleValue.value * 100) + '%';
+};
+
 const formatCurrency = (value) => {
     return new Intl.NumberFormat('fr-FR').format(value) + ' FCFA';
 };
@@ -233,31 +214,9 @@ const handleNewExit = () => {
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
-
-
-
-                    <div
-                        class="bg-white rounded-xl shadow-md border border-slate-100 flex flex-col h-full overflow-hidden">
-                        <div class="px-6 py-4 border-b border-slate-100">
-                            <h3 class="text-lg font-semibold text-slate-800">Alertes Stock</h3>
-                        </div>
-
-                        <div class="divide-y divide-slate-100 flex-1 flex flex-col">
-                            <div v-for="alert in stockAlerts" :key="alert.id"
-                                class="flex items-center justify-between px-6 py-4 hover:bg-slate-50 transition-colors flex-1">
-                                <div class="flex-1 min-w-0 pr-4">
-                                    <p class="text-sm font-bold text-slate-800 truncate">{{ alert.product }}</p>
-                                    <p class="text-xs text-slate-500 truncate">{{ alert.location }}</p>
-                                </div>
-                                <div class="flex-shrink-0">
-                                    <span
-                                        :class="['px-3 py-1.5 rounded-lg text-sm font-bold text-white min-w-[75px] inline-block text-center shadow-sm', getAlertBadgeClass(alert.current, alert.threshold)]">
-                                        {{ alert.current }} / {{ alert.threshold }}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
+                <div class="flex-1 py-4">
+                    <div class="h-8 bg-teal-600 rounded-r-sm transition-all duration-1000 ease-out shadow-sm group-hover:bg-teal-500"
+                        :style="{ width: getBarWidth(article.value) }">
                     </div>
 
                     <div class="bg-white rounded-xl shadow-md border border-slate-100 overflow-hidden flex flex-col">

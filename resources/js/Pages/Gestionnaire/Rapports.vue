@@ -166,21 +166,8 @@ const logout = () => {
                 <div class="flex justify-between items-center">
 
                     <div>
-
-                        <div v-if="activeView === 'kpi'" @click="activeView = 'grid'"
-                            class="flex items-center gap-2 text-teal-600 cursor-pointer hover:underline mb-2 text-sm font-medium">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 19l-7-7 7-7" />
-                            </svg>
-                            Retour aux rapports
-                        </div>
-                        <h2 class="text-2xl font-bold text-slate-800">
-                            {{ activeView === 'grid' ? 'Gérer vos rapports' : 'Tableau de bord KPI' }}
-                        </h2>
-                        <p class="text-slate-500 text-sm">
-                            {{ activeView === 'grid' ? `Analyser la consommation et l'état de vos stocks` : 'Indicateurs de performance en temps réel' }}
-                        </p>
+                        <h2 class="text-2xl font-bold text-slate-800">Gérer vos rapports</h2>
+                        <p class="text-slate-500 text-sm">Analyser la consommation et l’état de vos stocks</p>
                     </div>
 
                     <button v-if="activeView === 'grid'"
