@@ -5,6 +5,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\MouvementStockController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -61,9 +62,8 @@ Route::middleware(['auth', 'role:gestionnaire'])->prefix('gestionnaire')->name('
     Route::delete('/demandes/{withdrawRequest}', [\App\Http\Controllers\DemandeSortieController::class, 'destroy'])->name('demandes.destroy');
 
 
-    Route::get('/rapports', function () {
-        return Inertia::render('Gestionnaire/Rapports');
-    })->name('rapports.index');
+    Route::get('/rapports', [ReportController::class, 'index'])->name('rapports.index');
+    Route::get('/rapports/export', [ReportController::class, 'exportMovements'])->name('rapports.export');
 
     // Utilisateurs CRUD
     Route::get('/utilisateurs', [\App\Http\Controllers\UserController::class, 'index'])->name('utilisateurs.index');
@@ -80,8 +80,6 @@ Route::middleware(['auth', 'role:gestionnaire'])->prefix('gestionnaire')->name('
     Route::delete('/fournisseurs/{fournisseur}', [\App\Http\Controllers\ServiceFournisseurController::class, 'destroyFournisseur'])->name('fournisseurs.destroy');
 });
 
-
-
 // Groupe pour le rôle RESPONSABLE
 Route::middleware(['auth', 'role:responsable'])->prefix('responsable')->name('responsable.')->group(function () {
     Route::get('/dashboard', function () {
@@ -89,12 +87,9 @@ Route::middleware(['auth', 'role:responsable'])->prefix('responsable')->name('re
         return Inertia::render('Responsable/Dashboard');
     })->name('dashboard');
 
-     Route::get('/rapports', function () {
-        // Cette route rendra `resources/js/Pages/Responsable/Rapports.vue`
-        return Inertia::render('Responsable/Rapports');
-    })->name('rapports.index');
+    Route::get('/rapports', [ReportController::class, 'index'])->name('rapports.index');
+    Route::get('/rapports/export', [ReportController::class, 'exportMovements'])->name('rapports.export');
 });
-
 
 // Groupe pour le rôle DEMANDEUR
 Route::middleware(['auth', 'role:demandeur'])->prefix('demandeur')->name('demandeur.')->group(function () {
@@ -105,7 +100,6 @@ Route::middleware(['auth', 'role:demandeur'])->prefix('demandeur')->name('demand
 
     Route::get('/articles', [ArticleController::class, 'demandeurIndex'])->name('articles.index');
 });
-
 
 // Routes de profil générales
 Route::middleware('auth')->group(function () {

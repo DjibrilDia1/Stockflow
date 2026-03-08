@@ -1,13 +1,23 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch, computed } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 
 const showingNavigationDropdown = ref(false);
+
+const show = ref(true);
+const flash = computed(() => usePage().props.flash);
+
+watch(flash, () => {
+    show.value = true;
+    setTimeout(() => {
+        show.value = false;
+    }, 4000);
+}, { deep: true });
 </script>
 
 <template>
@@ -189,6 +199,15 @@ const showingNavigationDropdown = ref(false);
                     <slot name="header" />
                 </div>
             </header>
+
+            <div v-if="$page.props.flash.success && show" class="fixed top-20 right-5 z-50 rounded-md bg-green-600 px-6 py-4">
+                <p class="text-white font-semibold">{{ $page.props.flash.success }}</p>
+                <button @click="show = false" class="absolute top-2 right-2 text-white">&times;</button>
+            </div>
+            <div v-if="$page.props.flash.error && show" class="fixed top-20 right-5 z-50 rounded-md bg-red-600 px-6 py-4">
+                <p class="text-white font-semibold">{{ $page.props.flash.error }}</p>
+                <button @click="show = false" class="absolute top-2 right-2 text-white">&times;</button>
+            </div>
 
             <!-- Page Content -->
             <main>

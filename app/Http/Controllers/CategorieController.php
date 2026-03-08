@@ -12,9 +12,9 @@ use Inertia\Response;
 class CategorieController extends Controller
 {
     /**
-     * Affiche la liste de toutes les catégories.
+     * Affiche la liste de toutes les catï¿½gories.
      *
-     * @return Response La vue Inertia avec la liste des catégories.
+     * @return Response La vue Inertia avec la liste des catï¿½gories.
      */
     public function index(): Response
     {
@@ -24,9 +24,9 @@ class CategorieController extends Controller
     }
 
     /**
-     * Affiche le formulaire de création d'une nouvelle catégorie.
+     * Affiche le formulaire de crï¿½ation d'une nouvelle catï¿½gorie.
      *
-     * @return Response La vue Inertia pour créer une catégorie.
+     * @return Response La vue Inertia pour crï¿½er une catï¿½gorie.
      */
     public function create(): Response
     {
@@ -34,10 +34,10 @@ class CategorieController extends Controller
     }
 
     /**
-     * Enregistre une nouvelle catégorie dans la base de données.
+     * Enregistre une nouvelle catï¿½gorie dans la base de donnï¿½es.
      *
-     * @param  Request  $request Les données du formulaire de création.
-     * @return RedirectResponse Une redirection vers la liste des catégories.
+     * @param  Request  $request Les donnï¿½es du formulaire de crï¿½ation.
+     * @return RedirectResponse Une redirection vers la liste des catï¿½gories.
      */
     public function store(Request $request): RedirectResponse
     {
@@ -49,14 +49,14 @@ class CategorieController extends Controller
 
         Categorie::create($validated);
 
-        return Redirect::route('gestionnaire.articles.index');
+        return Redirect::route('gestionnaire.articles.index')->with('success', 'CatÃ©gorie crÃ©Ã©e avec succÃ¨s.');
     }
 
     /**
-     * Affiche les détails d'une catégorie spécifique.
+     * Affiche les dï¿½tails d'une catï¿½gorie spï¿½cifique.
      *
-     * @param  Categorie  $category Le modèle de la catégorie à afficher.
-     * @return Response La vue Inertia avec les détails de la catégorie.
+     * @param  Categorie  $category Le modï¿½le de la catï¿½gorie ï¿½ afficher.
+     * @return Response La vue Inertia avec les dï¿½tails de la catï¿½gorie.
      */
     public function show(Categorie $category): Response
     {
@@ -66,10 +66,10 @@ class CategorieController extends Controller
     }
 
     /**
-     * Affiche le formulaire de modification d'une catégorie existante.
+     * Affiche le formulaire de modification d'une catï¿½gorie existante.
      *
-     * @param  Categorie  $category Le modèle de la catégorie à modifier.
-     * @return Response La vue Inertia pour modifier la catégorie.
+     * @param  Categorie  $category Le modï¿½le de la catï¿½gorie ï¿½ modifier.
+     * @return Response La vue Inertia pour modifier la catï¿½gorie.
      */
     public function edit(Categorie $category): Response
     {
@@ -79,11 +79,11 @@ class CategorieController extends Controller
     }
 
     /**
-     * Met à jour une catégorie spécifique dans la base de données.
+     * Met ï¿½ jour une catï¿½gorie spï¿½cifique dans la base de donnï¿½es.
      *
-     * @param  Request  $request Les nouvelles données du formulaire.
-     * @param  Categorie  $category Le modèle de la catégorie à mettre à jour.
-     * @return RedirectResponse Une redirection vers la liste des catégories.
+     * @param  Request  $request Les nouvelles donnï¿½es du formulaire.
+     * @param  Categorie  $category Le modï¿½le de la catï¿½gorie ï¿½ mettre ï¿½ jour.
+     * @return RedirectResponse Une redirection vers la liste des catï¿½gories.
      */
     public function update(Request $request, Categorie $category): RedirectResponse
     {
@@ -95,22 +95,22 @@ class CategorieController extends Controller
 
         $category->update($validated);
 
-        return Redirect::route('gestionnaire.articles.index');
+        return Redirect::route('gestionnaire.articles.index')->with('success', 'CatÃ©gorie mise Ã  jour avec succÃ¨s.');
     }
 
     /**
-     * Supprime une catégorie spécifique de la base de données.
+     * Supprime une catï¿½gorie spï¿½cifique de la base de donnï¿½es.
      *
-     * @param  Categorie  $category Le modèle de la catégorie à supprimer.
-     * @return RedirectResponse Une redirection vers la liste des catégories.
+     * @param  Categorie  $category Le modï¿½le de la catï¿½gorie ï¿½ supprimer.
+     * @return RedirectResponse Une redirection vers la liste des catï¿½gories.
      */
     public function destroy(Categorie $category): RedirectResponse
     {
         try {
             $category->delete();
-            return Redirect::route('gestionnaire.articles.index')->with('success', 'Catégorie supprimée avec succès.');
+            return Redirect::route('gestionnaire.articles.index')->with('success', 'Catï¿½gorie supprimï¿½e avec succï¿½s.');
         } catch (\Exception $e) {
-            return Redirect::route('gestionnaire.articles.index')->with('error', 'Impossible de supprimer cette catégorie car elle contient des articles.');
+            return Redirect::route('gestionnaire.articles.index')->with('error', 'Impossible de supprimer cette catï¿½gorie car elle contient des articles.');
         }
     }
 }

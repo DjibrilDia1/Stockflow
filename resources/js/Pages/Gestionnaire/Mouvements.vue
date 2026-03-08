@@ -22,28 +22,7 @@ const movementForm = useForm({
     mvs_quantite: 1,
     mvs_motif: ''
 });
-const editingArticle = ref(null); // Ajouté : nécessaire pour l'édition
-const showEditModal = ref(false);
 
-const openEditModal = (entrepotItem) => {
-    // On crée une copie pour ne pas modifier le tableau en direct avant d'enregistrer
-    editingArticle.value = { ...entrepotItem };
-    showEditModal.value = true;
-};
-
-// Cette fonction enregistre les modifications dans le tableau simulé
-const updateEntrepot = () => {
-    // Trouve l'index de l'élément en cours de modification
-    const index = entrepot.value.findIndex(e => e.id === editingArticle.value.id);
-
-    // Si trouvé, on remplace l'ancien élément par le nouveau
-    if (index !== -1) {
-        entrepot.value[index] = { ...editingArticle.value };
-    }
-
-    // Ferme le modal
-    showEditModal.value = false;
-};
 
 const openModal = (type = 'IN') => {
     movementForm.clearErrors();
@@ -68,66 +47,21 @@ const addMouvement = () => {
 };
 
 
-const addEntrepot = () => {
-    // Vérification minimale pour éviter les entrées vides
-    if (!newEntrepot.value.nom) return;
-
-    const entrepotToAdd = {
-        id: Date.now(),
-        nom: newEntrepot.value.nom,
-        date: new Date().toLocaleDateString('fr-FR'), // Date auto à la création
-    };
-
-    entrepot.value.push(entrepotToAdd);
-
-    // Réinitialisation et fermeture
-    showAddEntrepotModal.value = false;
-    newEntrepot.value = {
-        nom: '',
-        date: ''
-    };
-};
-
 const deleteMouvement = (id) => {
     if (confirm('Êtes-vous sûr de vouloir supprimer ce mouvement ? Cette action est irréversible.')) {
         router.delete(route('gestionnaire.mouvements.destroy', id));
     }
 };
 
-// Suppression pour les entrepôts (Nouvelle fonction)
-const deleteEntrepot = (id) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cet entrepôt ?')) {
-        entrepot.value = entrepot.value.filter(e => e.id !== id);
-    }
-};
-
-
-
 
 const navigation = [
-
-
     { name: 'Tableau de bord', route: 'gestionnaire.dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-
-
     { name: 'Articles', route: 'gestionnaire.articles.index', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
-
-
     { name: 'Mouvements', route: 'gestionnaire.mouvements.index', icon: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' },
-
-
     { name: 'Demandes', route: 'gestionnaire.demandes.index', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
-
-
     { name: 'Rapports', route: 'gestionnaire.rapports.index', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
-
-
     { name: 'Utilisateur', route: 'gestionnaire.utilisateurs.index', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
-
-
-    { name: 'Services & Fournitures', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
-
-
+    { name: 'Services & Fournisseurs', route: 'gestionnaire.services-fournisseurs.index', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
 ];
 
 
@@ -183,7 +117,9 @@ const logout = () => {
                 <h1 class="text-2xl font-bold tracking-tight text-white">
                     <span class="text-blue-400">Stock</span><span class="text-teal-400">Flow</span>
                 </h1>
+                <p class="text-xs text-slate-300 mt-2">Espace Gestionnaire</p>
             </div>
+
             <nav class="px-3 py-6 space-y-1.5 flex-1">
                 <Link v-for="item in navigation" :key="item.name" :href="route(item.route)" :class="[
                     route().current(item.route)
@@ -306,8 +242,7 @@ const logout = () => {
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-semibold text-slate-700 mb-1">
-                                            {{ movementForm.mvs_type === 'TRANSFER' ? 'Entrepôt Source' : 'Entrepôt / Lieu' }}
-                                        </label>
+                                            {{ movementForm.mvs_type === 'TRANSFER' ? 'Entrepôt Source' : 'Entrepôt / Lieu' }}</label>
                                         <select v-model="movementForm.mvs_ent_id"
                                             class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none text-sm"
                                             :class="{ 'border-red-500': movementForm.errors.mvs_ent_id }">
@@ -491,108 +426,28 @@ const logout = () => {
                                     </tr>
                                 </tbody>
                             </table>
-                            <div class="px-8 py-5 flex flex-col items-center gap-2 bg-white border-t border-slate-100">
-                                <div class="flex items-center gap-2">
-                                    <button class="text-slate-400 hover:text-teal-600 font-bold">&lt;</button>
-                                    <button
-                                        class="w-8 h-8 bg-teal-600 text-white rounded flex items-center justify-center text-sm font-bold">1</button>
-                                    <button class="text-slate-400 hover:text-teal-600 font-bold">&gt;</button>
-                                </div>
-                                <span class="text-xs text-slate-500">1-3 Sur 3</span>
-                            </div>
                         </div>
                     </div>
 
-                    <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-col items-center gap-3">
-                        <div class="px-8 py-5 flex flex-col items-center gap-2 bg-white border-t border-slate-100">
-                            <div class="flex items-center gap-2">
-                                <Link v-for="(link, k) in props.stockMovements.links" :key="k" :href="link.url || '#'"
-                                    v-html="link.label"
-                                    class="px-3 py-1 text-sm rounded flex items-center justify-center transition-all"
-                                    :class="{
-                                        'bg-teal-600 text-white font-bold': link.active,
-                                        'text-slate-400 hover:text-teal-600': !link.active && link.url,
-                                        'text-slate-300 cursor-not-allowed': !link.url
-                                    }" />
-                            </div>
-                            <span class="text-xs text-slate-500">
-                                {{ props.stockMovements.from }}-{{ props.stockMovements.to }} sur {{
-                                    props.stockMovements.total }}
-                            </span>
+                    <div v-if="props.stockMovements.links && props.stockMovements.links.length > 3"
+                        class="px-6 py-4 bg-white border-t border-slate-100 flex flex-col items-center gap-2">
+                        <div class="flex items-center gap-2">
+                            <Link v-for="(link, k) in props.stockMovements.links" :key="k" :href="link.url || '#'"
+                                v-html="link.label"
+                                class="px-3 py-1 text-sm rounded flex items-center justify-center transition-all"
+                                :class="{
+                                    'bg-teal-600 text-white font-bold': link.active,
+                                    'text-slate-400 hover:text-teal-600': !link.active && link.url,
+                                    'text-slate-300 cursor-not-allowed': !link.url
+                                }" />
                         </div>
-                        <span class="text-xs text-slate-500 font-medium">1-3 Sur 3</span>
+                        <span class="text-xs text-slate-500">
+                            {{ props.stockMovements.from }}-{{ props.stockMovements.to }} sur {{
+                                props.stockMovements.total }}
+                        </span>
                     </div>
                 </div>
-                <Teleport to="body">
-                    <div v-if="showEditModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showEditModal = false">
-                        </div>
-                        <div
-                            class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
-                            <div
-                                class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                                <h3 class="text-lg font-bold text-slate-800">Modifier l'entrepôt</h3>
-                                <button @click="showEditModal = false"
-                                    class="text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
-                            </div>
-                            <form @submit.prevent="updateEntrepot" class="p-6 space-y-4">
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-1">Nom de
-                                        l'entrepôt</label>
-                                    <input v-model="editingArticle.nom" type="text" required
-                                        class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
-                                </div>
-                                <div class="flex gap-2">
-                                    <button type="button" @click="showEditModal = false"
-                                        class="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-semibold hover:bg-slate-50 transition-colors">
-                                        Annuler
-                                    </button>
-                                    <button type="submit"
-                                        class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700">
-                                        Enregistrer
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                    <div v-if="showAddEntrepotModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
-                            @click="showAddEntrepotModal = false"></div>
 
-                        <div
-                            class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
-
-                            <div
-                                class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                                <h3 class="text-lg font-bold text-slate-800">Ajouter un nouvel entrepôt</h3>
-                                <button @click="showAddEntrepotModal = false"
-                                    class="text-slate-400 hover:text-slate-600 text-2xl transition-colors">&times;</button>
-                            </div>
-
-                            <form @submit.prevent="addEntrepot" class="p-6 space-y-4">
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-1">
-                                        Nom de l'entrepôt
-                                    </label>
-                                    <input v-model="newEntrepot.nom" type="text"
-                                        placeholder="Ex: Entrepôt Principal, Campus A..." required
-                                        class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-all">
-                                </div>
-
-                                <div class="flex gap-3 pt-2">
-                                    <button type="button" @click="showAddEntrepotModal = false"
-                                        class="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-semibold hover:bg-slate-50 transition-colors">
-                                        Annuler
-                                    </button>
-                                    <button type="submit"
-                                        class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition-colors shadow-md">
-                                        Créer l'entrepôt
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </Teleport>
             </main>
         </div>
     </div>

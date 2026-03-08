@@ -168,21 +168,14 @@ const logout = () => {
 
                     <div class="space-y-4">
                         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-                            <<<<<<< HEAD <h3 class="text-base font-semibold text-slate-800">Acces rapide</h3>
-                                <Link :href="route('demandeur.demandes.index')"
-                                    class="text-sm text-slate-500 mt-1 block hover:text-teal-600 transition-colors cursor-pointer">
-                                    Créer rapidement une nouvelle demande de retrait.
-                                </Link>
-                                =======
-                                <h3 class="text-base font-semibold text-slate-800">Actions rapides</h3>
-                                <p class="text-sm text-slate-500 mt-1">
-                                    Besoin d'un article ? Créez une demande en quelques clics.
-                                </p>
-                                >>>>>>> fbc3247d5e81a96e28f6c406cd4d9f3dbdbbe7e0
-                                <Link :href="route('demandeur.demandes.index')"
-                                    class="inline-flex items-center justify-center mt-4 w-full px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold rounded-lg transition-all shadow-lg hover:shadow-teal-200">
-                                    <span class="mr-2 text-lg">+</span> Faire une demande
-                                </Link>
+                            <h3 class="text-base font-semibold text-slate-800">Actions rapides</h3>
+                            <p class="text-sm text-slate-500 mt-1">
+                                Besoin d'un article ? Créez une demande en quelques clics.
+                            </p>
+                            <Link :href="route('demandeur.demandes.index')"
+                                class="inline-flex items-center justify-center mt-4 w-full px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold rounded-lg transition-all shadow-lg hover:shadow-teal-200">
+                                <span class="mr-2 text-lg">+</span> Faire une demande
+                            </Link>
                         </div>
 
                         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">

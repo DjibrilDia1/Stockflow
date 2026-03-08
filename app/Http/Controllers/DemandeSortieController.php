@@ -112,7 +112,7 @@ class DemandeSortieController extends Controller
             'lds_note' => $validated['motif'],
         ]);
 
-        return Redirect::route('demandeur.demandes.index');
+        return Redirect::route('demandeur.demandes.index')->with('success', 'Demande de sortie créée avec succès.');
     }
 
     /**
@@ -182,7 +182,7 @@ class DemandeSortieController extends Controller
 
         DemandeSortie::create($validated);
 
-        return Redirect::route('gestionnaire.demandes.index');
+        return Redirect::route('gestionnaire.demandes.index')->with('success', 'Demande de sortie créée avec succès.');
     }
 
     /**
@@ -222,7 +222,7 @@ class DemandeSortieController extends Controller
 
         $withdrawRequest->update($validated);
 
-        return Redirect::route('gestionnaire.demandes.index');
+        return Redirect::route('gestionnaire.demandes.index')->with('success', 'Demande de sortie mise à jour avec succès.');
     }
 
     /**
@@ -232,6 +232,6 @@ class DemandeSortieController extends Controller
     {
         $withdrawRequest->delete();
 
-        return Redirect::route('gestionnaire.demandes.index');
+        return Redirect::route('gestionnaire.demandes.index')->with('success', 'Demande de sortie supprimée avec succès.');
     }
 }

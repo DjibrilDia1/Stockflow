@@ -14,7 +14,7 @@ class ArticleController extends Controller
 {
     /**
      * Affiche la liste de tous les articles.
-     * Les catégories associées sont pré-chargées pour optimiser les performances.
+     * Les catï¿½gories associï¿½es sont prï¿½-chargï¿½es pour optimiser les performances.
      *
      * @return Response La vue Inertia avec la liste des articles.
      */
@@ -71,10 +71,10 @@ class ArticleController extends Controller
     }
 
     /**
-     * Affiche le formulaire de création d'un nouvel article.
-     * Fournit la liste des catégories pour le formulaire de sélection.
+     * Affiche le formulaire de crï¿½ation d'un nouvel article.
+     * Fournit la liste des catï¿½gories pour le formulaire de sï¿½lection.
      *
-     * @return Response La vue Inertia pour créer un article.
+     * @return Response La vue Inertia pour crï¿½er un article.
      */
     public function create(): Response
     {
@@ -84,9 +84,9 @@ class ArticleController extends Controller
     }
 
     /**
-     * Enregistre un nouvel article dans la base de données.
+     * Enregistre un nouvel article dans la base de donnï¿½es.
      *
-     * @param  Request  $request Les données du formulaire de création.
+     * @param  Request  $request Les donnï¿½es du formulaire de crï¿½ation.
      * @return RedirectResponse Une redirection vers la liste des articles.
      */
     public function store(Request $request): RedirectResponse
@@ -103,18 +103,18 @@ class ArticleController extends Controller
 
         Article::create($validated);
 
-        return Redirect::route('gestionnaire.articles.index');
+        return Redirect::route('gestionnaire.articles.index')->with('success', 'Article crÃ©Ã© avec succÃ¨s.');
     }
 
     /**
-     * Affiche les détails d'un article spécifique.
+     * Affiche les dï¿½tails d'un article spï¿½cifique.
      *
-     * @param  Article  $item Le modèle de l'article à afficher.
-     * @return Response La vue Inertia avec les détails de l'article.
+     * @param  Article  $item Le modï¿½le de l'article ï¿½ afficher.
+     * @return Response La vue Inertia avec les dï¿½tails de l'article.
      */
     public function show(Article $item): Response
     {
-        // Pré-charge la catégorie pour l'affichage
+        // Prï¿½-charge la catï¿½gorie pour l'affichage
         $item->load('category');
         return Inertia::render('Gestionnaire/Articles/Show', [
             'item' => $item,
@@ -124,7 +124,7 @@ class ArticleController extends Controller
     /**
      * Affiche le formulaire de modification d'un article existant.
      *
-     * @param  Article  $item Le modèle de l'article à modifier.
+     * @param  Article  $item Le modï¿½le de l'article ï¿½ modifier.
      * @return Response La vue Inertia pour modifier l'article.
      */
     public function edit(Article $item): Response
@@ -136,10 +136,10 @@ class ArticleController extends Controller
     }
 
     /**
-     * Met à jour un article spécifique dans la base de données.
+     * Met ï¿½ jour un article spï¿½cifique dans la base de donnï¿½es.
      *
-     * @param  Request  $request Les nouvelles données du formulaire.
-     * @param  Article  $item Le modèle de l'article à mettre à jour.
+     * @param  Request  $request Les nouvelles donnï¿½es du formulaire.
+     * @param  Article  $item Le modï¿½le de l'article ï¿½ mettre ï¿½ jour.
      * @return RedirectResponse Une redirection vers la liste des articles.
      */
     public function update(Request $request, Article $item): RedirectResponse
@@ -156,22 +156,22 @@ class ArticleController extends Controller
 
         $item->update($validated);
 
-        return Redirect::route('gestionnaire.articles.index');
+        return Redirect::route('gestionnaire.articles.index')->with('success', 'Article mis Ã  jour avec succÃ¨s.');
     }
 
     /**
-     * Supprime un article spécifique de la base de données.
+     * Supprime un article spï¿½cifique de la base de donnï¿½es.
      *
-     * @param  Article  $item Le modèle de l'article à supprimer.
+     * @param  Article  $item Le modï¿½le de l'article ï¿½ supprimer.
      * @return RedirectResponse Une redirection vers la liste des articles.
      */
     public function destroy(Article $item): RedirectResponse
     {
         try {
             $item->delete();
-            return Redirect::route('gestionnaire.articles.index')->with('success', 'Article supprimé avec succès.');
+            return Redirect::route('gestionnaire.articles.index')->with('success', 'Article supprimï¿½ avec succï¿½s.');
         } catch (\Exception $e) {
-            return Redirect::route('gestionnaire.articles.index')->with('error', 'Impossible de supprimer cet article car il est lié à des mouvements de stock ou des demandes.');
+            return Redirect::route('gestionnaire.articles.index')->with('error', 'Impossible de supprimer cet article car il est liï¿½ ï¿½ des mouvements de stock ou des demandes.');
         }
     }
 }
