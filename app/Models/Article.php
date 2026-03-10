@@ -78,4 +78,6 @@ class Article extends Model
     {
         return $this->hasMany(LigneDemandeSortie::class, 'lds_art_id', 'art_id');
     }
+
+
 }

@@ -14,7 +14,7 @@ class ArticleController extends Controller
 {
     /**
      * Affiche la liste de tous les articles.
-     * Les cat�gories associ�es sont pr�-charg�es pour optimiser les performances.
+     * Les categories associees sont pre-chargees pour optimiser les performances.
      *
      * @return Response La vue Inertia avec la liste des articles.
      */
@@ -71,10 +71,10 @@ class ArticleController extends Controller
     }
 
     /**
-     * Affiche le formulaire de cr�ation d'un nouvel article.
-     * Fournit la liste des cat�gories pour le formulaire de s�lection.
+     * Affiche le formulaire de creation d'un nouvel article.
+     * Fournit la liste des categories pour le formulaire de selection.
      *
-     * @return Response La vue Inertia pour cr�er un article.
+     * @return Response La vue Inertia pour creer un article.
      */
     public function create(): Response
     {
@@ -84,9 +84,9 @@ class ArticleController extends Controller
     }
 
     /**
-     * Enregistre un nouvel article dans la base de donn�es.
+     * Enregistre un nouvel article dans la base de donnees.
      *
-     * @param  Request  $request Les donn�es du formulaire de cr�ation.
+     * @param  Request  $request Les donnees du formulaire de creation.
      * @return RedirectResponse Une redirection vers la liste des articles.
      */
     public function store(Request $request): RedirectResponse
@@ -107,14 +107,14 @@ class ArticleController extends Controller
     }
 
     /**
-     * Affiche les d�tails d'un article sp�cifique.
+     * Affiche les details d'un article specifique.
      *
-     * @param  Article  $item Le mod�le de l'article � afficher.
-     * @return Response La vue Inertia avec les d�tails de l'article.
+     * @param  Article  $item Le modele de l'article e afficher.
+     * @return Response La vue Inertia avec les details de l'article.
      */
     public function show(Article $item): Response
     {
-        // Pr�-charge la cat�gorie pour l'affichage
+        // Pre-charge la categorie pour l'affichage
         $item->load('category');
         return Inertia::render('Gestionnaire/Articles/Show', [
             'item' => $item,
@@ -124,7 +124,7 @@ class ArticleController extends Controller
     /**
      * Affiche le formulaire de modification d'un article existant.
      *
-     * @param  Article  $item Le mod�le de l'article � modifier.
+     * @param  Article  $item Le modele de l'article e modifier.
      * @return Response La vue Inertia pour modifier l'article.
      */
     public function edit(Article $item): Response
@@ -136,10 +136,10 @@ class ArticleController extends Controller
     }
 
     /**
-     * Met � jour un article sp�cifique dans la base de donn�es.
+     * Met e jour un article specifique dans la base de donnees.
      *
-     * @param  Request  $request Les nouvelles donn�es du formulaire.
-     * @param  Article  $item Le mod�le de l'article � mettre � jour.
+     * @param  Request  $request Les nouvelles donnees du formulaire.
+     * @param  Article  $item Le modele de l'article e mettre e jour.
      * @return RedirectResponse Une redirection vers la liste des articles.
      */
     public function update(Request $request, Article $item): RedirectResponse
@@ -160,18 +160,18 @@ class ArticleController extends Controller
     }
 
     /**
-     * Supprime un article sp�cifique de la base de donn�es.
+     * Supprime un article specifique de la base de donnees.
      *
-     * @param  Article  $item Le mod�le de l'article � supprimer.
+     * @param  Article  $item Le modele de l'article e supprimer.
      * @return RedirectResponse Une redirection vers la liste des articles.
      */
     public function destroy(Article $item): RedirectResponse
     {
         try {
             $item->delete();
-            return Redirect::route('gestionnaire.articles.index')->with('success', 'Article supprim� avec succ�s.');
+            return Redirect::route('gestionnaire.articles.index')->with('success', 'Article supprime avec succes.');
         } catch (\Exception $e) {
-            return Redirect::route('gestionnaire.articles.index')->with('error', 'Impossible de supprimer cet article car il est li� � des mouvements de stock ou des demandes.');
+            return Redirect::route('gestionnaire.articles.index')->with('error', 'Impossible de supprimer cet article car il est lie e des mouvements de stock ou des demandes.');
         }
     }
 }
