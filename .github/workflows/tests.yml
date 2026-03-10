@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php: [8.2, 8.3, 8.4]
+        php: [8.3, 8.4]   # ← 8.2 retiré (incompatible avec le composer.lock)
 
     name: PHP ${{ matrix.php }}
 
@@ -25,48 +25,31 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # PHP
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, gd
           coverage: none
 
-      # Node (IMPORTANT)
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      # Composer
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-interaction --no-progress
 
-      # NPM
       - name: Install NPM dependencies
         run: npm install
 
       - name: Build frontend assets
         run: npm run build
 
-      # Laravel setup
       - name: Prepare Laravel Application
         run: |
           cp .env.example .env
           php artisan key:generate
 
-      # Tests
-      - name: Run tests
-        run: php artisan test
-      
-      - name: Build frontend assets
-        run: npm run build
-      
-      - name: Prepare Laravel Application
-        run: |
-          cp .env.example .env
-          php artisan key:generate
-          
       - name: Run tests
         run: php artisan test
