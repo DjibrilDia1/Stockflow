@@ -1,55 +1,47 @@
 <script setup>
-import { ref } from 'vue';
-import { Link, router } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
+import { Link, router, usePage } from '@inertiajs/vue3';
+
+const page = usePage();
+const showDetailModal = ref(false);
+const selectedDetail = ref('');
 
 
+const openDetail = (detail) => {
+    selectedDetail.value = detail;
+    showDetailModal.value = true;
+};
+const userName = computed(() => page.props.auth?.user?.name ?? 'Gestionnaire');
+
+
+const props = defineProps({
+    withdrawRequests: Object,
+});
 
 const showAddDemandeModal = ref(false);
 
-const newDemande = ref({
-    ref: '', // Génère une ref simple
-    demandeur: 'Entrée',
-    entrepot: '',
-    date: new Date().toISOString().substr(0, 10), // Date du jour par défaut
-    statut: 'Brouillon',
-    detail: ''
-});
-
-const addDemande = () => {
-    const demandeToAdd = {
-        ...newDemande.value,
-        id: Date.now(),
-        // On définit la classe selon le statut par défaut
-        statutClass: 'bg-amber-100 text-amber-600'
-    };
-
-    demandes.value.push(demandeToAdd);
-
-    // Fermeture et reset
-    showAddDemandeModal.value = false;
-    newDemande.value = {
-        ref: 'DREQ-' + Math.floor(Math.random() * 1000),
-        demandeur: 'Entrée',
-        entrepot: '',
-        date: new Date().toISOString().substr(0, 10),
-        statut: 'Brouillon',
-        detail: ''
-    };
-};
-
 const deleteDemandes = (id) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce mouvement ? Cette action est irréversible.')) {
-        mouvements.value = mouvements.value.filter(mvt => mvt.id !== id);
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette demande ? Cette action est irréversible.')) {
+        router.delete(route('gestionnaire.demandes.destroy', id));
     }
 };
 
-// Données fictives
-const demandes = ref([
-    { id: 1, ref: 'DREQ-001', demandeur: 'Entrée', entrepot: 'Fournitures', date: '3/04/2024', statut: 'Brouillon', statutClass: 'bg-amber-100 text-amber-600', detail: '' },
-    { id: 2, ref: 'DREQ-002', demandeur: 'Transfert', entrepot: 'Fournitures', date: '13/04/2024', statut: 'Validée', statutClass: 'bg-teal-600 text-white', detail: '+ Stylos noirs x 20' },
-    { id: 3, ref: 'DREQ-003', demandeur: 'Ajustement', entrepot: 'Mobilier', date: '15/04/2024', statut: 'Servie', statutClass: 'bg-emerald-500 text-white', detail: '+ Cartouches d’encre x 10' },
-    { id: 4, ref: 'DREQ-004', demandeur: 'Sortie', entrepot: 'Mobilier', date: '15/04/2024', statut: 'Rejetée', statutClass: 'bg-red-500 text-white', detail: '+ Besoin non justifiée' },
-]);
+const validateRequest = (id, status) => {
+    const action = status === 'APPROVED' ? 'approuver' : 'rejeter';
+    if (confirm(`Voulez-vous vraiment ${action} cette demande ?`)) {
+        router.post(route('gestionnaire.demandes.validate', id), {
+            status: status
+        });
+    }
+};
+
+const getStatusClass = (status) => {
+    if (status === 'DRAFT') return 'bg-amber-100 text-amber-600';
+    if (status === 'APPROVED') return 'bg-teal-600 text-white';
+    if (status === 'FULFILLED') return 'bg-emerald-500 text-white';
+    if (status === 'REJECTED') return 'bg-red-500 text-white';
+    return 'bg-slate-100 text-slate-600';
+};
 
 const navigation = [
     { name: 'Tableau de bord', route: 'gestionnaire.dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
@@ -58,7 +50,7 @@ const navigation = [
     { name: 'Demandes', route: 'gestionnaire.demandes.index', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
     { name: 'Rapports', route: 'gestionnaire.rapports.index', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
     { name: 'Utilisateur', route: 'gestionnaire.utilisateurs.index', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
-    { name: 'Services & Fournitures', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
+    { name: 'Services & Fournisseurs', route: 'gestionnaire.services-fournisseurs.index', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
 
 ];
 
@@ -86,6 +78,7 @@ const logout = () => {
                 <h1 class="text-2xl font-bold tracking-tight text-white">
                     <span class="text-blue-400">Stock</span><span class="text-teal-400">Flow</span>
                 </h1>
+                <p class="text-xs text-slate-300 mt-2">Espace Gestionnaire</p>
             </div>
 
             <nav class="px-3 py-6 space-y-1.5 flex-1 overflow-y-auto">
@@ -119,16 +112,18 @@ const logout = () => {
             <header
                 class="bg-white border-b border-slate-200 sticky top-0 z-10 px-8 py-4 flex items-center justify-between">
                 <div class="flex items-center gap-4 text-slate-500">
-                    <Link :href="route('gestionnaire.dashboard')" class="text-slate-400 hover:text-teal-600 transition-colors">
+                    <Link :href="route('gestionnaire.mouvements.index')"
+                        class="text-slate-400 hover:text-teal-600 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                         </svg>
                     </Link>
                     <span class="font-medium">Demandes</span>
                 </div>
-                <div class="flex items-center gap-2 text-slate-700">
-                    <span class="text-sm font-medium">Gestionnaire de compte</span>
-                    <div class="w-9 h-9 bg-slate-100 rounded-full flex items-center justify-center">
+                <div class="flex items-center gap-2 text-slate-700 hover:text-teal-600 cursor-pointer group">
+                    <div class="text-sm font-medium text-slate-700">{{ userName }}</div>
+                    <div
+                        class="w-9 h-9 flex items-center justify-center bg-slate-100 rounded-full group-hover:bg-teal-50 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -257,61 +252,132 @@ const logout = () => {
                     <table class="w-full text-left">
                         <thead>
                             <tr class="bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-wider">
-                                <th class="px-6 py-4">Reference</th>
-                                <th class="px-6 py-4 text-center">Type</th>
-                                <th class="px-6 py-4 text-center">Entrepot</th>
+                                <th class="px-6 py-4">ID</th>
+                                <th class="px-6 py-4">Service / Demandeur</th>
+                                <th class="px-6 py-4">Articles</th>
+                                <th class="px-6 py-4">Quantité</th>
                                 <th class="px-6 py-4">Date</th>
                                 <th class="px-6 py-4">Statut</th>
                                 <th class="px-6 py-4 text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
-                            <tr v-for="item in demandes" :key="item.id"
+                            <tr v-for="item in props.withdrawRequests.data" :key="item.dso_id"
                                 class="hover:bg-slate-50 transition-colors group">
-                                <td class="px-6 py-5 text-sm font-medium text-blue-500 underline cursor-pointer">{{
-                                    item.ref }}</td>
+                                <td class="px-6 py-5 text-sm font-medium text-blue-500 underline cursor-pointer">#{{
+                                    item.dso_id }}</td>
+
                                 <td class="px-6 py-5">
-                                    <span :class="getTypeClass(item.demandeur)">
-                                        {{ item.demandeur }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-5 text-sm font-bold text-slate-700 text-center">{{ item.entrepot }}
-                                </td>
-                                <td class="px-6 py-5 text-sm text-slate-500">{{ item.date }}</td>
-                                <td class="px-6 py-5">
-                                    <div class="flex items-center gap-3">
-                                        <span
-                                            :class="['px-4 py-1.5 rounded-md text-xs font-bold block min-w-[100px] text-center', item.statutClass]">
-                                            {{ item.statut }}
-                                        </span>
-                                        <span v-if="item.detail" class="text-xs text-teal-600 font-semibold italic">{{
-                                            item.detail }}</span>
+                                    <div class="text-sm font-bold text-slate-700">{{ item.service?.ser_nom || 'Sans Service' }}</div>
+                                    <div class="text-xs text-slate-500">Demandeur: {{ item.requester?.name || 'N/A' }}
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 text-center">
-                                    <button @click="deleteDemandes(item.id)"
-                                        class="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition-colors"
-                                        title="Supprimer la demande">
-                                        <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
+
+                                <td class="px-6 py-5 text-sm text-slate-600">
+                                    <div v-for="line in item.lines" :key="line.lds_id">
+                                        • {{ line.item?.art_nom || 'Article inconnu' }}
+                                    </div>
+                                </td>
+
+                                <td class="px-6 py-5 text-sm text-slate-600">
+                                    <div v-for="line in item.lines" :key="line.lds_id">
+                                        {{ line.lds_qte_demandee }}
+                                    </div>
+                                </td>
+
+                                <td class="px-6 py-5 text-sm text-slate-500">{{ new Date(item.dso_created_at ||
+                                    Date.now()).toLocaleDateString('fr-FR') }}</td>
+
+                                <td class="px-6 py-5">
+                                    <span
+                                        :class="['px-3 py-1.5 rounded-md text-[10px] font-bold block min-w-[90px] text-center', getStatusClass(item.dso_statut)]">
+                                        {{ item.dso_statut }}
+                                    </span>
+                                </td>
+
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <template v-if="item.dso_statut === 'DRAFT'">
+                                            <button @click="validateRequest(item.dso_id, 'APPROVED')"
+                                                class="p-1.5 bg-teal-50 text-teal-600 hover:bg-teal-600 hover:text-white rounded-lg transition-all title='Approuver'">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            </button>
+                                            <button @click="validateRequest(item.dso_id, 'REJECTED')"
+                                                class="p-1.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-lg transition-all"
+                                                title="Rejeter">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                        </template>
+                                        <button @click="deleteDemandes(item.dso_id)"
+                                            class="p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
 
+                    <!-- Pagination Dynamique -->
                     <div class="px-8 py-5 flex flex-col items-center gap-2 bg-white border-t border-slate-100">
                         <div class="flex items-center gap-2">
-                            <button class="text-slate-400 hover:text-teal-600 font-bold">&lt;</button>
-                            <button
-                                class="w-8 h-8 bg-teal-600 text-white rounded flex items-center justify-center text-sm font-bold">1</button>
-                            <button class="text-slate-400 hover:text-teal-600 font-bold">&gt;</button>
+                            <Link v-for="(link, k) in props.withdrawRequests.links" :key="k" :href="link.url || '#'"
+                                v-html="link.label" class="px-3 py-1 text-sm rounded transition-all"
+                                :class="{ 'bg-teal-600 text-white font-bold': link.active, 'text-slate-400 hover:text-teal-600': !link.active && link.url, 'text-slate-300 cursor-not-allowed': !link.url }" />
                         </div>
-                        <span class="text-xs text-slate-500">1-3 Sur 3</span>
+                        <span class="text-xs text-slate-500">{{ props.withdrawRequests.from }}-{{
+                            props.withdrawRequests.to }} sur {{
+                                props.withdrawRequests.total }}</span>
                     </div>
+                </div>
+                <div v-if="showDetailModal" class="fixed inset-0 z-[110] flex items-center justify-center p-4">
+                    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" @click="showDetailModal = false">
+                    </div>
+
+                    <Teleport to="body">
+                        <div v-if="showDetailModal" class="fixed inset-0 z-[999] flex items-center justify-center p-4">
+                            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+                                @click="showDetailModal = false"></div>
+
+                            <div
+                                class="relative bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
+                                <div
+                                    class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-teal-50">
+                                    <h3 class="text-sm font-bold text-teal-800 uppercase tracking-wider">
+                                        Détails de l'article
+                                    </h3>
+                                    <button @click="showDetailModal = false"
+                                        class="text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
+                                </div>
+
+                                <div class="p-6">
+                                    <div class="max-h-[60vh] overflow-y-auto pr-2">
+                                        <p class="text-slate-700 whitespace-pre-line leading-relaxed break-words">
+                                            {{ selectedDetail }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="p-4 bg-slate-50 border-t border-slate-100 text-right">
+                                    <button @click="showDetailModal = false"
+                                        class="px-4 py-2 bg-slate-800 text-white text-sm rounded-lg font-semibold hover:bg-slate-700 transition-colors">
+                                        Fermer
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </Teleport>
                 </div>
             </main>
         </div>

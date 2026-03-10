@@ -1,67 +1,58 @@
 <script setup>
 import { ref } from 'vue';
-import { Link, router } from '@inertiajs/vue3';
+import { Link, router, useForm } from '@inertiajs/vue3';
 
+
+const props = defineProps({
+    stockMovements: Object,
+    articles: Array,
+    warehouses: Array,
+    suppliers: Array,
+});
 
 const showAddMouvementModal = ref(false);
 
-const newMouvement = ref({
-    date: '',
-    type: '',
-    article: '',
-    warehouse: '',
-    quantity: 1,
-    reason: ''
+const movementForm = useForm({
+    mvs_date_mouvement: new Date().toISOString().slice(0, 10),
+    mvs_type: 'IN',
+    mvs_art_id: '',
+    mvs_ent_id: '',
+    mvs_ent_dest_id: '', // Pour les transferts
+    mvs_fou_id: '', // Pour les entrées
+    mvs_quantite: 1,
+    mvs_motif: ''
 });
 
-const openModal = (type = 'Entrée') => {
-    // On réinitialise l'objet avec la date du jour et le type choisi
-    newMouvement.value = {
-        date: '',
-        type: type,
-        article: '',
-        warehouse: '',
-        quantity: type === 'Sortie' || type === 'Ajustement' ? -1 : 1, // Optionnel : quantité négative auto
-        reason: ''
-    };
+
+const openModal = (type = 'IN') => {
+    movementForm.clearErrors();
+    movementForm.mvs_date_mouvement = new Date().toISOString().slice(0, 10);
+    movementForm.mvs_type = type;
+    movementForm.mvs_art_id = '';
+    movementForm.mvs_ent_id = '';
+    movementForm.mvs_ent_dest_id = '';
+    movementForm.mvs_quantite = 1;
+    movementForm.mvs_motif = '';
     showAddMouvementModal.value = true;
 };
+
 // --- ACTION D'AJOUT ---
 const addMouvement = () => {
-    // Simulation d'ajout local
-    const mvtToAdd = {
-        ...newMouvement.value,
-        id: Date.now(),
-    };
-
-    mouvements.value.push(mvtToAdd);
-
-    // Réinitialisation et fermeture
-    showAddMouvementModal.value = false;
-    newMouvement.value = {
-        date: new Date().toLocaleDateString('fr-FR'),
-        type: 'Entrée',
-        article: '',
-        warehouse: '',
-        quantity: 1,
-        reason: ''
-    };
+    movementForm.post(route('gestionnaire.mouvements.store'), {
+        onSuccess: () => {
+            showAddMouvementModal.value = false;
+            movementForm.reset();
+        }
+    });
 };
+
 
 const deleteMouvement = (id) => {
     if (confirm('Êtes-vous sûr de vouloir supprimer ce mouvement ? Cette action est irréversible.')) {
-        mouvements.value = mouvements.value.filter(mvt => mvt.id !== id);
+        router.delete(route('gestionnaire.mouvements.destroy', id));
     }
 };
 
-
-// Simulation des données de mouvements
-const mouvements = ref([
-    { id: 1, date: '30/04/2024', type: 'Entrée', article: 'Papier A4', warehouse: 'Magasin central', quantity: 200, reason: 'Réapprovisionnement', typeClass: 'bg-emerald-100 text-emerald-700' },
-    { id: 2, date: '30/04/2024', type: 'Transfert', article: 'Stylos Noirs', warehouse: 'Campus A', quantity: 10, reason: 'Besoin urgent', typeClass: 'bg-blue-100 text-blue-700' },
-    { id: 3, date: '30/04/2024', type: 'Ajustement', article: 'Chaise de bureau', warehouse: 'Bâtiment B', quantity: -2, reason: 'Casse/Endommagé', typeClass: 'bg-orange-50 text-orange-700 rounded-lg font-semibold hover:bg-orange-100' },
-    { id: 4, date: '30/04/2024', type: 'Sortie', article: 'Chaise de bureau', warehouse: 'Bâtiment B', quantity: -2, reason: 'Casse/Endommagé', typeClass: 'bg-red-100 text-red-700' },
-]);
 
 const navigation = [
     { name: 'Tableau de bord', route: 'gestionnaire.dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
@@ -70,23 +61,52 @@ const navigation = [
     { name: 'Demandes', route: 'gestionnaire.demandes.index', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
     { name: 'Rapports', route: 'gestionnaire.rapports.index', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
     { name: 'Utilisateur', route: 'gestionnaire.utilisateurs.index', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
-    { name: 'Services & Fournitures', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
-
+    { name: 'Services & Fournisseurs', route: 'gestionnaire.services-fournisseurs.index', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
 ];
 
+
+
+
+
 const getTypeClass = (type) => {
+
+
     const baseClass = "px-3 py-1.5 rounded-md text-xs font-bold uppercase block text-center mx-auto max-w-[120px] border";
 
-    if (type === 'Entrée') return `${baseClass} bg-teal-50 text-teal-700 border-teal-100`;
-    if (type === 'Transfert') return `${baseClass} bg-blue-50 text-blue-700 border-blue-100`;
-    if (type === 'Ajustement') return `${baseClass} bg-orange-50 text-orange-700 border-orange-100`;
-    if (type === 'Sortie') return `${baseClass} bg-red-50 text-red-700 border-red-100`;
+
+
+
+
+    if (type === 'IN') return `${baseClass} bg-teal-50 text-teal-700 border-teal-100`;
+
+
+    if (type === 'TRANSFER') return `${baseClass} bg-blue-50 text-blue-700 border-blue-100`;
+
+
+    if (type === 'ADJUST') return `${baseClass} bg-orange-50 text-orange-700 border-orange-100`;
+
+
+    if (type === 'OUT') return `${baseClass} bg-red-50 text-red-700 border-red-100`;
+
+
+
+
 
     return `${baseClass} bg-slate-100 text-slate-600 border-slate-200`;
+
+
 };
 
+
+
+
+
 const logout = () => {
+
+
     if (confirm('Déconnexion ?')) router.post(route('logout'));
+
+
 };
 </script>
 
@@ -97,12 +117,12 @@ const logout = () => {
                 <h1 class="text-2xl font-bold tracking-tight text-white">
                     <span class="text-blue-400">Stock</span><span class="text-teal-400">Flow</span>
                 </h1>
+                <p class="text-xs text-slate-300 mt-2">Espace Gestionnaire</p>
             </div>
 
             <nav class="px-3 py-6 space-y-1.5 flex-1">
-                <Link v-for="item in navigation" :key="item.name" :href="item.route ? route(item.route) : '#'" :class="[
-                    /* On vérifie si la route actuelle correspond à l'item */
-                    item.route && route().current(item.route)
+                <Link v-for="item in navigation" :key="item.name" :href="route(item.route)" :class="[
+                    route().current(item.route)
                         ? 'bg-teal-600 text-white shadow-lg'
                         : 'text-slate-300 hover:bg-slate-700 hover:text-white',
                     'group flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg transition-all'
@@ -116,7 +136,7 @@ const logout = () => {
 
             <div class="p-4 border-t border-slate-700/50">
                 <button @click="logout"
-                    class="w-full flex px-4 py-2.5 text-sm font-medium text-slate-400 hover:bg-red-500/10 hover:text-red-400 rounded-lg transition-all group">
+                    class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-400 hover:bg-red-500/10 hover:text-red-400 rounded-lg transition-all group">
                     <svg class="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none"
                         stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -128,8 +148,7 @@ const logout = () => {
         </aside>
 
         <div class="ml-52 flex-1">
-            <header
-                class="bg-white border-b border-slate-200 sticky top-0 z-10 px-8 py-4 flex justify-between">
+            <header class="bg-white border-b border-slate-200 sticky top-0 z-10 px-8 py-4 flex justify-between">
                 <div class="flex items-center gap-4 text-slate-500">
                     <Link :href="route('gestionnaire.dashboard')" class="hover:text-teal-600 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -164,6 +183,7 @@ const logout = () => {
                         Nouveau mouvement
                     </button>
 
+
                     <div v-if="showAddMouvementModal"
                         class="fixed inset-0 z-[100] flex items-center justify-center p-4">
                         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
@@ -182,50 +202,103 @@ const logout = () => {
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-semibold text-slate-700 mb-1">Date</label>
-                                        <input v-model="newMouvement.date" type="text" placeholder="JJ/MM/AAAA" required
-                                            class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                                        <input v-model="movementForm.mvs_date_mouvement" type="date"
+                                            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+                                            :class="{ 'border-red-500': movementForm.errors.mvs_date_mouvement }">
+                                        <div v-if="movementForm.errors.mvs_date_mouvement"
+                                            class="text-red-500 text-xs mt-1">{{ movementForm.errors.mvs_date_mouvement
+                                            }}</div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-semibold text-slate-700 mb-1">Type de
                                             mouvement</label>
-                                        <select v-model="newMouvement.type"
-                                            class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none text-sm">
-                                            <option value="Entrée">Entrée</option>
-                                            <option value="Sortie">Sortie</option>
-                                            <option value="Transfert">Transfert</option>
-                                            <option value="Ajustement">Ajustement</option>
+                                        <select v-model="movementForm.mvs_type"
+                                            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none text-sm"
+                                            :class="{ 'border-red-500': movementForm.errors.mvs_type }">
+                                            <option value="IN">Entrée</option>
+                                            <option value="OUT">Sortie</option>
+                                            <option value="TRANSFER">Transfert</option>
+                                            <option value="ADJUST">Ajustement</option>
                                         </select>
+                                        <div v-if="movementForm.errors.mvs_type" class="text-red-500 text-xs mt-1">{{
+                                            movementForm.errors.mvs_type }}</div>
                                     </div>
                                 </div>
 
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-700 mb-1">Article</label>
-                                    <input v-model="newMouvement.article" type="text" placeholder="Nom de l'article"
-                                        required
-                                        class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                                    <select v-model="movementForm.mvs_art_id"
+                                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none text-sm"
+                                        :class="{ 'border-red-500': movementForm.errors.mvs_art_id }">
+                                        <option value="" disabled>Sélectionner un article</option>
+                                        <option v-for="art in articles" :key="art.art_id" :value="art.art_id">
+                                            {{ art.art_nom }} ({{ art.art_reference }})
+                                        </option>
+                                    </select>
+                                    <div v-if="movementForm.errors.mvs_art_id" class="text-red-500 text-xs mt-1">{{
+                                        movementForm.errors.mvs_art_id }}</div>
                                 </div>
 
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-sm font-semibold text-slate-700 mb-1">Entrepôt /
-                                            Lieu</label>
-                                        <input v-model="newMouvement.warehouse" type="text"
-                                            placeholder="Destination/Source" required
-                                            class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                                        <label class="block text-sm font-semibold text-slate-700 mb-1">
+                                            {{ movementForm.mvs_type === 'TRANSFER' ? 'Entrepôt Source' : 'Entrepôt / Lieu' }}</label>
+                                        <select v-model="movementForm.mvs_ent_id"
+                                            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none text-sm"
+                                            :class="{ 'border-red-500': movementForm.errors.mvs_ent_id }">
+                                            <option value="" disabled>Sélectionner</option>
+                                            <option v-for="ent in warehouses" :key="ent.ent_id" :value="ent.ent_id">
+                                                {{ ent.ent_nom }}
+                                            </option>
+                                        </select>
+                                        <div v-if="movementForm.errors.mvs_ent_id" class="text-red-500 text-xs mt-1">{{
+                                            movementForm.errors.mvs_ent_id }}</div>
+                                    </div>
+                                    <div v-if="movementForm.mvs_type === 'TRANSFER'">
+                                        <label class="block text-sm font-semibold text-slate-700 mb-1">Entrepôt
+                                            Destination</label>
+                                        <select v-model="movementForm.mvs_ent_dest_id"
+                                            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none text-sm"
+                                            :class="{ 'border-red-500': movementForm.errors.mvs_ent_dest_id }">
+                                            <option value="" disabled>Sélectionner</option>
+                                            <option v-for="ent in warehouses" :key="ent.ent_id" :value="ent.ent_id">
+                                                {{ ent.ent_nom }}
+                                            </option>
+                                        </select>
+                                        <div v-if="movementForm.errors.mvs_ent_dest_id"
+                                            class="text-red-500 text-xs mt-1">{{ movementForm.errors.mvs_ent_dest_id }}
+                                        </div>
+                                    </div>
+                                    <div v-if="movementForm.mvs_type === 'IN'">
+                                        <label class="block text-sm font-semibold text-slate-700 mb-1">Fournisseur
+                                            (Optionnel)</label>
+                                        <select v-model="movementForm.mvs_fou_id"
+                                            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none text-sm">
+                                            <option value="">Aucun</option>
+                                            <option v-for="fou in suppliers" :key="fou.fou_id" :value="fou.fou_id">
+                                                {{ fou.fou_nom }}
+                                            </option>
+                                        </select>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-semibold text-slate-700 mb-1">Quantité</label>
-                                        <input v-model.number="newMouvement.quantity" type="number" required
-                                            class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                                        <input v-model.number="movementForm.mvs_quantite" type="number"
+                                            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+                                            :class="{ 'border-red-500': movementForm.errors.mvs_quantite }">
+                                        <div v-if="movementForm.errors.mvs_quantite" class="text-red-500 text-xs mt-1">
+                                            {{ movementForm.errors.mvs_quantite }}</div>
                                     </div>
                                 </div>
 
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-700 mb-1">Motif /
                                         Raison</label>
-                                    <textarea v-model="newMouvement.reason" rows="2"
+                                    <textarea v-model="movementForm.mvs_motif" rows="2"
                                         placeholder="Ex: Réapprovisionnement mensuel"
-                                        class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none text-sm"></textarea>
+                                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500 outline-none text-sm"
+                                        :class="{ 'border-red-500': movementForm.errors.mvs_motif }"></textarea>
+                                    <div v-if="movementForm.errors.mvs_motif" class="text-red-500 text-xs mt-1">{{
+                                        movementForm.errors.mvs_motif }}</div>
                                 </div>
 
                                 <div class="pt-4 flex gap-3">
@@ -234,8 +307,9 @@ const logout = () => {
                                         Annuler
                                     </button>
                                     <button type="submit"
-                                        class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition-colors shadow-md">
-                                        Confirmer le mouvement
+                                        class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition-colors shadow-md"
+                                        :disabled="movementForm.processing">
+                                        {{ movementForm.processing ? 'Traitement...' : 'Confirmer le mouvement' }}
                                     </button>
                                 </div>
                             </form>
@@ -278,22 +352,22 @@ const logout = () => {
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <button @click="openModal('Entrée')"
+                    <button @click="openModal('IN')"
                         class="flex items-center justify-center gap-2 p-3 bg-teal-50 text-teal-700 rounded-lg font-semibold hover:bg-teal-100 transition-colors border border-teal-100">
                         <span class="text-xl">+</span> Entrée
                     </button>
 
-                    <button @click="openModal('Sortie')"
+                    <button @click="openModal('OUT')"
                         class="flex items-center justify-center gap-2 p-3 bg-red-50 text-red-700 rounded-lg font-semibold hover:bg-red-100 transition-colors border border-red-100">
                         <span class="text-xl">-</span> Sortie
                     </button>
 
-                    <button @click="openModal('Ajustement')"
+                    <button @click="openModal('ADJUST')"
                         class="flex items-center justify-center gap-2 p-3 bg-orange-50 text-orange-700 rounded-lg font-semibold hover:bg-orange-100 transition-colors border border-orange-100">
                         <span class="text-sm">⚠️</span> Ajustement
                     </button>
 
-                    <button @click="openModal('Transfert')"
+                    <button @click="openModal('TRANSFER')"
                         class="flex items-center justify-center gap-2 p-3 bg-blue-50 text-blue-700 rounded-lg font-semibold hover:bg-blue-100 transition-colors border border-blue-100">
                         <span class="text-sm">🔄</span> Transfert
                     </button>
@@ -316,25 +390,29 @@ const logout = () => {
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
-                                    <tr v-for="mvt in mouvements" :key="mvt.id"
+                                    <tr v-for="movement in props.stockMovements.data" :key="movement.mvs_id"
                                         class="hover:bg-slate-50 transition-colors">
-                                        <td class="px-6 py-4 text-sm text-slate-600">{{ mvt.date }}</td>
+                                        <td class="px-6 py-4 text-sm text-slate-600">{{ new
+                                            Date(movement.mvs_date_mouvement).toLocaleDateString('fr-FR') }}</td>
 
                                         <td class="px-6 py-4">
-                                            <span :class="getTypeClass(mvt.type)">
-                                                {{ mvt.type }}
+                                            <span :class="getTypeClass(movement.mvs_type)">
+                                                {{ movement.mvs_type }}
                                             </span>
                                         </td>
 
-                                        <td class="px-6 py-4 text-sm font-medium text-slate-700">{{ mvt.article }}</td>
-                                        <td class="px-6 py-4 text-sm text-slate-500">{{ mvt.warehouse }}</td>
+                                        <td class="px-6 py-4 text-sm font-medium text-slate-700">{{ movement.item ?
+                                            movement.item.art_nom : 'N/A' }}</td>
+                                        <td class="px-6 py-4 text-sm text-slate-500">{{ movement.warehouse ?
+                                            movement.warehouse.ent_nom : 'N/A' }}</td>
                                         <td class="px-6 py-4 text-sm font-bold"
-                                            :class="mvt.quantity > 0 ? 'text-emerald-600' : 'text-red-600'">
-                                            {{ mvt.quantity > 0 ? '+' : '' }}{{ mvt.quantity }}
+                                            :class="movement.mvs_quantite > 0 ? 'text-emerald-600' : 'text-red-600'">
+                                            {{ movement.mvs_quantite > 0 ? '+' : '' }}{{ movement.mvs_quantite }}
                                         </td>
-                                        <td class="px-6 py-4 text-sm text-slate-500 italic">{{ mvt.reason }}</td>
+                                        <td class="px-6 py-4 text-sm text-slate-500 italic">{{ movement.mvs_motif }}
+                                        </td>
                                         <td class="px-6 py-4 text-center">
-                                            <button @click="deleteMouvement(mvt.id)"
+                                            <button @click="deleteMouvement(movement.mvs_id)"
                                                 class="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition-colors"
                                                 title="Supprimer le mouvement">
                                                 <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor"
@@ -351,18 +429,25 @@ const logout = () => {
                         </div>
                     </div>
 
-                    <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-col items-center gap-3">
-                        <div class="px-8 py-5 flex flex-col items-center gap-2 bg-white border-t border-slate-100">
-                            <div class="flex items-center gap-2">
-                                <button class="text-slate-400 hover:text-teal-600 font-bold">&lt;</button>
-                                <button
-                                    class="w-8 h-8 bg-teal-600 text-white rounded flex items-center justify-center text-sm font-bold">1</button>
-                                <button class="text-slate-400 hover:text-teal-600 font-bold">&gt;</button>
-                            </div>
-                            <span class="text-xs text-slate-500">1-3 Sur 3</span>
+                    <div v-if="props.stockMovements.links && props.stockMovements.links.length > 3"
+                        class="px-6 py-4 bg-white border-t border-slate-100 flex flex-col items-center gap-2">
+                        <div class="flex items-center gap-2">
+                            <Link v-for="(link, k) in props.stockMovements.links" :key="k" :href="link.url || '#'"
+                                v-html="link.label"
+                                class="px-3 py-1 text-sm rounded flex items-center justify-center transition-all"
+                                :class="{
+                                    'bg-teal-600 text-white font-bold': link.active,
+                                    'text-slate-400 hover:text-teal-600': !link.active && link.url,
+                                    'text-slate-300 cursor-not-allowed': !link.url
+                                }" />
                         </div>
+                        <span class="text-xs text-slate-500">
+                            {{ props.stockMovements.from }}-{{ props.stockMovements.to }} sur {{
+                                props.stockMovements.total }}
+                        </span>
                     </div>
                 </div>
+
             </main>
         </div>
     </div>

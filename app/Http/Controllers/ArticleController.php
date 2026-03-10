@@ -14,22 +14,67 @@ class ArticleController extends Controller
 {
     /**
      * Affiche la liste de tous les articles.
-     * Les catÃ©gories associÃ©es sont prÃ©-chargÃ©es pour optimiser les performances.
+     * Les categories associees sont pre-chargees pour optimiser les performances.
      *
      * @return Response La vue Inertia avec la liste des articles.
      */
     public function index(): Response
     {
-        return Inertia::render('Gestionnaire/Articles/Index', [
-            'items' => Article::with('category')->get(),
+        return Inertia::render('Gestionnaire/Articles', [
+            'items' => Article::with(['category', 'itemStocks.warehouse'])->paginate(3, ['*'], 'items'),
+            'categories_all' => Categorie::all(['cat_id', 'cat_nom']),
+            'categories' => Categorie::paginate(3, ['*'], 'categories'),
+            'warehouses' => \App\Models\Entrepot::all(['ent_id', 'ent_nom']),
         ]);
     }
 
     /**
-     * Affiche le formulaire de crÃ©ation d'un nouvel article.
-     * Fournit la liste des catÃ©gories pour le formulaire de sÃ©lection.
+     * Affiche la liste des articles pour les demandeurs.
+     */
+    public function demandeurIndex(): Response
+    {
+        return Inertia::render('Demandeur/Articles', [
+            'articles' => Article::with(['category', 'itemStocks.warehouse'])->get()->map(function($article) {
+                return [
+                    'id' => $article->art_id,
+                    'code' => $article->art_reference,
+                    'name' => $article->art_nom,
+                    'category' => $article->category->cat_nom ?? 'N/A',
+                    'stock' => $article->total_stock,
+                    'status' => $article->total_stock > $article->art_seuil_alerte ? 'Disponible' : ($article->total_stock > 0 ? 'Stock bas' : 'Rupture'),
+                    'warehouses' => $article->itemStocks->map(function($stock) {
+                        return [
+                            'id' => $stock->sta_ent_id,
+                            'name' => $stock->warehouse->ent_nom ?? 'N/A',
+                            'qty' => $stock->sta_quantite,
+                        ];
+                    }),
+                ];
+            }),
+            'categories' => Categorie::all(['cat_id', 'cat_nom']),
+            'articlesDisponibles' => Article::with(['itemStocks.warehouse'])
+                ->get()
+                ->map(function($article) {
+                    return [
+                        'id' => $article->art_id,
+                        'nom' => $article->art_nom,
+                        'warehouses' => $article->itemStocks->map(function($stock) {
+                            return [
+                                'id' => $stock->sta_ent_id,
+                                'name' => $stock->warehouse->ent_nom ?? 'N/A',
+                                'qty' => $stock->sta_quantite,
+                            ];
+                        })->values()
+                    ];
+                }),
+        ]);
+    }
+
+    /**
+     * Affiche le formulaire de creation d'un nouvel article.
+     * Fournit la liste des categories pour le formulaire de selection.
      *
-     * @return Response La vue Inertia pour crÃ©er un article.
+     * @return Response La vue Inertia pour creer un article.
      */
     public function create(): Response
     {
@@ -39,17 +84,17 @@ class ArticleController extends Controller
     }
 
     /**
-     * Enregistre un nouvel article dans la base de donnÃ©es.
+     * Enregistre un nouvel article dans la base de donnees.
      *
-     * @param  Request  $request Les donnÃ©es du formulaire de crÃ©ation.
+     * @param  Request  $request Les donnees du formulaire de creation.
      * @return RedirectResponse Une redirection vers la liste des articles.
      */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'art_reference' => 'required|string|max:255|unique:articles,art_reference',
-            'art_nom' => 'required|string|max:255',
-            'art_unite' => 'required|string|max:255',
+            'art_reference' => 'required|string|max:255|unique:articles,art_reference|regex:/^(?![0-9]+$).+$/',
+            'art_nom' => 'required|string|max:255|regex:/^(?![0-9]+$).+$/',
+            'art_unite' => 'required|string|max:255|regex:/^[^0-9]+$/',
             'art_cat_id' => 'required|integer|exists:categories,cat_id',
             'art_seuil_alerte' => 'nullable|integer|min:0',
             'art_stock_securite' => 'nullable|integer|min:0',
@@ -58,18 +103,18 @@ class ArticleController extends Controller
 
         Article::create($validated);
 
-        return Redirect::route('items.index');
+        return Redirect::route('gestionnaire.articles.index')->with('success', 'Article créé avec succès.');
     }
 
     /**
-     * Affiche les dÃ©tails d'un article spÃ©cifique.
+     * Affiche les details d'un article specifique.
      *
-     * @param  Article  $item Le modÃ¨le de l'article Ã  afficher.
-     * @return Response La vue Inertia avec les dÃ©tails de l'article.
+     * @param  Article  $item Le modele de l'article e afficher.
+     * @return Response La vue Inertia avec les details de l'article.
      */
     public function show(Article $item): Response
     {
-        // PrÃ©-charge la catÃ©gorie pour l'affichage
+        // Pre-charge la categorie pour l'affichage
         $item->load('category');
         return Inertia::render('Gestionnaire/Articles/Show', [
             'item' => $item,
@@ -79,7 +124,7 @@ class ArticleController extends Controller
     /**
      * Affiche le formulaire de modification d'un article existant.
      *
-     * @param  Article  $item Le modÃ¨le de l'article Ã  modifier.
+     * @param  Article  $item Le modele de l'article e modifier.
      * @return Response La vue Inertia pour modifier l'article.
      */
     public function edit(Article $item): Response
@@ -91,18 +136,18 @@ class ArticleController extends Controller
     }
 
     /**
-     * Met Ã  jour un article spÃ©cifique dans la base de donnÃ©es.
+     * Met e jour un article specifique dans la base de donnees.
      *
-     * @param  Request  $request Les nouvelles donnÃ©es du formulaire.
-     * @param  Article  $item Le modÃ¨le de l'article Ã  mettre Ã  jour.
+     * @param  Request  $request Les nouvelles donnees du formulaire.
+     * @param  Article  $item Le modele de l'article e mettre e jour.
      * @return RedirectResponse Une redirection vers la liste des articles.
      */
     public function update(Request $request, Article $item): RedirectResponse
     {
         $validated = $request->validate([
-            'art_reference' => 'required|string|max:255|unique:articles,art_reference,' . $item->getKey() . ',art_id',
-            'art_nom' => 'required|string|max:255',
-            'art_unite' => 'required|string|max:255',
+            'art_reference' => 'required|string|max:255|regex:/^(?![0-9]+$).+$/|unique:articles,art_reference,' . $item->getKey() . ',art_id',
+            'art_nom' => 'required|string|max:255|regex:/^(?![0-9]+$).+$/',
+            'art_unite' => 'required|string|max:255|regex:/^[^0-9]+$/',
             'art_cat_id' => 'required|integer|exists:categories,cat_id',
             'art_seuil_alerte' => 'nullable|integer|min:0',
             'art_stock_securite' => 'nullable|integer|min:0',
@@ -111,20 +156,22 @@ class ArticleController extends Controller
 
         $item->update($validated);
 
-        return Redirect::route('items.index');
+        return Redirect::route('gestionnaire.articles.index')->with('success', 'Article mis à jour avec succès.');
     }
 
     /**
-     * Supprime un article spÃ©cifique de la base de donnÃ©es.
+     * Supprime un article specifique de la base de donnees.
      *
-     * @param  Article  $item Le modÃ¨le de l'article Ã  supprimer.
+     * @param  Article  $item Le modele de l'article e supprimer.
      * @return RedirectResponse Une redirection vers la liste des articles.
      */
     public function destroy(Article $item): RedirectResponse
     {
-        $item->delete();
-
-        return Redirect::route('items.index');
+        try {
+            $item->delete();
+            return Redirect::route('gestionnaire.articles.index')->with('success', 'Article supprime avec succes.');
+        } catch (\Exception $e) {
+            return Redirect::route('gestionnaire.articles.index')->with('error', 'Impossible de supprimer cet article car il est lie e des mouvements de stock ou des demandes.');
+        }
     }
 }
-

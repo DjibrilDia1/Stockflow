@@ -12,9 +12,9 @@ use Inertia\Response;
 class CategorieController extends Controller
 {
     /**
-     * Affiche la liste de toutes les catÃ©gories.
+     * Affiche la liste de toutes les cat�gories.
      *
-     * @return Response La vue Inertia avec la liste des catÃ©gories.
+     * @return Response La vue Inertia avec la liste des cat�gories.
      */
     public function index(): Response
     {
@@ -24,9 +24,9 @@ class CategorieController extends Controller
     }
 
     /**
-     * Affiche le formulaire de crÃ©ation d'une nouvelle catÃ©gorie.
+     * Affiche le formulaire de cr�ation d'une nouvelle cat�gorie.
      *
-     * @return Response La vue Inertia pour crÃ©er une catÃ©gorie.
+     * @return Response La vue Inertia pour cr�er une cat�gorie.
      */
     public function create(): Response
     {
@@ -34,10 +34,10 @@ class CategorieController extends Controller
     }
 
     /**
-     * Enregistre une nouvelle catÃ©gorie dans la base de donnÃ©es.
+     * Enregistre une nouvelle cat�gorie dans la base de donn�es.
      *
-     * @param  Request  $request Les donnÃ©es du formulaire de crÃ©ation.
-     * @return RedirectResponse Une redirection vers la liste des catÃ©gories.
+     * @param  Request  $request Les donn�es du formulaire de cr�ation.
+     * @return RedirectResponse Une redirection vers la liste des cat�gories.
      */
     public function store(Request $request): RedirectResponse
     {
@@ -49,14 +49,14 @@ class CategorieController extends Controller
 
         Categorie::create($validated);
 
-        return Redirect::route('categories.index');
+        return Redirect::route('gestionnaire.articles.index')->with('success', 'Catégorie créée avec succès.');
     }
 
     /**
-     * Affiche les dÃ©tails d'une catÃ©gorie spÃ©cifique.
+     * Affiche les d�tails d'une cat�gorie sp�cifique.
      *
-     * @param  Categorie  $category Le modÃ¨le de la catÃ©gorie Ã  afficher.
-     * @return Response La vue Inertia avec les dÃ©tails de la catÃ©gorie.
+     * @param  Categorie  $category Le mod�le de la cat�gorie � afficher.
+     * @return Response La vue Inertia avec les d�tails de la cat�gorie.
      */
     public function show(Categorie $category): Response
     {
@@ -66,10 +66,10 @@ class CategorieController extends Controller
     }
 
     /**
-     * Affiche le formulaire de modification d'une catÃ©gorie existante.
+     * Affiche le formulaire de modification d'une cat�gorie existante.
      *
-     * @param  Categorie  $category Le modÃ¨le de la catÃ©gorie Ã  modifier.
-     * @return Response La vue Inertia pour modifier la catÃ©gorie.
+     * @param  Categorie  $category Le mod�le de la cat�gorie � modifier.
+     * @return Response La vue Inertia pour modifier la cat�gorie.
      */
     public function edit(Categorie $category): Response
     {
@@ -79,11 +79,11 @@ class CategorieController extends Controller
     }
 
     /**
-     * Met Ã  jour une catÃ©gorie spÃ©cifique dans la base de donnÃ©es.
+     * Met � jour une cat�gorie sp�cifique dans la base de donn�es.
      *
-     * @param  Request  $request Les nouvelles donnÃ©es du formulaire.
-     * @param  Categorie  $category Le modÃ¨le de la catÃ©gorie Ã  mettre Ã  jour.
-     * @return RedirectResponse Une redirection vers la liste des catÃ©gories.
+     * @param  Request  $request Les nouvelles donn�es du formulaire.
+     * @param  Categorie  $category Le mod�le de la cat�gorie � mettre � jour.
+     * @return RedirectResponse Une redirection vers la liste des cat�gories.
      */
     public function update(Request $request, Categorie $category): RedirectResponse
     {
@@ -95,20 +95,22 @@ class CategorieController extends Controller
 
         $category->update($validated);
 
-        return Redirect::route('categories.index');
+        return Redirect::route('gestionnaire.articles.index')->with('success', 'Catégorie mise à jour avec succès.');
     }
 
     /**
-     * Supprime une catÃ©gorie spÃ©cifique de la base de donnÃ©es.
+     * Supprime une cat�gorie sp�cifique de la base de donn�es.
      *
-     * @param  Categorie  $category Le modÃ¨le de la catÃ©gorie Ã  supprimer.
-     * @return RedirectResponse Une redirection vers la liste des catÃ©gories.
+     * @param  Categorie  $category Le mod�le de la cat�gorie � supprimer.
+     * @return RedirectResponse Une redirection vers la liste des cat�gories.
      */
     public function destroy(Categorie $category): RedirectResponse
     {
-        $category->delete();
-
-        return Redirect::route('categories.index');
+        try {
+            $category->delete();
+            return Redirect::route('gestionnaire.articles.index')->with('success', 'Cat�gorie supprim�e avec succ�s.');
+        } catch (\Exception $e) {
+            return Redirect::route('gestionnaire.articles.index')->with('error', 'Impossible de supprimer cette cat�gorie car elle contient des articles.');
+        }
     }
 }
-

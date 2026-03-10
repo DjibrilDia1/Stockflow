@@ -24,7 +24,16 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'ser_id',
     ];
+
+    /**
+     * Get the service that the user belongs to.
+     */
+    public function service(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Service::class, 'ser_id', 'ser_id');
+    }
 
     /**
      * The attributes that should be hidden for serialization.

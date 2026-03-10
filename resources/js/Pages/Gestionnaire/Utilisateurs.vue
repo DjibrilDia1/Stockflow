@@ -1,75 +1,74 @@
 <script setup>
-import { ref } from 'vue';
-import { Link, router } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
+import { Link, router, usePage, useForm } from '@inertiajs/vue3';
+
+const page = usePage();
+const userName = computed(() => page.props.auth?.user?.name ?? 'Gestionnaire');
+
+const props = defineProps({
+    users: Object,
+    services: Array,
+});
 
 const showAddUserModal = ref(false);
 const isEditing = ref(false);
-const currentUserId = ref(null);
 
-const newUser = ref({
-    nom: '',
+const userForm = useForm({
+    id: null,
+    name: '',
     email: '',
-    role: 'Demandeur',
-    service: '',
-    statut: 'Actif'
+    role: 'demandeur',
+    ser_id: '',
+    password: '', // Optionnel pour la modification
 });
-
-// Données fictives initiales
-const utilisateurs = ref([
-    { id: 1, nom: 'Amadou Diallo', initials: 'AM', email: 'a.diallo@stockflow.sn', role: 'Gestionnaire', roleClass: 'bg-teal-100 text-teal-700', service: 'Logistique', date: '15/01/2024', statut: 'Actif' },
-    { id: 2, nom: 'Fatou Sarr', initials: 'FS', email: 'F.Sarr@stockflow.sn', role: 'Demandeur', roleClass: 'bg-blue-100 text-blue-700', service: 'RH', date: '15/01/2024', statut: 'Actif' },
-    { id: 3, nom: 'Ibrahim Sow', initials: 'IS', email: 'I.Sow@stockflow.sn', role: 'Responsable', roleClass: 'bg-purple-100 text-purple-700', service: 'Direction', date: '15/01/2024', statut: 'Actif' },
-]);
 
 const openAddModal = () => {
     isEditing.value = false;
-    newUser.value = { nom: '', email: '', role: 'Demandeur', service: '', statut: 'Actif' };
+    userForm.reset();
+    userForm.clearErrors();
     showAddUserModal.value = true;
 };
 
 const openEditModal = (user) => {
     isEditing.value = true;
-    currentUserId.value = user.id;
-    newUser.value = { ...user };
+    userForm.clearErrors();
+    userForm.id = user.id;
+    userForm.name = user.name;
+    userForm.email = user.email;
+    userForm.role = user.role;
+    userForm.ser_id = user.ser_id;
+    userForm.password = ''; 
     showAddUserModal.value = true;
 };
 
 const deleteUser = (id) => {
     if (confirm('Supprimer cet utilisateur ?')) {
-        utilisateurs.value = utilisateurs.value.filter(u => u.id !== id);
+        router.delete(route('gestionnaire.utilisateurs.destroy', id));
     }
 };
 
 const saveUser = () => {
-    const words = newUser.value.nom.split(' ');
-    const initials = words.map(w => w[0]).join('').toUpperCase().substring(0, 2) || '??';
-
-    const roleClasses = {
-        'Gestionnaire': 'bg-teal-100 text-teal-700',
-        'Demandeur': 'bg-blue-100 text-blue-700',
-        'Responsable': 'bg-purple-100 text-purple-700'
-    };
-
-    const userData = {
-        ...newUser.value,
-        initials,
-        roleClass: roleClasses[newUser.value.role] || 'bg-slate-100 text-slate-700'
-    };
-
     if (isEditing.value) {
-        const index = utilisateurs.value.findIndex(u => u.id === currentUserId.value);
-        if (index !== -1) {
-            utilisateurs.value[index] = { ...userData, id: currentUserId.value };
-        }
+        userForm.put(route('gestionnaire.utilisateurs.update', userForm.id), {
+            onSuccess: () => {
+                showAddUserModal.value = false;
+                userForm.reset();
+            }
+        });
     } else {
-        utilisateurs.value.push({
-            ...userData,
-            id: Date.now(),
-            date: new Date().toLocaleDateString('fr-FR')
+        userForm.post(route('gestionnaire.utilisateurs.store'), {
+            onSuccess: () => {
+                showAddUserModal.value = false;
+                userForm.reset();
+            }
         });
     }
+};
 
-    showAddUserModal.value = false;
+const getRoleClass = (role) => {
+    if (role === 'gestionnaire') return 'bg-teal-100 text-teal-700';
+    if (role === 'responsable') return 'bg-purple-100 text-purple-700';
+    return 'bg-blue-100 text-blue-700';
 };
 
 const navigation = [
@@ -77,9 +76,9 @@ const navigation = [
     { name: 'Articles', route: 'gestionnaire.articles.index', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
     { name: 'Mouvements', route: 'gestionnaire.mouvements.index', icon: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' },
     { name: 'Demandes', route: 'gestionnaire.demandes.index', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
-    { name: 'Rapports', route: 'gestionnaire.rapports.index', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0_8 -8' },
+    { name: 'Rapports', route: 'gestionnaire.rapports.index', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
     { name: 'Utilisateur', route: 'gestionnaire.utilisateurs.index', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
-    { name: 'Services & Fournitures', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
+    { name: 'Services & Fournisseurs', route: 'gestionnaire.services-fournisseurs.index', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
 ];
 
 const logout = () => {
@@ -94,6 +93,7 @@ const logout = () => {
                 <h1 class="text-2xl font-bold tracking-tight text-white">
                     <span class="text-blue-400">Stock</span><span class="text-teal-400">Flow</span>
                 </h1>
+                <p class="text-xs text-slate-300 mt-2">Espace Gestionnaire</p>
             </div>
             <nav class="px-3 py-6 space-y-1.5 flex-1">
                 <Link v-for="item in navigation" :key="item.name" :href="item.route ? route(item.route) : '#'"
@@ -121,16 +121,17 @@ const logout = () => {
             <header
                 class="bg-white border-b border-slate-200 sticky top-0 z-10 px-8 py-4 flex items-center justify-between">
                 <div class="flex items-center gap-4 text-slate-500">
-                    <Link :href="route('gestionnaire.dashboard')" class="hover:text-teal-600 transition-colors">
+                    <Link :href="route('gestionnaire.rapports.index')" class="hover:text-teal-600 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                         </svg>
                     </Link>
                     <span class="font-medium">Utilisateurs</span>
                 </div>
-                <div class="flex items-center gap-2 text-slate-700">
-                    <span class="text-sm font-medium">Gestionnaire de compte</span>
-                    <div class="w-9 h-9 bg-slate-100 rounded-full flex items-center justify-center">
+                <div class="flex items-center gap-2 text-slate-700 hover:text-teal-600 cursor-pointer group">
+                    <div class="text-sm font-medium text-slate-700">{{ userName }}</div>
+                    <div
+                        class="w-9 h-9 flex items-center justify-center bg-slate-100 rounded-full group-hover:bg-teal-50 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -145,7 +146,7 @@ const logout = () => {
                         <h2 class="text-2xl font-bold text-slate-800">Gestion des utilisateurs</h2>
                         <p class="text-slate-500 text-sm">Gérer les comptes et les accès du systèmes</p>
                     </div>
-                    <button @click="showAddUserModal = true"
+                    <button @click="openAddModal"
                         class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-all shadow-sm">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -155,74 +156,74 @@ const logout = () => {
                     </button>
                 </div>
 
-                <Teleport to="body">
-                    <div v-if="showAddUserModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
-                            @click="showAddUserModal = false"></div>
+                <div v-if="showAddUserModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        @click="showAddUserModal = false"></div>
 
-                        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
-                            <div
-                                class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                                <h3 class="text-lg font-bold text-slate-800">Nouvel Utilisateur</h3>
-                                <button @click="showAddUserModal = false"
-                                    class="text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
+                    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+                        <div
+                            class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                            <h3 class="text-lg font-bold text-slate-800">{{ isEditing ? 'Modifier l\'utilisateur' : 'Nouvel Utilisateur' }}</h3>
+                            <button @click="showAddUserModal = false"
+                                class="text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
+                        </div>
+
+                        <form @submit.prevent="saveUser" class="p-6 space-y-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Nom complet</label>
+                                <input v-model="userForm.name" type="text" placeholder="Ex: Moussa Ndiaye" required
+                                    class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
                             </div>
 
-                            <form @submit.prevent="saveUser" class="p-6 space-y-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Email professionnel</label>
+                                <input v-model="userForm.email" type="email" placeholder="m.ndiaye@stockflow.sn"
+                                    required
+                                    class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-1">Nom complet</label>
-                                    <input v-model="newUser.nom" type="text" placeholder="Ex: Moussa Ndiaye" required
+                                    <label class="block text-sm font-semibold text-slate-700 mb-1">Rôle</label>
+                                    <select v-model="userForm.role"
                                         class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                                        <option value="gestionnaire">Gestionnaire</option>
+                                        <option value="demandeur">Demandeur</option>
+                                        <option value="responsable">Responsable</option>
+                                    </select>
                                 </div>
-
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-1">Email
-                                        professionnel</label>
-                                    <input v-model="newUser.email" type="email" placeholder="m.ndiaye@stockflow.sn"
-                                        required
-                                        class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
-                                </div>
-
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-semibold text-slate-700 mb-1">Rôle</label>
-                                        <select v-model="newUser.role"
-                                            class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
-                                            <option value="Gestionnaire">Gestionnaire</option>
-                                            <option value="Demandeur">Demandeur</option>
-                                            <option value="Responsable">Responsable</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-semibold text-slate-700 mb-1">Statut</label>
-                                        <select v-model="newUser.statut"
-                                            class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
-                                            <option value="Actif">Actif</option>
-                                            <option value="Inactif">Inactif</option>
-                                        </select>
-                                    </div>
-                                </div>
-
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-700 mb-1">Service</label>
-                                    <input v-model="newUser.service" type="text" placeholder="Ex: Comptabilité" required
+                                    <select v-model="userForm.ser_id" required
                                         class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                                        <option value="" disabled>Choisir un service</option>
+                                        <option v-for="service in props.services" :key="service.ser_id" :value="service.ser_id">
+                                            {{ service.ser_nom }}
+                                        </option>
+                                    </select>
                                 </div>
+                            </div>
 
-                                <div class="pt-4 flex gap-3">
-                                    <button type="button" @click="showAddUserModal = false"
-                                        class="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-semibold hover:bg-slate-50 transition-colors">
-                                        Annuler
-                                    </button>
-                                    <button type="submit"
-                                        class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition-colors shadow-md">
-                                        {{ isEditing ? 'Mettre à jour' : 'Créer le compte' }}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+                            <div v-if="!isEditing">
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Mot de passe</label>
+                                <input v-model="userForm.password" type="password" required
+                                    class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                            </div>
+
+                            <div class="pt-4 flex gap-3">
+                                <button type="button" @click="showAddUserModal = false"
+                                    class="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-semibold hover:bg-slate-50 transition-colors">
+                                    Annuler
+                                </button>
+                                <button type="submit"
+                                    class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition-colors shadow-md">
+                                    {{ isEditing ? 'Mettre à jour' : 'Créer le compte' }}
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                </Teleport>
+                </div>
+
                 <div
                     class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-wrap gap-4 items-center">
                     <div class="relative flex-1 min-w-[200px]">
@@ -234,28 +235,17 @@ const logout = () => {
                         <input type="text" placeholder="Rechercher un utilisateur..."
                             class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none">
                     </div>
-                    <select class="bg-slate-50 border border-slate-200 rounded-lg px-10 py-2 text-sm outline-none">
-                        <option>Rôle tous</option>
-                    </select>
-                    <select class="bg-slate-50 border border-slate-200 rounded-lg px-10 py-2 text-sm outline-none">
-                        <option>Service Tous</option>
-                    </select>
                 </div>
 
                 <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="border-b border-slate-100 bg-slate-50/50">
-                                <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Nom
-                                    complet</th>
+                                <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Service / Nom</th>
                                 <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                                     Email</th>
                                 <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Rôle
                                 </th>
-                                <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                    Service</th>
-                                <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Date
-                                    de création</th>
                                 <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                                     Statut</th>
                                 <th
@@ -264,30 +254,25 @@ const logout = () => {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-50">
-                            <tr v-for="user in utilisateurs" :key="user.id"
+                            <tr v-for="user in props.users.data" :key="user.id"
                                 class="hover:bg-slate-50/80 transition-colors">
                                 <td class="px-6 py-4">
-                                    <div class="flex items-center gap-3">
-                                        <div
-                                            class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-600 border border-slate-200">
-                                            {{ user.initials }}
-                                        </div>
-                                        <span class="text-sm font-medium text-slate-700">{{ user.nom }}</span>
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-bold text-slate-800">{{ user.service?.ser_nom || 'Sans Service' }}</span>
+                                        <span class="text-xs text-slate-500">{{ user.name }}</span>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-slate-600">{{ user.email }}</td>
                                 <td class="px-6 py-4">
                                     <span
-                                        :class="['px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide', user.roleClass]">
+                                        :class="['px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide', getRoleClass(user.role)]">
                                         {{ user.role }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 text-sm text-slate-700 font-medium">{{ user.service }}</td>
-                                <td class="px-6 py-4 text-sm text-slate-500">{{ user.date }}</td>
                                 <td class="px-6 py-4">
                                     <span
                                         class="bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded text-[10px] font-bold uppercase">
-                                        {{ user.statut }}
+                                        Actif
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-right">
@@ -312,17 +297,16 @@ const logout = () => {
                         </tbody>
                     </table>
 
-                    <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-col items-center gap-3">
-                        <div class="px-8 py-5 flex flex-col items-center gap-2 bg-white border-t border-slate-100">
-                            <div class="flex items-center gap-2">
-                                <button class="text-slate-400 hover:text-teal-600 font-bold">&lt;</button>
-                                <button
-                                    class="w-8 h-8 bg-teal-600 text-white rounded flex items-center justify-center text-sm font-bold">1</button>
-                                <button class="text-slate-400 hover:text-teal-600 font-bold">&gt;</button>
-                            </div>
-                            <span class="text-xs text-slate-500">1-3 Sur 3</span>
+                    <!-- Pagination -->
+                    <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-col items-center gap-2">
+                        <div class="flex items-center gap-1">
+                            <Link v-for="(link, k) in props.users.links" :key="k" :href="link.url || '#'" v-html="link.label"
+                                class="px-3 py-1 text-sm rounded transition-all"
+                                :class="{'bg-teal-600 text-white font-bold': link.active, 'text-slate-400 hover:text-teal-600': !link.active && link.url, 'text-slate-300 cursor-not-allowed': !link.url}" />
                         </div>
+                        <span class="text-xs text-slate-500">{{ props.users.from }}-{{ props.users.to }} sur {{ props.users.total }} utilisateurs</span>
                     </div>
+
                 </div>
             </main>
         </div>

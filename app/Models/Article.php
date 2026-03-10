@@ -33,6 +33,21 @@ class Article extends Model
     ];
 
     /**
+     * Get the total stock quantity across all warehouses.
+     */
+    public function getTotalStockAttribute(): int
+    {
+        return $this->itemStocks()->sum('sta_quantite');
+    }
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['total_stock'];
+
+    /**
      * Get the category that owns the item.
      */
     public function category(): BelongsTo
@@ -63,5 +78,6 @@ class Article extends Model
     {
         return $this->hasMany(LigneDemandeSortie::class, 'lds_art_id', 'art_id');
     }
-}
 
+
+}

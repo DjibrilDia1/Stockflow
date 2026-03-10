@@ -1,22 +1,21 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
+import NewRequestModal from '@/Components/NewRequestModal.vue';
+
+const props = defineProps({
+    requests: Array,
+    articlesDisponibles: Array
+});
 
 const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? 'Demandeur');
 
 const menu = [
-    { name: 'Dashboard', route: 'demandeur.dashboard' },
-    { name: 'Demandes', route: 'demandeur.demandes.index' },
-    { name: 'Consultation articles', route: 'demandeur.articles.index' },
+    { name: 'Tableau de bord', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', route: 'demandeur.dashboard' },
+    { name: 'Demandes', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', route: 'demandeur.demandes.index' },
+    { name: 'Consultation articles', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', route: 'demandeur.articles.index' },
 ];
-
-const requests = ref([
-    { id: 1, ref: 'DR-2026-021', type: 'Retrait', article: 'Papier A4', qty: 20, date: '12/02/2026', status: 'En validation' },
-    { id: 2, ref: 'DR-2026-020', type: 'Retrait', article: 'Stylos noirs', qty: 40, date: '10/02/2026', status: 'En preparation' },
-    { id: 3, ref: 'DR-2026-019', type: 'Retrait', article: 'Cartouches', qty: 6, date: '08/02/2026', status: 'Prete' },
-    { id: 4, ref: 'DR-2026-017', type: 'Retrait', article: 'Classeurs', qty: 8, date: '02/02/2026', status: 'Rejetee' },
-]);
 
 const statusClass = (status) => {
     const classes = {
@@ -25,100 +24,121 @@ const statusClass = (status) => {
         Prete: 'bg-emerald-100 text-emerald-700',
         Rejetee: 'bg-red-100 text-red-700',
     };
-
     return classes[status] ?? 'bg-slate-100 text-slate-700';
 };
 
 const logout = () => {
-    if (confirm('Deconnexion ?')) {
-        router.post(route('logout'));
-    }
+    if (confirm('Déconnexion ?')) router.post(route('logout'));
 };
+
+const showModal = ref(false);
 </script>
 
 <template>
     <div class="min-h-screen bg-slate-50 flex">
-        <aside class="fixed left-0 top-0 h-screen w-64 bg-slate-800 shadow-2xl z-50 flex flex-col">
+        <aside class="fixed left-0 top-0 h-screen w-52 bg-slate-800 shadow-2xl z-50 flex flex-col">
             <div class="px-6 py-6 border-b border-slate-700/50">
                 <h1 class="text-2xl font-bold tracking-tight text-white">
                     <span class="text-blue-400">Stock</span><span class="text-teal-400">Flow</span>
                 </h1>
-                <p class="text-xs text-slate-300 mt-2">Espace demandeur</p>
+                <p class="text-xs text-slate-300 mt-2">Espace Demandeur</p>
             </div>
 
-            <nav class="px-3 py-6 space-y-1.5 flex-1 overflow-y-auto">
-                <Link
-                    v-for="item in menu"
-                    :key="item.name"
-                    :href="route(item.route)"
-                    :class="[
-                        route().current(item.route)
-                            ? 'bg-teal-600 text-white shadow-lg'
-                            : 'text-slate-300 hover:bg-slate-700 hover:text-white',
-                        'flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg transition-all'
-                    ]"
-                >
+            <nav class="px-3 py-6 space-y-1.5 flex-1">
+                <Link v-for="item in menu" :key="item.name" :href="item.route ? route(item.route) : '#'" :class="[
+                    item.route && route().current(item.route)
+                        ? 'bg-teal-600 text-white shadow-lg'
+                        : 'text-slate-300 hover:bg-slate-700 hover:text-white',
+                    'group flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg transition-all'
+                ]">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.icon" />
+                    </svg>
                     {{ item.name }}
                 </Link>
             </nav>
 
             <div class="p-4 border-t border-slate-700/50">
-                <button
-                    @click="logout"
-                    class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-400 hover:bg-red-500/10 hover:text-red-400 rounded-lg transition-all"
-                >
-                    Deconnexion
+                <button @click="logout"
+                    class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-400 hover:bg-red-500/10 hover:text-red-400 rounded-lg transition-all group">
+                    <svg class="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    Déconnexion
                 </button>
             </div>
         </aside>
 
-        <div class="ml-64 flex-1">
-            <header class="bg-white border-b border-slate-200 sticky top-0 z-10 px-8 py-4 flex items-center justify-between">
-                <div>
-                    <h2 class="text-xl font-bold text-slate-800">Demandes de retrait</h2>
-                    <p class="text-sm text-slate-500">Suivi de vos demandes et historique</p>
+        <div class="ml-52 flex-1">
+            <header
+                class="bg-white border-b border-slate-200 sticky top-0 z-10 px-8 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-4 text-slate-500">
+                    <Link :href="route('demandeur.dashboard')"
+                        class="text-slate-400 hover:text-teal-600 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </Link>
+                    <span class="font-medium">Mes Demandes</span>
                 </div>
-                <div class="text-sm font-medium text-slate-700">{{ userName }}</div>
+                <div class="flex items-center gap-2 text-slate-700 hover:text-teal-600 cursor-pointer group">
+                    <div class="text-sm font-medium text-slate-700">{{ userName }}</div>
+                    <div
+                        class="w-9 h-9 flex items-center justify-center bg-slate-100 rounded-full group-hover:bg-teal-50 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </div>
+                </div>
             </header>
 
-            <main class="p-8 space-y-6">
-                <section class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
-                    <div class="flex flex-col md:flex-row gap-3">
-                        <input
-                            type="text"
-                            placeholder="Rechercher une demande..."
-                            class="flex-1 px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none"
-                        >
-                        <button class="px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-lg">
-                            Nouvelle demande
-                        </button>
+            <main class="p-10 space-y-8">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900">Suivi des demandes</h2>
+                        <p class="text-slate-500 mt-1">Historique de vos demandes de sortie de stock</p>
                     </div>
-                </section>
+                    <button @click="showModal = true"
+                        class="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg transition-all shadow-lg flex items-center gap-2">
+                        <span class="text-xl">+</span> Nouvelle demande
+                    </button>
+                </div>
+
+                <!-- Nouveau composant partagé -->
+                <NewRequestModal 
+                    :show="showModal" 
+                    :articles="articlesDisponibles" 
+                    @close="showModal = false"
+                />
 
                 <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
                     <table class="w-full">
                         <thead class="bg-slate-50 border-b border-slate-200">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-slate-600">Reference</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-slate-600">Type</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-slate-600">Article</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-slate-600">Quantite</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-slate-600">Date</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-slate-600">Statut</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase text-slate-600">Référence</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase text-slate-600">Article</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase text-slate-600">Qté</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase text-slate-600">Date</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold uppercase text-slate-600">Statut</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
-                            <tr v-for="request in requests" :key="request.id" class="hover:bg-slate-50">
-                                <td class="px-6 py-4 text-sm font-semibold text-blue-600">{{ request.ref }}</td>
-                                <td class="px-6 py-4 text-sm text-slate-700">{{ request.type }}</td>
+                            <tr v-for="request in requests" :key="request.id" class="hover:bg-slate-50 transition-colors">
+                                <td class="px-6 py-4 text-sm font-bold text-blue-600">{{ request.ref }}</td>
                                 <td class="px-6 py-4 text-sm text-slate-700">{{ request.article }}</td>
                                 <td class="px-6 py-4 text-sm text-slate-700">{{ request.qty }}</td>
                                 <td class="px-6 py-4 text-sm text-slate-500">{{ request.date }}</td>
                                 <td class="px-6 py-4">
-                                    <span :class="['px-3 py-1 rounded-full text-xs font-semibold', statusClass(request.status)]">
+                                    <span :class="['px-3 py-1 rounded-full text-xs font-bold', statusClass(request.status)]">
                                         {{ request.status }}
                                     </span>
                                 </td>
+                            </tr>
+                            <tr v-if="requests.length === 0">
+                                <td colspan="5" class="px-6 py-10 text-center text-slate-500 italic">Aucune demande pour le moment.</td>
                             </tr>
                         </tbody>
                     </table>

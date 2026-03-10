@@ -2,6 +2,10 @@
 
 use App\Enums\UserRole;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\MouvementStockController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -34,31 +38,46 @@ Route::middleware('auth')->get('/dashboard', function () {
 
 // Groupe pour le rôle GESTIONNAIRE
 Route::middleware(['auth', 'role:gestionnaire'])->prefix('gestionnaire')->name('gestionnaire.')->group(function () {
-    Route::get('/dashboard', function () {
-        // Cette route rendra `resources/js/Pages/Gestionnaire/Dashboard.vue`
-        return Inertia::render('Gestionnaire/Dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::get('/articles', function () {
-        return Inertia::render('Gestionnaire/Articles');
-    })->name('articles.index');
+    // Articles CRUD
+    Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');
+    Route::post('/articles', [ArticleController::class, 'store'])->name('articles.store');
+    Route::put('/articles/{item}', [ArticleController::class, 'update'])->name('articles.update');
+    Route::delete('/articles/{item}', [ArticleController::class, 'destroy'])->name('articles.destroy');
 
-    Route::get('/mouvements', function () {
-        return Inertia::render('Gestionnaire/Mouvements');
-    })->name('mouvements.index');
+    // Catégories CRUD
+    Route::post('/categories', [\App\Http\Controllers\CategorieController::class, 'store'])->name('categories.store');
+    Route::put('/categories/{category}', [\App\Http\Controllers\CategorieController::class, 'update'])->name('categories.update');
+    Route::delete('/categories/{category}', [\App\Http\Controllers\CategorieController::class, 'destroy'])->name('categories.destroy');
 
-    Route::get('/demandes', function () {
-        return Inertia::render('Gestionnaire/Demandes');
-    })->name('demandes.index');
+    // Mouvements CRUD
+    Route::get('/mouvements', [MouvementStockController::class, 'index'])->name('mouvements.index');
+    Route::post('/mouvements', [MouvementStockController::class, 'store'])->name('mouvements.store');
+    Route::delete('/mouvements/{stockMovement}', [MouvementStockController::class, 'destroy'])->name('mouvements.destroy');
+
+    // Demandes
+    Route::get('/demandes', [\App\Http\Controllers\DemandeSortieController::class, 'index'])->name('demandes.index');
+    Route::post('/demandes/{demande}/validate', [\App\Http\Controllers\DemandeSortieController::class, 'validateRequest'])->name('demandes.validate');
+    Route::delete('/demandes/{withdrawRequest}', [\App\Http\Controllers\DemandeSortieController::class, 'destroy'])->name('demandes.destroy');
 
 
-    Route::get('/rapports', function () {
-        return Inertia::render('Gestionnaire/Rapports');
-    })->name('rapports.index');
+    Route::get('/rapports', [ReportController::class, 'index'])->name('rapports.index');
+    Route::get('/rapports/export', [ReportController::class, 'exportMovements'])->name('rapports.export');
 
-    Route::get('/utilisateurs', function () {
-        return Inertia::render('Gestionnaire/Utilisateurs');
-    })->name('utilisateurs.index');
+    // Utilisateurs CRUD
+    Route::get('/utilisateurs', [\App\Http\Controllers\UserController::class, 'index'])->name('utilisateurs.index');
+    Route::post('/utilisateurs', [\App\Http\Controllers\UserController::class, 'store'])->name('utilisateurs.store');
+    Route::put('/utilisateurs/{user}', [\App\Http\Controllers\UserController::class, 'update'])->name('utilisateurs.update');
+    Route::delete('/utilisateurs/{user}', [\App\Http\Controllers\UserController::class, 'destroy'])->name('utilisateurs.destroy');
+
+    Route::get('/services-fournisseurs', [\App\Http\Controllers\ServiceFournisseurController::class, 'index'])->name('services-fournisseurs.index');
+    Route::post('/services', [\App\Http\Controllers\ServiceFournisseurController::class, 'storeService'])->name('services.store');
+    Route::put('/services/{service}', [\App\Http\Controllers\ServiceFournisseurController::class, 'updateService'])->name('services.update');
+    Route::delete('/services/{service}', [\App\Http\Controllers\ServiceFournisseurController::class, 'destroyService'])->name('services.destroy');
+    Route::post('/fournisseurs', [\App\Http\Controllers\ServiceFournisseurController::class, 'storeFournisseur'])->name('fournisseurs.store');
+    Route::put('/fournisseurs/{fournisseur}', [\App\Http\Controllers\ServiceFournisseurController::class, 'updateFournisseur'])->name('fournisseurs.update');
+    Route::delete('/fournisseurs/{fournisseur}', [\App\Http\Controllers\ServiceFournisseurController::class, 'destroyFournisseur'])->name('fournisseurs.destroy');
 });
 
 // Groupe pour le rôle RESPONSABLE
@@ -67,24 +86,20 @@ Route::middleware(['auth', 'role:responsable'])->prefix('responsable')->name('re
         // Cette route rendra `resources/js/Pages/Responsable/Dashboard.vue`
         return Inertia::render('Responsable/Dashboard');
     })->name('dashboard');
+
+    Route::get('/rapports', [ReportController::class, 'index'])->name('rapports.index');
+    Route::get('/rapports/export', [ReportController::class, 'exportMovements'])->name('rapports.export');
 });
 
 // Groupe pour le rôle DEMANDEUR
 Route::middleware(['auth', 'role:demandeur'])->prefix('demandeur')->name('demandeur.')->group(function () {
-    Route::get('/dashboard', function () {
-        // Cette route rendra `resources/js/Pages/Demandeur/Dashboard.vue`
-        return Inertia::render('Demandeur/Dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'demandeurDashboard'])->name('dashboard');
 
-    Route::get('/demandes', function () {
-        return Inertia::render('Demandeur/Demandes');
-    })->name('demandes.index');
+    Route::get('/demandes', [\App\Http\Controllers\DemandeSortieController::class, 'demandeurIndex'])->name('demandes.index');
+    Route::post('/demandes', [\App\Http\Controllers\DemandeSortieController::class, 'demandeurStore'])->name('demandes.store');
 
-    Route::get('/articles', function () {
-        return Inertia::render('Demandeur/Articles');
-    })->name('articles.index');
+    Route::get('/articles', [ArticleController::class, 'demandeurIndex'])->name('articles.index');
 });
-
 
 // Routes de profil générales
 Route::middleware('auth')->group(function () {
