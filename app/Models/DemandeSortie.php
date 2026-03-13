@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\StockArticle;
 use App\Models\MouvementStock;
+use App\Models\Article;
 
 class DemandeSortie extends Model
 {
@@ -31,6 +32,132 @@ class DemandeSortie extends Model
     ];
 
     /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['reference', 'status_label', 'total_quantity'];
+
+    /**
+     * Get the formatted reference.
+     */
+    public function getReferenceAttribute(): string
+    {
+        return 'DSO-' . str_pad($this->dso_id, 5, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Get the human-readable status.
+     */
+    public function getStatusLabelAttribute(): string
+    {
+        return match($this->dso_statut) {
+            'DRAFT' => 'En validation',
+            'APPROVED' => 'En préparation',
+            'FULFILLED' => 'Prête',
+            'REJECTED' => 'Rejetée',
+            default => $this->dso_statut
+        };
+    }
+
+    /**
+     * Get the total quantity across all lines.
+     */
+    public function getTotalQuantityAttribute(): int
+    {
+        return $this->lines->sum('lds_qte_demandee');
+    }
+
+    /**
+     * Scope to eager load details.
+     */
+    public function scopeWithDetails($query)
+    {
+        return $query->with(['service', 'requester', 'lines.item', 'lines.warehouse']);
+    }
+
+    /**
+     * Scope to filter by requester.
+     */
+    public function scopeForUser($query, $userId)
+    {
+        return $query->where('dso_demandeur_id', $userId);
+    }
+
+
+    /**
+     * Reject the request.
+     */
+    public function reject(): bool
+    {
+        return $this->update(['dso_statut' => 'REJECTED']);
+    }
+
+    /**
+     * Get statistics for a specific requester.
+     */
+    public static function getStatsForUser($userId): array
+    {
+        return [
+            'inProgress' => self::where('dso_demandeur_id', $userId)
+                ->whereIn('dso_statut', ['DRAFT', 'APPROVED'])
+                ->count(),
+            'processed' => self::where('dso_demandeur_id', $userId)
+                ->where('dso_statut', 'FULFILLED')
+                ->count(),
+            'rejected' => self::where('dso_demandeur_id', $userId)
+                ->where('dso_statut', 'REJECTED')
+                ->count(),
+        ];
+    }
+
+    /**
+     * Get data for the manager's request index.
+     */
+    public static function getManagerIndexData()
+    {
+        return [
+            'withdrawRequests' => self::withDetails()
+                ->latest()
+                ->paginate(3),
+        ];
+    }
+
+    /**
+     * Get data for the demandeur's request index.
+     */
+    public static function getDemandeurIndexData($userId)
+    {
+        return [
+            'requests' => self::forUser($userId)
+                ->withDetails()
+                ->latest()
+                ->get()
+                ->map->formatForUser(),
+            'articlesDisponibles' => Article::withStockDetails()
+                ->get()
+                ->map->formatAvailability(),
+        ];
+    }
+
+    /**
+     * Format the request for the user list.
+     */
+    public function formatForUser(): array
+    {
+        return [
+            'id' => $this->dso_id,
+            'ref' => $this->reference,
+            'type' => 'Retrait',
+            'article' => $this->lines->first()->item->art_nom ?? 'Multiples',
+            'qty' => $this->total_quantity,
+            'date' => $this->dso_created_at->format('d/m/Y'),
+            'status' => $this->status_label,
+        ];
+    }
+
+
+    /**
      * Get the service that requested the withdrawal.
      */
     public function service(): BelongsTo
@@ -52,16 +179,6 @@ class DemandeSortie extends Model
     public function lines(): HasMany
     {
         return $this->hasMany(LigneDemandeSortie::class, 'lds_dso_id', 'dso_id');
-    }
-
-    
-
-    /**
-     * Scope: demandes appartenant à un utilisateur donné.
-     */
-    public function scopeForUser($query, int $userId)
-    {
-        return $query->where('dso_demandeur_id', $userId);
     }
 
     /**
@@ -115,6 +232,10 @@ class DemandeSortie extends Model
      */
     public function approve(int $gestionnaireId): bool
     {
+        if ($this->dso_statut !== 'DRAFT') {
+            return false;
+        }
+
         foreach ($this->lines as $line) {
             $stock = StockArticle::findStock($line->lds_art_id, $line->lds_ent_id);
 
@@ -135,6 +256,7 @@ class DemandeSortie extends Model
             ]);
         }
 
+        $this->update(['dso_statut' => 'APPROVED']);
         return true;
     }
 }

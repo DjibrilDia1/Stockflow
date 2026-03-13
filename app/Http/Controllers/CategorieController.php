@@ -11,7 +11,6 @@ use Inertia\Response;
 
 class CategorieController extends Controller
 {
-
     /**
      * Enregistre une nouvelle categorie dans la base de donnees.
      */
@@ -29,7 +28,7 @@ class CategorieController extends Controller
     }
 
     /**
-     * Mettre jour une categorie specifique dans la base de donnees.
+     * Mettre à jour une categorie specifique dans la base de donnees.
      */
     public function update(Request $request, Categorie $category): RedirectResponse
     {
@@ -51,9 +50,9 @@ class CategorieController extends Controller
     {
         try {
             $category->delete();
-            return Redirect::route('gestionnaire.articles.index')->with('success', 'Categorie supprimee avec succes.');
+            return Redirect::route('gestionnaire.articles.index')->with('success', 'Catégorie supprimée avec succès.');
         } catch (\Exception $e) {
-            return Redirect::route('gestionnaire.articles.index')->with('error', 'Impossible de supprimer cette categorie car elle contient des articles.');
+            return Redirect::route('gestionnaire.articles.index')->with('error', 'Impossible de supprimer cette catégorie car elle contient des articles.');
         }
     }
 }

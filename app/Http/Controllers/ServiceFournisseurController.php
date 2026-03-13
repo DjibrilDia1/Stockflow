@@ -11,6 +11,9 @@ use Inertia\Response;
 
 class ServiceFournisseurController extends Controller
 {
+    /**
+     * Affiche la liste des services et fournisseurs.
+     */
     public function index(Request $request): Response
     {
         return Inertia::render('Gestionnaire/Services-Fournisseurs', [
@@ -21,7 +24,9 @@ class ServiceFournisseurController extends Controller
 
     // --- Services ---
 
-    // Enregistrement d'un service
+    /**
+     * Enregistre un nouveau service.
+     */
     public function storeService(Request $request)
     {
         $validated = $request->validate([
@@ -31,10 +36,12 @@ class ServiceFournisseurController extends Controller
         ]);
 
         Service::create($validated);
-        return Redirect::back()->with('success', 'Service ajouté.');
+        return Redirect::back()->with('success', 'Le service a été ajouté avec succès.');
     }
 
-    // Mise à jour d'un service
+    /**
+     * Met à jour un service.
+     */
     public function updateService(Request $request, Service $service)
     {
         $validated = $request->validate([
@@ -44,50 +51,57 @@ class ServiceFournisseurController extends Controller
         ]);
 
         $service->update($validated);
-        return Redirect::back()->with('success', 'Service mis à jour.');
+        return Redirect::back()->with('success', 'Le service a été mis à jour avec succès.');
     }
 
-    // Suppression d'un service
+    /**
+     * Supprime un service.
+     */
     public function destroyService(Service $service)
     {
         $service->delete();
-        return Redirect::back()->with('success', 'Service supprimé.');
+        return Redirect::back()->with('success', 'Le service a été supprimé avec succès.');
     }
 
     // --- Fournisseurs ---
-
-    // Enregistrement d'un fournisseur
+    /**
+     * Enregistre un nouveau fournisseur.
+     */
     public function storeFournisseur(Request $request)
     {
         $validated = $request->validate([
             'fou_nom' => 'required|string|max:255',
-            'fou_email' => 'required|email|max:255|unique:fournisseurs',
-            'fou_telephone' => 'required|string|max:20',
+            'fou_email' => 'nullable|email|max:255|unique:fournisseurs,fou_email',
+            'fou_telephone' => 'nullable|string|max:255',
             'fou_adresse' => 'nullable|string',
         ]);
 
         Fournisseur::create($validated);
-        return Redirect::back()->with('success', 'Fournisseur ajouté.');
+        return Redirect::back()->with('success', 'Le fournisseur a été ajouté avec succès.');
     }
 
-    // Mise à jour d'un fournisseur
+    /**
+     * Met à jour un fournisseur.
+     */
     public function updateFournisseur(Request $request, Fournisseur $fournisseur)
     {
         $validated = $request->validate([
             'fou_nom' => 'required|string|max:255',
-            'fou_email' => 'required|email|max:255|unique:fournisseurs,fou_email,' . $fournisseur->fou_id . ',fou_id',
-            'fou_telephone' => 'required|string|max:20',
+            'fou_email' => 'nullable|email|max:255|unique:fournisseurs,fou_email,' . $fournisseur->fou_id . ',fou_id',
+            'fou_telephone' => 'nullable|string|max:255',
             'fou_adresse' => 'nullable|string',
         ]);
 
         $fournisseur->update($validated);
-        return Redirect::back()->with('success', 'Fournisseur mis à jour.');
+        return Redirect::back()->with('success', 'Le fournisseur a été mis à jour avec succès.');
     }
 
-    // Suppression d'un fournisseur
+    /**
+     * Supprime un fournisseur.
+     */
     public function destroyFournisseur(Fournisseur $fournisseur)
     {
         $fournisseur->delete();
-        return Redirect::back()->with('success', 'Fournisseur supprimé.');
+        return Redirect::back()->with('success', 'Le fournisseur a été supprimé avec succès.');
     }
 }

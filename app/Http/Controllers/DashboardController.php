@@ -3,26 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Models\Article;
-use App\Models\Categorie;
-use App\Models\Entrepot;
-use App\Models\MouvementStock;
-use Inertia\Inertia;
-use Inertia\Response;
-
 use App\Models\DemandeSortie;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class DashboardController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Dashboard pour les gestionnaires.
      */
     public function index(): Response
     {
         $totalArticles    = Article::count();
-        $totalCategories  = Categorie::count();
-        $totalEntrepots   = Entrepot::count();
-        $movementsCount   = MouvementStock::count();
+        $totalCategories  = \App\Models\Categorie::count();
+        $totalEntrepots   = \App\Models\Entrepot::count();
+        $movementsCount   = \App\Models\MouvementStock::count();
         $stockValue       = Article::totalStockValue();
 
         $alertsQuery         = Article::belowAlertThreshold();
@@ -38,7 +34,7 @@ class DashboardController extends Controller
             ];
         });
 
-        $recentMovements = MouvementStock::with(['item', 'warehouse', 'service'])
+        $recentMovements = \App\Models\MouvementStock::with(['item', 'warehouse', 'service'])
             ->latest('mvs_id')
             ->take(5)
             ->get()
@@ -54,7 +50,7 @@ class DashboardController extends Controller
                 ];
             });
 
-        $topArticles = MouvementStock::topConsumedArticles(5);
+        $topArticles = \App\Models\MouvementStock::topConsumedArticles(5);
 
         return Inertia::render('Gestionnaire/Dashboard', [
             'stats' => [

@@ -6,6 +6,7 @@ use App\Models\DemandeSortie;
 use App\Models\StockArticle;
 use App\Models\Service;
 use App\Models\User;
+use App\Models\Article;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
@@ -18,15 +19,11 @@ class DemandeSortieController extends Controller
      */
     public function index(): Response
     {
-        return Inertia::render('Gestionnaire/Demandes', [
-            'withdrawRequests' => DemandeSortie::with(['service', 'requester', 'lines.item'])
-                ->latest()
-                ->paginate(3),
-        ]);
+        return Inertia::render('Gestionnaire/Demandes', DemandeSortie::getManagerIndexData());
     }
 
     /**
-     * Affiche les demandes du demandeur connecté.
+     * Affiche les demandes du demandeur connect.
      */
     public function demandeurIndex(): Response
     {
@@ -113,13 +110,11 @@ class DemandeSortieController extends Controller
             if (!$demande->approve(auth()->id())) {
                 return Redirect::back()->with('error', 'Stock insuffisant dans l\'entrepôt choisi.');
             }
+        } else {
+            $demande->reject();
         }
 
-        $demande->update([
-            'dso_statut' => $validated['status'],
-        ]);
-
-        return Redirect::back()->with('success', 'La demande a été ' . ($validated['status'] === 'APPROVED' ? 'approuvée et le stock a été mis à jour.' : 'rejetée.'));
+        return Redirect::back()->with('success', 'La demande a été ' . ($validated['status'] === 'APPROVED' ? 'approuvée.' : 'rejetée.'));
     }
 
     /**

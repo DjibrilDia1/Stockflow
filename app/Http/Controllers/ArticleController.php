@@ -39,7 +39,17 @@ class ArticleController extends Controller
     }
 
     /**
-     * Enregistre un nouvel article dans la base de donnees.
+     * Affiche le formulaire de création d'un nouvel article.
+     */
+    public function create(): Response
+    {
+        return Inertia::render('Gestionnaire/Articles/Create', [
+            'categories' => Categorie::all(['cat_id', 'cat_nom']),
+        ]);
+    }
+
+    /**
+     * Enregistre un nouvel article dans la base de données.
      */
     public function store(Request $request): RedirectResponse
     {
@@ -53,14 +63,35 @@ class ArticleController extends Controller
             'art_prix_defaut' => 'nullable|numeric|min:0|max:99999999.99',
         ]);
 
-        Article::create($validated);
+        Article::storeFromRequest($validated);
 
         return Redirect::route('gestionnaire.articles.index')->with('success', 'Article créé avec succès.');
     }
 
     /**
-     * Met e jour un article specifique dans la base de donnees.
-     *
+     * Affiche les détails d'un article spécifique.
+     */
+    public function show(Article $item): Response
+    {
+        $item->load('category');
+        return Inertia::render('Gestionnaire/Articles/Show', [
+            'item' => $item,
+        ]);
+    }
+
+    /**
+     * Affiche le formulaire de modification d'un article existant.
+     */
+    public function edit(Article $item): Response
+    {
+        return Inertia::render('Gestionnaire/Articles/Edit', [
+            'item' => $item,
+            'categories' => Categorie::all(['cat_id', 'cat_nom']),
+        ]);
+    }
+
+    /**
+     * Met à jour un article spécifique dans la base de données.
      */
     public function update(Request $request, Article $item): RedirectResponse
     {
@@ -74,22 +105,21 @@ class ArticleController extends Controller
             'art_prix_defaut' => 'nullable|numeric|min:0|max:99999999.99',
         ]);
 
-        $item->update($validated);
+        $item->updateFromRequest($validated);
 
         return Redirect::route('gestionnaire.articles.index')->with('success', 'Article mis à jour avec succès.');
     }
 
     /**
-     * Supprime un article specifique de la base de donnees.
-     *
+     * Supprime un article spécifique de la base de données.
      */
     public function destroy(Article $item): RedirectResponse
     {
         try {
             $item->delete();
-            return Redirect::route('gestionnaire.articles.index')->with('success', 'Article supprime avec succes.');
+            return Redirect::route('gestionnaire.articles.index')->with('success', 'Article supprimé avec succès.');
         } catch (\Exception $e) {
-            return Redirect::route('gestionnaire.articles.index')->with('error', 'Impossible de supprimer cet article car il est lie e des mouvements de stock ou des demandes.');
-        }
+            return Redirect::route('gestionnaire.articles.index')->with('error', 'Impossible de supprimer cet article car il est lié à des mouvements de stock ou des demandes.');
+      }
     }
 }

@@ -3,11 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\MouvementStock;
-use App\Models\Article;
-use App\Models\Entrepot;
-use App\Models\Fournisseur;
-use App\Models\Service;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
@@ -57,13 +52,13 @@ class MouvementStockController extends Controller
 
         return Inertia::render('Gestionnaire/Mouvements', [
             'stockMovements' => $query->latest('mvs_date_mouvement')->paginate(4)->withQueryString(),
-            'warehouses_paginated' => Entrepot::paginate(5, ['*'], 'entrepots')->withQueryString(),
-            'articles' => Article::all(['art_id', 'art_nom', 'art_reference']),
-            'warehouses' => Entrepot::all(['ent_id', 'ent_nom']),
-            'suppliers' => Fournisseur::all(['fou_id', 'fou_nom']),
+            'warehouses_paginated' => \App\Models\Entrepot::paginate(5, ['*'], 'entrepots')->withQueryString(),
+            'articles' => \App\Models\Article::all(['art_id', 'art_nom', 'art_reference']),
+            'warehouses' => \App\Models\Entrepot::all(['ent_id', 'ent_nom']),
+            'suppliers' => \App\Models\Fournisseur::all(['fou_id', 'fou_nom']),
             'filters' => $request->only(['search', 'type', 'article_id', 'warehouse_id', 'date_start', 'date_end'])
         ]);
-    }   
+    }
 
     /**
      * Enregistre un nouveau mouvement de stock.
@@ -87,7 +82,17 @@ class MouvementStockController extends Controller
 
         MouvementStock::recordWithStockUpdate($validated);
 
-        return Redirect::route('gestionnaire.mouvements.index')->with('success', 'Mouvement enregistré.');
+        $messages = [
+            'IN' => 'L\'entrée de stock a été enregistrée avec succès.',
+            'OUT' => 'La sortie de stock a été enregistrée avec succès.',
+            'TRANSFER' => 'Le transfert entre entrepôts a été effectué avec succès.',
+            'ADJUST' => 'L\'ajustement de stock a été enregistré avec succès.',
+        ];
+
+        $type = $validated['mvs_type'];
+        $message = $messages[$type] ?? 'Le mouvement de stock a été enregistré.';
+
+        return Redirect::route('gestionnaire.mouvements.index')->with('success', $message);
     }
 
     /**
@@ -96,7 +101,7 @@ class MouvementStockController extends Controller
     public function destroy(MouvementStock $stockMovement)
     {
         $stockMovement->delete();
-        return Redirect::route('gestionnaire.mouvements.index')->with('success', 'Mouvement supprimé.');
+        return Redirect::route('gestionnaire.mouvements.index')->with('success', 'Mouvement de stock supprimé avec succès.');
     }
 
     // --- Entrepôts ---
