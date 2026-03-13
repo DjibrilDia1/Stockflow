@@ -125,7 +125,7 @@ const openRequestModal = (articleId) => {
                 <NewRequestModal :show="showModal" :articles="articlesDisponibles" :initialArticleId="initialArticleId"
                     @close="showModal = false" />
 
-                <section class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+                <section class="bg-white rounded-lg border border-slate-200 shadow-sm p-5">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <input v-model="searchQuery" type="text" placeholder="Rechercher par nom ou code..."
                             class="px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none">

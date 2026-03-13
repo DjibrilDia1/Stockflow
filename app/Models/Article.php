@@ -19,9 +19,8 @@ class Article extends Model
 
     /**
      * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
      */
+
     protected $fillable = [
         'art_reference',
         'art_nom',
@@ -42,8 +41,6 @@ class Article extends Model
 
     /**
      * The accessors to append to the model's array form.
-     *
-     * @var array
      */
     protected $appends = ['total_stock'];
 
@@ -77,6 +74,75 @@ class Article extends Model
     public function withdrawRequestLines(): HasMany
     {
         return $this->hasMany(LigneDemandeSortie::class, 'lds_art_id', 'art_id');
+    }
+
+    /**
+     * Scope: articles dont le stock total est inférieur ou égal au seuil d'alerte.
+     */
+    public function scopeBelowAlertThreshold($query)
+    {
+        return $query->whereRaw(
+            'COALESCE((select SUM(sta_quantite) from stocks_articles where articles.art_id = stocks_articles.sta_art_id), 0) <= art_seuil_alerte'
+        )->withSum('itemStocks as total_stock', 'sta_quantite');
+    }
+
+    /**
+     * Calcule la valeur totale du stock (somme des quantités × prix par défaut).
+     */
+    public static function totalStockValue(): float
+    {
+        return (float) (static::join('stocks_articles', 'articles.art_id', '=', 'stocks_articles.sta_art_id')
+            ->selectRaw('SUM(stocks_articles.sta_quantite * articles.art_prix_defaut) as total_value')
+            ->value('total_value') ?? 0);
+    }
+
+    /**
+     * Retourne la liste formatée des articles pour la vue demandeur
+     */
+    public static function forDemandeurDisplay(): \Illuminate\Support\Collection
+    {
+        return static::with(['category', 'itemStocks.warehouse'])->get()->map(function ($article) {
+            return [
+                'id'       => $article->art_id,
+                'code'     => $article->art_reference,
+                'name'     => $article->art_nom,
+                'category' => $article->category->cat_nom ?? 'N/A',
+                'stock'    => $article->total_stock,
+                'status'   => $article->total_stock > $article->art_seuil_alerte
+                    ? 'Disponible'
+                    : ($article->total_stock > 0 ? 'Stock bas' : 'Rupture'),
+                'warehouses' => $article->itemStocks->map(fn ($stock) => [
+                    'id'   => $stock->sta_ent_id,
+                    'name' => $stock->warehouse->ent_nom ?? 'N/A',
+                    'qty'  => $stock->sta_quantite,
+                ]),
+            ];
+        });
+    }
+
+    /**
+     * Retourne la liste simplifiée des articles disponibles pour le formulaire
+     * de demande de sortie (id, nom, entrepôts avec quantités).
+     */
+    public static function asAvailableList(): \Illuminate\Support\Collection
+    {
+        return static::with(['itemStocks.warehouse'])->get()->map(function ($article) {
+            return [
+                'id'         => $article->art_id,
+                'nom'        => $article->art_nom,
+                'warehouses' => $article->itemStocks->map(fn ($stock) => [
+                    'id'   => $stock->sta_ent_id,
+                    'name' => $stock->warehouse->ent_nom ?? 'N/A',
+                    'qty'  => $stock->sta_quantite,
+                ])->values(),
+            ];
+        });
+    }
+
+    // Articles paginer avec les relations
+    public static function getWithRelationsPaginated($perPage)
+    {
+        return self::with(['category', 'itemStocks.warehouse'])->paginate($perPage, ['*'], 'items');
     }
 
 

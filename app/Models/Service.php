@@ -27,6 +27,14 @@ class Service extends Model
     ];
 
     /**
+     * Get the users belonging to this service.
+     */
+    public function users(): HasMany
+    {
+        return $this->hasMany(User::class, 'ser_id', 'ser_id');
+    }
+
+    /**
      * Get the stock movements for the service.
      */
     public function stockMovements(): HasMany
@@ -41,5 +49,12 @@ class Service extends Model
     {
         return $this->hasMany(DemandeSortie::class, 'dso_ser_id', 'ser_id');
     }
+
+    // -------------------------- Methodes -------------------------
+    public static function getUsersCountAttribute($perPage)
+    {
+        return self::paginate($perPage, ['*'], 'services')->withQueryString();
+    }
+    
 }
 

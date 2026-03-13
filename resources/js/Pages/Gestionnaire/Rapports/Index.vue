@@ -61,10 +61,9 @@ watch(filterForm, () => {
 
 const changeTab = (tab) => {
     currentTab.value = tab;
-    router.get(route('gestionnaire.rapports.index'), { tab }, {
-        preserveState: true,
-        preserveScroll: true
-    });
+    const url = new URL(window.location);
+    url.searchParams.set('tab', tab);
+    window.history.replaceState({}, '', url);
 };
 
 const exportExcel = () => {
@@ -98,7 +97,7 @@ const barChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-        legend: { display: false }
+        legend: { display: true, position: 'bottom' }
     }
 };
 
@@ -114,7 +113,10 @@ const pieChartData = computed(() => ({
 
 const pieChartOptions = {
     responsive: true,
-    maintainAspectRatio: false
+    maintainAspectRatio: false,
+    plugins: {
+        legend: { display: true, position: 'bottom' }
+    }
 };
 
 const navigation = [
@@ -234,7 +236,11 @@ const logout = () => { if (confirm('Déconnexion ?')) router.post(route('logout'
                         <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
                             <div class="text-sm text-slate-500">Affichage de {{ movementsData.from || 0 }} à {{ movementsData.to || 0 }} sur {{ movementsData.total }} mouvements</div>
                             <div class="flex gap-2">
-                                <Link v-for="link in movementsData.links" :key="link.label" :href="link.url || '#'" v-html="link.label" :class="['px-3 py-1 rounded text-sm transition-all', link.active ? 'bg-teal-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100', !link.url ? 'opacity-50 cursor-not-allowed' : '']" preserve-scroll />
+                                <Link v-for="link in movementsData.links" :key="link.label" 
+                                    :href="link.url ? link.url + '&tab=movements' : '#'" 
+                                    v-html="link.label" 
+                                    :class="['px-3 py-1 rounded text-sm transition-all', link.active ? 'bg-teal-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100', !link.url ? 'opacity-50 cursor-not-allowed' : '']" 
+                                    preserve-scroll preserve-state />
                             </div>
                         </div>
                     </div>

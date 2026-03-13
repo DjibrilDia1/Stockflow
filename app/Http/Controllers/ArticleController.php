@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Article;
 use App\Models\Categorie;
+use App\Models\Entrepot;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -15,16 +16,13 @@ class ArticleController extends Controller
     /**
      * Affiche la liste de tous les articles.
      * Les categories associees sont pre-chargees pour optimiser les performances.
-     *
-     * @return Response La vue Inertia avec la liste des articles.
      */
     public function index(): Response
     {
         return Inertia::render('Gestionnaire/Articles', [
-            'items' => Article::with(['category', 'itemStocks.warehouse'])->paginate(3, ['*'], 'items'),
-            'categories_all' => Categorie::all(['cat_id', 'cat_nom']),
-            'categories' => Categorie::paginate(3, ['*'], 'categories'),
-            'warehouses' => \App\Models\Entrepot::all(['ent_id', 'ent_nom']),
+            'items'          => Article::getWithRelationsPaginated(3),
+            'categories_all' => Categorie::getAllCategories(),
+            'categories'     => Categorie::getWithRelationsPaginated(3),
         ]);
     }
 
@@ -34,60 +32,14 @@ class ArticleController extends Controller
     public function demandeurIndex(): Response
     {
         return Inertia::render('Demandeur/Articles', [
-            'articles' => Article::with(['category', 'itemStocks.warehouse'])->get()->map(function($article) {
-                return [
-                    'id' => $article->art_id,
-                    'code' => $article->art_reference,
-                    'name' => $article->art_nom,
-                    'category' => $article->category->cat_nom ?? 'N/A',
-                    'stock' => $article->total_stock,
-                    'status' => $article->total_stock > $article->art_seuil_alerte ? 'Disponible' : ($article->total_stock > 0 ? 'Stock bas' : 'Rupture'),
-                    'warehouses' => $article->itemStocks->map(function($stock) {
-                        return [
-                            'id' => $stock->sta_ent_id,
-                            'name' => $stock->warehouse->ent_nom ?? 'N/A',
-                            'qty' => $stock->sta_quantite,
-                        ];
-                    }),
-                ];
-            }),
-            'categories' => Categorie::all(['cat_id', 'cat_nom']),
-            'articlesDisponibles' => Article::with(['itemStocks.warehouse'])
-                ->get()
-                ->map(function($article) {
-                    return [
-                        'id' => $article->art_id,
-                        'nom' => $article->art_nom,
-                        'warehouses' => $article->itemStocks->map(function($stock) {
-                            return [
-                                'id' => $stock->sta_ent_id,
-                                'name' => $stock->warehouse->ent_nom ?? 'N/A',
-                                'qty' => $stock->sta_quantite,
-                            ];
-                        })->values()
-                    ];
-                }),
-        ]);
-    }
-
-    /**
-     * Affiche le formulaire de creation d'un nouvel article.
-     * Fournit la liste des categories pour le formulaire de selection.
-     *
-     * @return Response La vue Inertia pour creer un article.
-     */
-    public function create(): Response
-    {
-        return Inertia::render('Gestionnaire/Articles/Create', [
-            'categories' => Categorie::all(['cat_id', 'cat_nom']),
+            'articles'            => Article::forDemandeurDisplay(),
+            'categories'          => Categorie::all(['cat_id', 'cat_nom']),
+            'articlesDisponibles' => Article::asAvailableList(),
         ]);
     }
 
     /**
      * Enregistre un nouvel article dans la base de donnees.
-     *
-     * @param  Request  $request Les donnees du formulaire de creation.
-     * @return RedirectResponse Une redirection vers la liste des articles.
      */
     public function store(Request $request): RedirectResponse
     {
@@ -107,40 +59,8 @@ class ArticleController extends Controller
     }
 
     /**
-     * Affiche les details d'un article specifique.
-     *
-     * @param  Article  $item Le modele de l'article e afficher.
-     * @return Response La vue Inertia avec les details de l'article.
-     */
-    public function show(Article $item): Response
-    {
-        // Pre-charge la categorie pour l'affichage
-        $item->load('category');
-        return Inertia::render('Gestionnaire/Articles/Show', [
-            'item' => $item,
-        ]);
-    }
-
-    /**
-     * Affiche le formulaire de modification d'un article existant.
-     *
-     * @param  Article  $item Le modele de l'article e modifier.
-     * @return Response La vue Inertia pour modifier l'article.
-     */
-    public function edit(Article $item): Response
-    {
-        return Inertia::render('Gestionnaire/Articles/Edit', [
-            'item' => $item,
-            'categories' => Categorie::all(['cat_id', 'cat_nom']),
-        ]);
-    }
-
-    /**
      * Met e jour un article specifique dans la base de donnees.
      *
-     * @param  Request  $request Les nouvelles donnees du formulaire.
-     * @param  Article  $item Le modele de l'article e mettre e jour.
-     * @return RedirectResponse Une redirection vers la liste des articles.
      */
     public function update(Request $request, Article $item): RedirectResponse
     {
@@ -162,8 +82,6 @@ class ArticleController extends Controller
     /**
      * Supprime un article specifique de la base de donnees.
      *
-     * @param  Article  $item Le modele de l'article e supprimer.
-     * @return RedirectResponse Une redirection vers la liste des articles.
      */
     public function destroy(Article $item): RedirectResponse
     {

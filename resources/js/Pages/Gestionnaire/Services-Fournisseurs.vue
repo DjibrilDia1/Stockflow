@@ -6,23 +6,44 @@ const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gestionnaire');
 
 const props = defineProps({
-    services: Object,
-    fournisseurs: Object,
+    services: {
+        type: Object,
+        default: () => ({ data: [], links: [], total: 0 })
+    },
+    fournisseurs: {
+        type: Object,
+        default: () => ({ data: [], links: [], total: 0 })
+    },
 });
 
-// État pour basculer entre les deux onglets
-const activeTab = ref('services'); // 'services' ou 'fournisseurs'
-
+const activeTab = ref('services');
 const showModal = ref(false);
 const isEditing = ref(false);
 
+// Recherche
+const searchService = ref('');
+const searchFournisseur = ref('');
+
+const filteredServices = computed(() =>
+    props.services?.data?.filter(s =>
+        (s.ser_nom ?? '').toLowerCase().includes(searchService.value.toLowerCase()) ||
+        (s.ser_code ?? '').toLowerCase().includes(searchService.value.toLowerCase())
+    ) ?? []
+);
+
+const filteredFournisseurs = computed(() =>
+    props.fournisseurs?.data?.filter(f =>
+        (f.fou_nom ?? '').toLowerCase().includes(searchFournisseur.value.toLowerCase()) ||
+        (f.fou_email ?? '').toLowerCase().includes(searchFournisseur.value.toLowerCase())
+    ) ?? []
+);
+
 // Formulaires
 const serviceForm = useForm({
-    ser_id: null,
-    ser_nom: '',
+    ser_id:   null,
+    ser_nom:  '',
     ser_code: '',
-    ser_responsable: '',
-    ser_etage: '',
+    ser_type: '',
 });
 
 const fournisseurForm = useForm({
@@ -31,10 +52,9 @@ const fournisseurForm = useForm({
     fou_email: '',
     fou_telephone: '',
     fou_adresse: '',
-    fou_categorie: '',
 });
 
-// Logique d'ouverture Modal
+// Logique Modal
 const openAddModal = () => {
     isEditing.value = false;
     if (activeTab.value === 'services') {
@@ -51,11 +71,10 @@ const openEditModal = (item) => {
     isEditing.value = true;
     if (activeTab.value === 'services') {
         serviceForm.clearErrors();
-        serviceForm.ser_id = item.ser_id;
-        serviceForm.ser_nom = item.ser_nom;
+        serviceForm.ser_id   = item.ser_id;
+        serviceForm.ser_nom  = item.ser_nom;
         serviceForm.ser_code = item.ser_code;
-        serviceForm.ser_responsable = item.ser_responsable;
-        serviceForm.ser_etage = item.ser_etage;
+        serviceForm.ser_type = item.ser_type ?? '';
     } else {
         fournisseurForm.clearErrors();
         fournisseurForm.fou_id = item.fou_id;
@@ -63,7 +82,6 @@ const openEditModal = (item) => {
         fournisseurForm.fou_email = item.fou_email;
         fournisseurForm.fou_telephone = item.fou_telephone;
         fournisseurForm.fou_adresse = item.fou_adresse;
-        fournisseurForm.fou_categorie = item.fou_categorie;
     }
     showModal.value = true;
 };
@@ -193,107 +211,169 @@ const logout = () => {
 
                 </div>
 
-                <div class="flex gap-2 p-1 bg-slate-200/50 rounded-xl w-fit">
-                    <button @click="activeTab = 'services'"
-                        :class="[activeTab === 'services' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']"
-                        class="px-6 py-2 rounded-lg text-sm font-bold transition-all">
+                <!-- Tabs Navigation -->
+                <div class="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit">
+                    <button @click="activeTab = 'services'" :class="[
+                        'flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all',
+                        activeTab === 'services'
+                            ? 'bg-white text-teal-700 shadow-sm border border-slate-200'
+                            : 'text-slate-500 hover:text-slate-700'
+                    ]">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
                         Services Internes
+                        <span class="ml-1 px-2 py-0.5 rounded-full text-xs font-bold"
+                            :class="activeTab === 'services' ? 'bg-teal-100 text-teal-700' : 'bg-slate-200 text-slate-500'">
+                            {{ props.services?.total ?? 0 }}
+                        </span>
                     </button>
-                    <button @click="activeTab = 'fournisseurs'"
-                        :class="[activeTab === 'fournisseurs' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']"
-                        class="px-6 py-2 rounded-lg text-sm font-bold transition-all">
+                    <button @click="activeTab = 'fournisseurs'" :class="[
+                        'flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all',
+                        activeTab === 'fournisseurs'
+                            ? 'bg-white text-teal-700 shadow-sm border border-slate-200'
+                            : 'text-slate-500 hover:text-slate-700'
+                    ]">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
                         Fournisseurs
+                        <span class="ml-1 px-2 py-0.5 rounded-full text-xs font-bold"
+                            :class="activeTab === 'fournisseurs' ? 'bg-teal-100 text-teal-700' : 'bg-slate-200 text-slate-500'">
+                            {{ props.fournisseurs?.total ?? 0 }}
+                        </span>
                     </button>
                 </div>
 
-                <div v-if="activeTab === 'services'" class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                    <table class="w-full text-left">
-                        <thead
-                            class="bg-slate-50 border-b border-slate-100 text-xs font-semibold text-slate-500 uppercase">
-                            <tr>
-                                <th class="px-6 py-4">Nom du Service</th>
-                                <th class="px-6 py-4">Code</th>
-                                <th class="px-6 py-4">Responsable</th>
-                                <th class="px-6 py-4">Localisation</th>
-                                <th class="px-6 py-4 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-50">
-                            <tr v-for="s in services.data" :key="s.ser_id" class="hover:bg-slate-50/50 transition-colors">
-                                <td class="px-6 py-4 font-bold text-slate-700">{{ s.ser_nom }}</td>
-                                <td class="px-6 py-4 text-sm text-slate-500">{{ s.ser_code }}</td>
-                                <td class="px-6 py-4 text-sm text-slate-600">{{ s.ser_responsable || 'N/A' }}</td>
-                                <td class="px-6 py-4 text-sm"><span class="bg-slate-100 px-2 py-1 rounded text-slate-500">{{ s.ser_etage || 'N/A' }}</span></td>
-                                <td class="px-6 py-4 text-right">
-                                    <div class="flex justify-end gap-2">
-                                        <button @click="openEditModal(s)" class="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                            </svg>
-                                        </button>
-                                        <button @click="deleteItem(s.ser_id)" class="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition-colors">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </td>
-
-                            </tr>
-
-                        </tbody>
-                    </table>
-                    <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-col items-center gap-2">
-                        <div class="flex items-center gap-1">
-                            <Link v-for="(link, k) in services.links" :key="k" :href="link.url || '#'" v-html="link.label"
-                                class="px-3 py-1 text-sm rounded transition-all"
-                                :class="{'bg-teal-600 text-white font-bold': link.active, 'text-slate-400 hover:text-teal-600': !link.active && link.url, 'text-slate-300 cursor-not-allowed': !link.url}" />
+                <!-- Table Services -->
+                <div v-show="activeTab === 'services'" class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-slate-100">
+                        <div class="relative max-w-sm">
+                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <input v-model="searchService" type="text" placeholder="Rechercher par nom ou code..."
+                                class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none bg-slate-50" />
                         </div>
                     </div>
-                </div>
 
-                <div v-else class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                     <table class="w-full text-left">
                         <thead class="bg-slate-50 border-b border-slate-100 text-xs font-semibold text-slate-500 uppercase">
                             <tr>
-                                <th class="px-6 py-4">Raison Sociale</th>
-                                <th class="px-6 py-4">Catégorie</th>
-                                <th class="px-6 py-4">Téléphone</th>
-                                <th class="px-6 py-4">Email</th>
+                                <th class="px-6 py-4">Nom du Service</th>
+                                <th class="px-6 py-4">Code</th>
+                                <th class="px-6 py-4">Type</th>
+                                <th class="px-6 py-4">Utilisateurs</th>
+                                <th class="px-6 py-4">Date de création</th>
                                 <th class="px-6 py-4 text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-50">
-                            <tr v-for="f in fournisseurs.data" :key="f.fou_id" class="hover:bg-slate-50/50 transition-colors">
-                                <td class="px-6 py-4 font-bold text-slate-700">{{ f.fou_nom }}</td>
-                                <td class="px-6 py-4">
-                                    <span class="px-2 py-1 rounded-md text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-100 uppercase">{{ f.fou_categorie || 'N/A' }}</span>
+                        <tbody class="divide-y divide-slate-100">
+                            <tr v-for="s in filteredServices" :key="s.ser_id" class="hover:bg-slate-50/50 transition-colors">
+                                <td class="px-6 py-4 font-semibold text-slate-800">{{ s.ser_nom }}</td>
+                                <td class="px-6 py-4 text-sm text-slate-600">{{ s.ser_code || '—' }}</td>
+                                <td class="px-6 py-4 text-sm text-slate-600">{{ s.ser_type || '—' }}</td>
+                                <td class="px-6 py-4 text-sm text-slate-600">{{ s.users_count || 0 }}</td>
+                                <td class="px-6 py-4 text-sm text-slate-500">
+                                    {{ s.ser_created_at ? new Date(s.ser_created_at).toLocaleDateString() : 'N/A' }}
                                 </td>
-                                <td class="px-6 py-4 text-sm text-slate-600">{{ f.fou_telephone }}</td>
-                                <td class="px-6 py-4 text-sm text-teal-600 underline">{{ f.fou_email }}</td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex justify-end gap-2">
-                                        <button @click="openEditModal(f)" class="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <button @click="openEditModal(s)" class="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="Modifier">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                             </svg>
                                         </button>
-                                        <button @click="deleteItem(f.fou_id)" class="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition-colors">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <button @click="deleteItem(s.ser_id)" class="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition-colors" title="Supprimer">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                         </button>
                                     </div>
                                 </td>
                             </tr>
+                            <tr v-if="filteredServices.length === 0">
+                                <td colspan="6" class="px-6 py-10 text-center text-slate-400 text-sm">
+                                    Aucun service trouvé pour « {{ searchService }} »
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
+                    <!-- Pagination Services -->
                     <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-col items-center gap-2">
                         <div class="flex items-center gap-1">
-                            <Link v-for="(link, k) in fournisseurs.links" :key="k" :href="link.url || '#'" v-html="link.label"
+                            <Link v-for="(link, k) in (props.services?.links ?? [])" :key="k" :href="link.url || '#'" v-html="link.label"
                                 class="px-3 py-1 text-sm rounded transition-all"
                                 :class="{'bg-teal-600 text-white font-bold': link.active, 'text-slate-400 hover:text-teal-600': !link.active && link.url, 'text-slate-300 cursor-not-allowed': !link.url}" />
                         </div>
+                        <span class="text-xs text-slate-400">{{ props.services?.from ?? 0 }}–{{ props.services?.to ?? 0 }} sur {{ props.services?.total ?? 0 }} services</span>
+                    </div>
+                </div>
+
+                <!-- Table Fournisseurs -->
+                <div v-show="activeTab === 'fournisseurs'" class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-slate-100">
+                        <div class="relative max-w-sm">
+                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <input v-model="searchFournisseur" type="text" placeholder="Rechercher par nom ou email..."
+                                class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none bg-slate-50" />
+                        </div>
+                    </div>
+
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50 border-b border-slate-100 text-xs font-semibold text-slate-500 uppercase">
+                            <tr>
+                                <th class="px-6 py-4">Nom / Raison Sociale</th>
+                                <th class="px-6 py-4">Email</th>
+                                <th class="px-6 py-4">Adresse</th>
+                                <th class="px-6 py-4">Date de création</th>
+                                <th class="px-6 py-4">Téléphone</th>
+                                <th class="px-6 py-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <tr v-for="f in filteredFournisseurs" :key="f.fou_id" class="hover:bg-slate-50/50 transition-colors">
+                                <td class="px-6 py-4 font-semibold text-slate-800">{{ f.fou_nom }}</td>
+                                <td class="px-6 py-4 text-sm text-slate-600">{{ f.fou_email || '—' }}</td>
+                                <td class="px-6 py-4 text-sm text-slate-600">{{ f.fou_adresse || '—' }}</td>
+                                <td class="px-6 py-4 text-sm text-slate-500">
+                                    {{ f.fou_created_at ? new Date(f.fou_created_at).toLocaleDateString() : '—' }} 
+                                </td>
+                                <td class="px-6 py-4 text-sm text-slate-600">{{ f.fou_telephone || '—' }}</td>
+                                <td class="px-6 py-4 text-right">
+                                    <div class="flex justify-end gap-2">
+                                        <button @click="openEditModal(f)" class="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="Modifier">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                            </svg>
+                                        </button>
+                                        <button @click="deleteItem(f.fou_id)" class="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition-colors" title="Supprimer">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr v-if="filteredFournisseurs.length === 0">
+                                <td colspan="6" class="px-6 py-10 text-center text-slate-400 text-sm">
+                                    Aucun fournisseur trouvé pour « {{ searchFournisseur }} »
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <!-- Pagination Fournisseurs -->
+                    <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-col items-center gap-2">
+                        <div class="flex items-center gap-1">
+                            <Link v-for="(link, k) in (props.fournisseurs?.links ?? [])" :key="k" :href="link.url || '#'" v-html="link.label"
+                                class="px-3 py-1 text-sm rounded transition-all"
+                                :class="{'bg-teal-600 text-white font-bold': link.active, 'text-slate-400 hover:text-teal-600': !link.active && link.url, 'text-slate-300 cursor-not-allowed': !link.url}" />
+                        </div>
+                        <span class="text-xs text-slate-400">{{ props.fournisseurs?.from ?? 0 }}–{{ props.fournisseurs?.to ?? 0 }} sur {{ props.fournisseurs?.total ?? 0 }} fournisseurs</span>
                     </div>
                 </div>
             </main>
@@ -312,43 +392,54 @@ const logout = () => {
                         <div v-if="activeTab === 'services'" class="space-y-4">
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Nom du Service</label>
-                                <input v-model="serviceForm.ser_nom" type="text" required class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500">
+                                <input v-model="serviceForm.ser_nom" type="text" required
+                                    class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500"
+                                    :class="{ 'border-red-400': serviceForm.errors.ser_nom }">
+                                <p v-if="serviceForm.errors.ser_nom" class="text-red-500 text-xs mt-1">{{ serviceForm.errors.ser_nom }}</p>
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Code Service</label>
-                                <input v-model="serviceForm.ser_code" type="text" required class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500">
+                                <input v-model="serviceForm.ser_code" type="text" required
+                                    class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500"
+                                    :class="{ 'border-red-400': serviceForm.errors.ser_code }">
+                                <p v-if="serviceForm.errors.ser_code" class="text-red-500 text-xs mt-1">{{ serviceForm.errors.ser_code }}</p>
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">Responsable</label>
-                                <input v-model="serviceForm.ser_responsable" type="text" class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">Localisation (Étage)</label>
-                                <input v-model="serviceForm.ser_etage" type="text" placeholder="ex: 2ème étage" class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500">
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Type</label>
+                                <select v-model="serviceForm.ser_type"
+                                    class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500 bg-white text-sm">
+                                    <option value="">— Non défini —</option>
+                                    <option value="Interne">
+                                        Interne
+                                    </option>
+                                    <option value="Externe">
+                                        Externe
+                                    </option>
+                                </select>
                             </div>
                         </div>
                         <div v-else class="space-y-4">
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Nom / Raison Sociale</label>
                                 <input v-model="fournisseurForm.fou_nom" type="text" required class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">Catégorie d'activité</label>
-                                <input v-model="fournisseurForm.fou_categorie" type="text" placeholder="ex: Plomberie, Sécurité, etc." class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500">
+                                <p v-if="fournisseurForm.errors.fou_nom" class="text-red-500 text-xs mt-1">{{ fournisseurForm.errors.fou_nom }}</p>
                             </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-700 mb-1">Téléphone</label>
                                     <input v-model="fournisseurForm.fou_telephone" type="text" class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500">
+                                    <p v-if="fournisseurForm.errors.fou_telephone" class="text-red-500 text-xs mt-1">{{ fournisseurForm.errors.fou_telephone }}</p>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-700 mb-1">Email</label>
                                     <input v-model="fournisseurForm.fou_email" type="email" class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500">
+                                    <p v-if="fournisseurForm.errors.fou_email" class="text-red-500 text-xs mt-1">{{ fournisseurForm.errors.fou_email }}</p>
                                 </div>
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Adresse</label>
                                 <textarea v-model="fournisseurForm.fou_adresse" rows="2" class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500"></textarea>
+                                <p v-if="fournisseurForm.errors.fou_adresse" class="text-red-500 text-xs mt-1">{{ fournisseurForm.errors.fou_adresse }}</p>
                             </div>
                         </div>
 

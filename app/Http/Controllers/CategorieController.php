@@ -11,33 +11,9 @@ use Inertia\Response;
 
 class CategorieController extends Controller
 {
-    /**
-     * Affiche la liste de toutes les cat�gories.
-     *
-     * @return Response La vue Inertia avec la liste des cat�gories.
-     */
-    public function index(): Response
-    {
-        return Inertia::render('Gestionnaire/Categories/Index', [
-            'categories' => Categorie::all(),
-        ]);
-    }
 
     /**
-     * Affiche le formulaire de cr�ation d'une nouvelle cat�gorie.
-     *
-     * @return Response La vue Inertia pour cr�er une cat�gorie.
-     */
-    public function create(): Response
-    {
-        return Inertia::render('Gestionnaire/Categories/Create');
-    }
-
-    /**
-     * Enregistre une nouvelle cat�gorie dans la base de donn�es.
-     *
-     * @param  Request  $request Les donn�es du formulaire de cr�ation.
-     * @return RedirectResponse Une redirection vers la liste des cat�gories.
+     * Enregistre une nouvelle categorie dans la base de donnees.
      */
     public function store(Request $request): RedirectResponse
     {
@@ -53,37 +29,7 @@ class CategorieController extends Controller
     }
 
     /**
-     * Affiche les d�tails d'une cat�gorie sp�cifique.
-     *
-     * @param  Categorie  $category Le mod�le de la cat�gorie � afficher.
-     * @return Response La vue Inertia avec les d�tails de la cat�gorie.
-     */
-    public function show(Categorie $category): Response
-    {
-        return Inertia::render('Gestionnaire/Categories/Show', [
-            'category' => $category,
-        ]);
-    }
-
-    /**
-     * Affiche le formulaire de modification d'une cat�gorie existante.
-     *
-     * @param  Categorie  $category Le mod�le de la cat�gorie � modifier.
-     * @return Response La vue Inertia pour modifier la cat�gorie.
-     */
-    public function edit(Categorie $category): Response
-    {
-        return Inertia::render('Gestionnaire/Categories/Edit', [
-            'category' => $category,
-        ]);
-    }
-
-    /**
-     * Met � jour une cat�gorie sp�cifique dans la base de donn�es.
-     *
-     * @param  Request  $request Les nouvelles donn�es du formulaire.
-     * @param  Categorie  $category Le mod�le de la cat�gorie � mettre � jour.
-     * @return RedirectResponse Une redirection vers la liste des cat�gories.
+     * Mettre jour une categorie specifique dans la base de donnees.
      */
     public function update(Request $request, Categorie $category): RedirectResponse
     {
@@ -99,18 +45,15 @@ class CategorieController extends Controller
     }
 
     /**
-     * Supprime une cat�gorie sp�cifique de la base de donn�es.
-     *
-     * @param  Categorie  $category Le mod�le de la cat�gorie � supprimer.
-     * @return RedirectResponse Une redirection vers la liste des cat�gories.
+     * Supprime une categorie specifique de la base de donnees.
      */
     public function destroy(Categorie $category): RedirectResponse
     {
         try {
             $category->delete();
-            return Redirect::route('gestionnaire.articles.index')->with('success', 'Cat�gorie supprim�e avec succ�s.');
+            return Redirect::route('gestionnaire.articles.index')->with('success', 'Categorie supprimee avec succes.');
         } catch (\Exception $e) {
-            return Redirect::route('gestionnaire.articles.index')->with('error', 'Impossible de supprimer cette cat�gorie car elle contient des articles.');
+            return Redirect::route('gestionnaire.articles.index')->with('error', 'Impossible de supprimer cette categorie car elle contient des articles.');
         }
     }
 }

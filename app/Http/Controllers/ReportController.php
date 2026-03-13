@@ -8,10 +8,8 @@ use App\Models\StockArticle;
 use App\Models\Entrepot;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\MouvementsExport;
-use Illuminate\Support\Facades\DB;
 use App\Enums\UserRole;
 
 class ReportController extends Controller
@@ -27,113 +25,84 @@ class ReportController extends Controller
             default => 'Auth/Login'
         };
 
+        $lowStockData = [];
+        $movementsData = [
+            'data' => [],
+            'links' => [],
+            'from' => null,
+            'to' => null,
+            'total' => 0,
+        ];
+        $kpiData = [
+            'underThreshold' => 0,
+            'lowStock' => 0,
+            'outOfStock' => 0,
+            'available' => 0,
+            'movementsThisMonth' => 0,
+            'mostConsumedItem' => [
+                'name' => '-',
+                'quantity' => 0,
+            ],
+            'totalArticles' => 0,
+        ];
+        $entrepots = [];
+        $articles = [];
+
+        $lowStockData = $this->getLowStockData();
+        $movementsData = $this->getMovementJournalData($request);
+        $kpiData = $this->getKpiData();
+        $entrepots = Entrepot::all(['ent_id', 'ent_nom']);
+        $articles = Article::all(['art_id', 'art_nom']);
+
         return Inertia::render($view, [
             'activeTab' => $tab,
             'filters' => $request->only(['article', 'entrepot', 'type', 'date_start', 'date_end']),
-            'lowStockData' => $this->getLowStockData(),
-            'movementsData' => $this->getMovementJournalData($request),
-            'kpiData' => $this->getKpiData(),
-            'entrepots' => Entrepot::all(['ent_id', 'ent_nom']),
-            'articles' => Article::all(['art_id', 'art_nom']),
+            'lowStockData' => $lowStockData,
+            'movementsData' => $movementsData,
+            'kpiData' => $kpiData,
+            'entrepots' => $entrepots,
+            'articles' => $articles,
         ]);
     }
 
     private function getLowStockData()
     {
-        return StockArticle::join('articles', 'stocks_articles.sta_art_id', '=', 'articles.art_id')
-            ->join('entrepots', 'stocks_articles.sta_ent_id', '=', 'entrepots.ent_id')
-            ->where(function($query) {
-                $query->whereColumn('sta_quantite', '<', 'art_seuil_alerte')
-                      ->orWhereColumn('sta_quantite', '<', 'art_stock_securite');
-            })
-            ->select('stocks_articles.*', 'articles.art_reference', 'articles.art_nom', 'articles.art_seuil_alerte', 'articles.art_stock_securite', 'entrepots.ent_nom')
-            ->get()
-            ->map(function ($stock) {
-                return [
-                    'id' => $stock->sta_id,
-                    'reference' => $stock->art_reference,
-                    'nom' => $stock->art_nom,
-                    'entrepot' => $stock->ent_nom,
-                    'stock_actuel' => $stock->sta_quantite,
-                    'seuil_bas' => $stock->art_seuil_alerte,
-                    'stock_securite' => $stock->art_stock_securite,
-                    'statut' => $stock->sta_quantite < $stock->art_stock_securite ? 'Critique' : 'Alerte',
-                ];
-            });
+        return StockArticle::lowStockReport();
     }
 
     private function getMovementJournalData(Request $request)
     {
-        $query = MouvementStock::with(['item', 'warehouse', 'supplier', 'service', 'user'])
-            ->orderBy('mvs_date_mouvement', 'desc');
-
-        if ($request->filled('article')) {
-            $query->where('mvs_art_id', $request->article);
-        }
-        if ($request->filled('entrepot')) {
-            $query->where('mvs_ent_id', $request->entrepot);
-        }
-        if ($request->filled('type')) {
-            $query->where('mvs_type', $request->type);
-        }
-        if ($request->filled('date_start')) {
-            $query->whereDate('mvs_date_mouvement', '>=', $request->date_start);
-        }
-        if ($request->filled('date_end')) {
-            $query->whereDate('mvs_date_mouvement', '<=', $request->date_end);
-        }
-
-        return $query->paginate(10)->withQueryString();
+        return MouvementStock::with(['item', 'warehouse', 'supplier', 'service', 'user'])
+            ->filtered($request->only(['article', 'entrepot', 'type', 'date_start', 'date_end']))
+            ->orderBy('mvs_date_mouvement', 'desc')
+            ->paginate(3)
+            ->withQueryString();
     }
 
     private function getKpiData()
     {
-        $now = Carbon::now();
-        $startOfMonth = $now->copy()->startOfMonth();
+        $totalArticles      = Article::count();
+        $lowStockCount      = StockArticle::lowStock()->count();
+        $outOfStockCount    = StockArticle::outOfStock()->count();
+        $movementsThisMonth = MouvementStock::thisMonth()->count();
+        $availableCount     = StockArticle::available()->count();
 
-        // 1. Total Articles Count
-        $totalArticles = Article::count();
-
-        // 2. Low Stock Articles Count (Articles where at least one warehouse is below threshold)
-        $lowStockCount = StockArticle::join('articles', 'stocks_articles.sta_art_id', '=', 'articles.art_id')
-            ->whereColumn('sta_quantite', '<', 'art_seuil_alerte')
-            ->where('sta_quantite', '>', 0)
-            ->count();
-
-        // 3. Out of Stock Articles Count (Articles where at least one warehouse is at 0)
-        $outOfStockCount = StockArticle::where('sta_quantite', '<=', 0)->count();
-
-        // 4. Movements This Month
-        $movementsThisMonth = MouvementStock::whereBetween('mvs_date_mouvement', [$startOfMonth, $now])->count();
-
-        // 5. Most Consumed Item
-        $mostConsumedItem = MouvementStock::where('mvs_type', 'OUT')
-            ->select('mvs_art_id', DB::raw('SUM(ABS(mvs_quantite)) as total_qty'))
-            ->groupBy('mvs_art_id')
-            ->orderByDesc('total_qty')
-            ->first();
-            
+        $mostConsumedItem     = MouvementStock::mostConsumedArticle();
         $mostConsumedItemName = '-';
         if ($mostConsumedItem) {
             $article = Article::find($mostConsumedItem->mvs_art_id);
             $mostConsumedItemName = $article ? $article->art_nom : '-';
         }
 
-        // 6. Available stock count (Above threshold)
-        // For the sake of simplification, we consider an item "available" if its stock > threshold
-        $availableCount = StockArticle::join('articles', 'stocks_articles.sta_art_id', '=', 'articles.art_id')
-            ->whereColumn('sta_quantite', '>=', 'art_seuil_alerte')
-            ->count();
-
         return [
-            'underThreshold' => $lowStockCount + $outOfStockCount,
-            'lowStock' => $lowStockCount,
-            'outOfStock' => $outOfStockCount,
-            'available' => $availableCount,
+            'underThreshold'   => $lowStockCount + $outOfStockCount,
+            'lowStock'         => $lowStockCount,
+            'outOfStock'       => $outOfStockCount,
+            'available'        => $availableCount,
             'movementsThisMonth' => $movementsThisMonth,
             'mostConsumedItem' => [
-                'name' => $mostConsumedItemName,
-                'quantity' => $mostConsumedItem ? $mostConsumedItem->total_qty : 0
+                'name'     => $mostConsumedItemName,
+                'quantity' => $mostConsumedItem ? $mostConsumedItem->total_qty : 0,
             ],
             'totalArticles' => $totalArticles,
         ];

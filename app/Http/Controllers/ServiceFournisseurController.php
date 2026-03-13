@@ -14,38 +14,40 @@ class ServiceFournisseurController extends Controller
     public function index(Request $request): Response
     {
         return Inertia::render('Gestionnaire/Services-Fournisseurs', [
-            'services' => Service::paginate(3, ['*'], 'services')->withQueryString(),
-            'fournisseurs' => Fournisseur::paginate(3, ['*'], 'fournisseurs')->withQueryString(),
+            'services'     => Service::getUsersCountAttribute(3),
+            'fournisseurs' => Fournisseur::getUsersCountAttribute(3),
         ]);
     }
 
     // --- Services ---
+
+    // Enregistrement d'un service
     public function storeService(Request $request)
     {
         $validated = $request->validate([
-            'ser_nom' => 'required|string|max:255',
+            'ser_nom'  => 'required|string|max:255',
             'ser_code' => 'required|string|max:255|unique:services,ser_code',
-            'ser_responsable' => 'nullable|string|max:255',
-            'ser_etage' => 'nullable|string|max:255',
+            'ser_type' => 'nullable|string|max:255',
         ]);
 
         Service::create($validated);
         return Redirect::back()->with('success', 'Service ajouté.');
     }
 
+    // Mise à jour d'un service
     public function updateService(Request $request, Service $service)
     {
         $validated = $request->validate([
-            'ser_nom' => 'required|string|max:255',
+            'ser_nom'  => 'required|string|max:255',
             'ser_code' => 'required|string|max:255|unique:services,ser_code,' . $service->ser_id . ',ser_id',
-            'ser_responsable' => 'nullable|string|max:255',
-            'ser_etage' => 'nullable|string|max:255',
+            'ser_type' => 'nullable|string|max:255',
         ]);
 
         $service->update($validated);
         return Redirect::back()->with('success', 'Service mis à jour.');
     }
 
+    // Suppression d'un service
     public function destroyService(Service $service)
     {
         $service->delete();
@@ -53,6 +55,8 @@ class ServiceFournisseurController extends Controller
     }
 
     // --- Fournisseurs ---
+
+    // Enregistrement d'un fournisseur
     public function storeFournisseur(Request $request)
     {
         $validated = $request->validate([
@@ -60,13 +64,13 @@ class ServiceFournisseurController extends Controller
             'fou_email' => 'required|email|max:255|unique:fournisseurs',
             'fou_telephone' => 'required|string|max:20',
             'fou_adresse' => 'nullable|string',
-            'fou_categorie' => 'nullable|string',
         ]);
 
         Fournisseur::create($validated);
         return Redirect::back()->with('success', 'Fournisseur ajouté.');
     }
 
+    // Mise à jour d'un fournisseur
     public function updateFournisseur(Request $request, Fournisseur $fournisseur)
     {
         $validated = $request->validate([
@@ -74,13 +78,13 @@ class ServiceFournisseurController extends Controller
             'fou_email' => 'required|email|max:255|unique:fournisseurs,fou_email,' . $fournisseur->fou_id . ',fou_id',
             'fou_telephone' => 'required|string|max:20',
             'fou_adresse' => 'nullable|string',
-            'fou_categorie' => 'nullable|string',
         ]);
 
         $fournisseur->update($validated);
         return Redirect::back()->with('success', 'Fournisseur mis à jour.');
     }
 
+    // Suppression d'un fournisseur
     public function destroyFournisseur(Fournisseur $fournisseur)
     {
         $fournisseur->delete();

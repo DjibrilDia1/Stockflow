@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Service;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -31,11 +30,11 @@ class UserController extends Controller
         ]);
 
         User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'role' => $validated['role'],
-            'ser_id' => $validated['ser_id'],
+            'name'     => $validated['name'],
+            'email'    => $validated['email'],
+            'password' => $validated['password'],
+            'role'     => $validated['role'],
+            'ser_id'   => $validated['ser_id'],
         ]);
 
         return Redirect::route('gestionnaire.utilisateurs.index')->with('success', 'Utilisateur créé avec succès.');
@@ -51,16 +50,18 @@ class UserController extends Controller
             'password' => 'nullable|string|min:8',
         ]);
 
-        $user->update([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'role' => $validated['role'],
+        $data = [
+            'name'   => $validated['name'],
+            'email'  => $validated['email'],
+            'role'   => $validated['role'],
             'ser_id' => $validated['ser_id'],
-        ]);
+        ];
 
         if ($request->filled('password')) {
-            $user->update(['password' => Hash::make($validated['password'])]);
+            $data['password'] = $validated['password'];
         }
+
+        $user->update($data);
 
         return Redirect::route('gestionnaire.utilisateurs.index')->with('success', 'Utilisateur mis à jour.');
     }

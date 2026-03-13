@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\DemandeSortie;
+use App\Models\StockArticle;
 use App\Models\Service;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -30,40 +31,40 @@ class DemandeSortieController extends Controller
     public function demandeurIndex(): Response
     {
         return Inertia::render('Demandeur/Demandes', [
-            'requests' => DemandeSortie::where('dso_demandeur_id', auth()->id())
+            'requests' => DemandeSortie::forUser(auth()->id())
                 ->with(['lines.item'])
                 ->latest()
                 ->get()
-                ->map(function($d) {
+                ->map(function ($d) {
                     return [
-                        'id' => $d->dso_id,
-                        'ref' => 'DSO-' . str_pad($d->dso_id, 5, '0', STR_PAD_LEFT),
-                        'type' => 'Retrait',
+                        'id'      => $d->dso_id,
+                        'ref'     => 'DSO-' . str_pad($d->dso_id, 5, '0', STR_PAD_LEFT),
+                        'type'    => 'Retrait',
                         'article' => $d->lines->first()->item->art_nom ?? 'Multiples',
-                        'qty' => $d->lines->sum('lds_qte_demandee'),
-                        'date' => $d->dso_created_at->format('d/m/Y'),
-                        'status' => match($d->dso_statut) {
-                            'DRAFT' => 'En validation',
-                            'APPROVED' => 'En preparation',
+                        'qty'     => $d->lines->sum('lds_qte_demandee'),
+                        'date'    => $d->dso_created_at->format('d/m/Y'),
+                        'status'  => match ($d->dso_statut) {
+                            'DRAFT'     => 'En validation',
+                            'APPROVED'  => 'En preparation',
                             'FULFILLED' => 'Prete',
-                            'REJECTED' => 'Rejetee',
-                            default => $d->dso_statut
+                            'REJECTED'  => 'Rejetee',
+                            default     => $d->dso_statut,
                         },
                     ];
                 }),
             'articlesDisponibles' => \App\Models\Article::with(['itemStocks.warehouse'])
                 ->get()
-                ->map(function($article) {
+                ->map(function ($article) {
                     return [
-                        'id' => $article->art_id,
-                        'nom' => $article->art_nom,
-                        'warehouses' => $article->itemStocks->map(function($stock) {
+                        'id'         => $article->art_id,
+                        'nom'        => $article->art_nom,
+                        'warehouses' => $article->itemStocks->map(function ($stock) {
                             return [
-                                'id' => $stock->sta_ent_id,
+                                'id'   => $stock->sta_ent_id,
                                 'name' => $stock->warehouse->ent_nom ?? 'N/A',
-                                'qty' => $stock->sta_quantite,
+                                'qty'  => $stock->sta_quantite,
                             ];
-                        })->values()
+                        })->values(),
                     ];
                 }),
         ]);
@@ -81,36 +82,20 @@ class DemandeSortieController extends Controller
             'motif' => 'nullable|string',
         ]);
 
-        // Vérification de sécurité du stock disponible
-        $stock = \App\Models\StockArticle::where('sta_art_id', $validated['article_id'])
-            ->where('sta_ent_id', $validated['entrepot_id'])
-            ->first();
+        $stock = StockArticle::findStock($validated['article_id'], $validated['entrepot_id']);
 
         if (!$stock || $stock->sta_quantite < $validated['quantite']) {
             return Redirect::back()->with('error', 'La quantité demandée dépasse le stock disponible dans cet entrepôt.');
         }
 
-        // Récupération du service de l'utilisateur connecté
         $serviceId = auth()->user()->ser_id;
 
-        // Si l'utilisateur n'a pas de service, on prend le premier par défaut (sécurité)
         if (!$serviceId) {
-            $service = \App\Models\Service::first();
+            $service = Service::first();
             $serviceId = $service ? $service->ser_id : null;
         }
 
-        $demande = DemandeSortie::create([
-            'dso_ser_id' => $serviceId,
-            'dso_demandeur_id' => auth()->id(),
-            'dso_statut' => 'DRAFT',
-        ]);
-
-        $demande->lines()->create([
-            'lds_art_id' => $validated['article_id'],
-            'lds_ent_id' => $validated['entrepot_id'],
-            'lds_qte_demandee' => $validated['quantite'],
-            'lds_note' => $validated['motif'],
-        ]);
+        DemandeSortie::createWithLine($serviceId, auth()->id(), $validated);
 
         return Redirect::route('demandeur.demandes.index')->with('success', 'Demande de sortie créée avec succès.');
     }
@@ -124,29 +109,9 @@ class DemandeSortieController extends Controller
             'status' => 'required|in:APPROVED,REJECTED',
         ]);
 
-        // Si on approuve, on déduit le stock
         if ($validated['status'] === 'APPROVED' && $demande->dso_statut === 'DRAFT') {
-            foreach ($demande->lines as $line) {
-                $stock = \App\Models\StockArticle::where('sta_art_id', $line->lds_art_id)
-                    ->where('sta_ent_id', $line->lds_ent_id)
-                    ->first();
-
-                if ($stock && $stock->sta_quantite >= $line->lds_qte_demandee) {
-                    $stock->decrement('sta_quantite', $line->lds_qte_demandee);
-                    
-                    // On crée aussi un mouvement de stock de type "OUT"
-                    \App\Models\MouvementStock::create([
-                        'mvs_art_id' => $line->lds_art_id,
-                        'mvs_ent_id' => $line->lds_ent_id,
-                        'mvs_ser_id' => $demande->dso_ser_id,
-                        'mvs_usr_id' => auth()->id(),
-                        'mvs_quantite' => $line->lds_qte_demandee,
-                        'mvs_type' => 'OUT',
-                        'mvs_date_mouvement' => now(),
-                    ]);
-                } else {
-                    return Redirect::back()->with('error', 'Stock insuffisant dans l\'entrepôt choisi.');
-                }
+            if (!$demande->approve(auth()->id())) {
+                return Redirect::back()->with('error', 'Stock insuffisant dans l\'entrepôt choisi.');
             }
         }
 

@@ -56,6 +56,11 @@ Route::middleware(['auth', 'role:gestionnaire'])->prefix('gestionnaire')->name('
     Route::post('/mouvements', [MouvementStockController::class, 'store'])->name('mouvements.store');
     Route::delete('/mouvements/{stockMovement}', [MouvementStockController::class, 'destroy'])->name('mouvements.destroy');
 
+    // Mouvements -> Entrepôts CRUD
+    Route::post('/mouvements/entrepots', [MouvementStockController::class, 'storeEntrepot'])->name('mouvements.entrepots.store');
+    Route::put('/mouvements/entrepots/{entrepot}', [MouvementStockController::class, 'updateEntrepot'])->name('mouvements.entrepots.update');
+    Route::delete('/mouvements/entrepots/{entrepot}', [MouvementStockController::class, 'destroyEntrepot'])->name('mouvements.entrepots.destroy');
+
     // Demandes
     Route::get('/demandes', [\App\Http\Controllers\DemandeSortieController::class, 'index'])->name('demandes.index');
     Route::post('/demandes/{demande}/validate', [\App\Http\Controllers\DemandeSortieController::class, 'validateRequest'])->name('demandes.validate');

@@ -22,8 +22,6 @@ class LigneDemandeSortie extends Model
 
     /**
      * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
      */
     protected $fillable = [
         'lds_dso_id',
@@ -57,5 +55,8 @@ class LigneDemandeSortie extends Model
     {
         return $this->belongsTo(Entrepot::class, 'lds_ent_id', 'ent_id');
     }
+
+    // --------------------------- Methodes ---------------------------
+    
 }
 

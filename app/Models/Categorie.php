@@ -33,5 +33,17 @@ class Categorie extends Model
     {
         return $this->hasMany(Article::class, 'art_cat_id', 'cat_id');
     }
+
+    // Categories paginer avec les relations
+    public static function getWithRelationsPaginated($perPage)
+    {
+        return self::with(['items'])->paginate($perPage, ['*'], 'categories');
+    }
+
+    // Dans Categorie.php
+    public static function getAllCategories()
+    {
+        return self::all(['cat_id', 'cat_nom']);
+    }
 }
 

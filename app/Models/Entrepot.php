@@ -18,8 +18,6 @@ class Entrepot extends Model
 
     /**
      * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
      */
     protected $fillable = [
         'ent_nom',
@@ -42,5 +40,13 @@ class Entrepot extends Model
     {
         return $this->hasMany(MouvementStock::class, 'mvs_ent_id', 'ent_id');
     }
+
+    // --------------------------- Methodes----------------------------------
+    // Entrepots paginer avec les relations
+    public static function  getAllWarehouses()
+    {
+        return self::all(['ent_id', 'ent_nom']);
+    }
+    
 }
 

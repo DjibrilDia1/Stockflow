@@ -18,8 +18,6 @@ class Fournisseur extends Model
 
     /**
      * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
      */
     protected $fillable = [
         'fou_nom',
@@ -35,6 +33,12 @@ class Fournisseur extends Model
     public function stockMovements(): HasMany
     {
         return $this->hasMany(MouvementStock::class, 'mvs_fou_id', 'fou_id');
+    }
+
+    // Methodes pour les fournisseurs
+    public static function getUsersCountAttribute($perPage)
+    {
+        return self::paginate($perPage, ['*'], 'fournisseurs')->withQueryString();
     }
 }
 
