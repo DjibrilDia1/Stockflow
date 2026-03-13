@@ -22,9 +22,11 @@ class RoleMiddleware
         }
 
         $userRole = Auth::user()->role;
-        $requiredRole = UserRole::tryFrom($role);
+        
+        // On compare les valeurs (chaînes de caractères) pour être sûr
+        $userRoleValue = ($userRole instanceof UserRole) ? $userRole->value : $userRole;
 
-        if ($userRole !== $requiredRole) {
+        if ($userRoleValue !== strtolower($role)) {
             abort(403, 'Unauthorized action.');
         }
 

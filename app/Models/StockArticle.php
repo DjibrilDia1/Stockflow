@@ -32,6 +32,14 @@ class StockArticle extends Model
     ];
 
     /**
+     * Scope to eager load item and warehouse.
+     */
+    public function scopeWithDetails($query)
+    {
+        return $query->with(['item', 'warehouse']);
+    }
+
+    /**
      * Get the item that owns the stock.
      */
     public function item(): BelongsTo

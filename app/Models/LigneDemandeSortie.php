@@ -35,6 +35,14 @@ class LigneDemandeSortie extends Model
     ];
 
     /**
+     * Scope to eager load related models.
+     */
+    public function scopeWithDetails($query)
+    {
+        return $query->with(['withdrawRequest', 'item', 'warehouse']);
+    }
+
+    /**
      * Get the withdraw request that owns the line.
      */
     public function withdrawRequest(): BelongsTo

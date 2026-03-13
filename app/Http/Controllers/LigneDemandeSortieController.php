@@ -19,7 +19,7 @@ class LigneDemandeSortieController extends Controller
     public function index(): Response
     {
         return Inertia::render('Gestionnaire/LigneDemandeSorties/Index', [
-            'withdrawRequestLines' => LigneDemandeSortie::with(['withdrawRequest', 'item', 'warehouse'])->get(),
+            'withdrawRequestLines' => LigneDemandeSortie::withDetails()->get(),
         ]);
     }
 

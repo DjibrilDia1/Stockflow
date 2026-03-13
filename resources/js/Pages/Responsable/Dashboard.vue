@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
+import Toast from '@/Components/Toast.vue';
 
 const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? 'Responsable');
@@ -50,6 +51,7 @@ const getAlertBadgeClass = (current, threshold) => {
 
 <template>
     <div class="min-h-screen bg-slate-50 flex">
+        <Toast />
         <aside class="fixed left-0 top-0 h-screen w-52 bg-slate-800 shadow-2xl z-50 flex flex-col">
             <div class="px-6 py-6 border-b border-slate-700/50">
                 <h1 class="text-2xl font-bold tracking-tight text-white">

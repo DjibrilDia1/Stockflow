@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { Link, router, usePage, useForm } from '@inertiajs/vue3';
+import Toast from '@/Components/Toast.vue';
 
 const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gestionnaire');
@@ -10,8 +11,22 @@ const props = defineProps({
     fournisseurs: Object,
 });
 
-// État pour basculer entre les deux onglets
-const activeTab = ref('services'); // 'services' ou 'fournisseurs'
+// État pour basculer entre les deux onglets (initialisé via l'URL)
+const activeTab = ref(new URLSearchParams(window.location.search).get('tab') || 'services');
+
+const switchTab = (tab) => {
+    activeTab.value = tab;
+    // Mettre à jour l'URL sans recharger complètement pour que la pagination sache quel onglet garder
+    router.get(route('gestionnaire.services-fournisseurs.index'), { 
+        tab: tab,
+        services: new URLSearchParams(window.location.search).get('services') || 1,
+        fournisseurs: new URLSearchParams(window.location.search).get('fournisseurs') || 1
+    }, {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true
+    });
+};
 
 const showModal = ref(false);
 const isEditing = ref(false);
@@ -119,6 +134,7 @@ const logout = () => {
 
 <template>
     <div class="min-h-screen bg-slate-50 flex">
+        <Toast />
         <aside class="fixed left-0 top-0 h-screen w-52 bg-slate-800 shadow-2xl z-50 flex flex-col">
             <div class="px-6 py-6 border-b border-slate-700/50">
                 <h1 class="text-2xl font-bold tracking-tight text-white">
@@ -194,12 +210,12 @@ const logout = () => {
                 </div>
 
                 <div class="flex gap-2 p-1 bg-slate-200/50 rounded-xl w-fit">
-                    <button @click="activeTab = 'services'"
+                    <button @click="switchTab('services')"
                         :class="[activeTab === 'services' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']"
                         class="px-6 py-2 rounded-lg text-sm font-bold transition-all">
                         Services Internes
                     </button>
-                    <button @click="activeTab = 'fournisseurs'"
+                    <button @click="switchTab('fournisseurs')"
                         :class="[activeTab === 'fournisseurs' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500 hover:text-slate-700']"
                         class="px-6 py-2 rounded-lg text-sm font-bold transition-all">
                         Fournisseurs
@@ -245,7 +261,9 @@ const logout = () => {
                     </table>
                     <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-col items-center gap-2">
                         <div class="flex items-center gap-1">
-                            <Link v-for="(link, k) in services.links" :key="k" :href="link.url || '#'" v-html="link.label"
+                            <Link v-for="(link, k) in services.links" :key="k" 
+                                :href="link.url ? `${link.url}&tab=services` : '#'" 
+                                v-html="link.label"
                                 class="px-3 py-1 text-sm rounded transition-all"
                                 :class="{'bg-teal-600 text-white font-bold': link.active, 'text-slate-400 hover:text-teal-600': !link.active && link.url, 'text-slate-300 cursor-not-allowed': !link.url}" />
                         </div>
@@ -290,7 +308,9 @@ const logout = () => {
                     </table>
                     <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-col items-center gap-2">
                         <div class="flex items-center gap-1">
-                            <Link v-for="(link, k) in fournisseurs.links" :key="k" :href="link.url || '#'" v-html="link.label"
+                            <Link v-for="(link, k) in fournisseurs.links" :key="k" 
+                                :href="link.url ? `${link.url}&tab=fournisseurs` : '#'" 
+                                v-html="link.label"
                                 class="px-3 py-1 text-sm rounded transition-all"
                                 :class="{'bg-teal-600 text-white font-bold': link.active, 'text-slate-400 hover:text-teal-600': !link.active && link.url, 'text-slate-300 cursor-not-allowed': !link.url}" />
                         </div>
@@ -312,43 +332,70 @@ const logout = () => {
                         <div v-if="activeTab === 'services'" class="space-y-4">
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Nom du Service</label>
-                                <input v-model="serviceForm.ser_nom" type="text" required class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500">
+                                <input v-model="serviceForm.ser_nom" type="text" required 
+                                    class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500"
+                                    :class="{ 'border-red-500': serviceForm.errors.ser_nom }">
+                                <div v-if="serviceForm.errors.ser_nom" class="text-red-500 text-xs mt-1">{{ serviceForm.errors.ser_nom }}</div>
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Code Service</label>
-                                <input v-model="serviceForm.ser_code" type="text" required class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500">
+                                <input v-model="serviceForm.ser_code" type="text" required 
+                                    class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500"
+                                    :class="{ 'border-red-500': serviceForm.errors.ser_code }">
+                                <div v-if="serviceForm.errors.ser_code" class="text-red-500 text-xs mt-1">{{ serviceForm.errors.ser_code }}</div>
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Responsable</label>
-                                <input v-model="serviceForm.ser_responsable" type="text" class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500">
+                                <input v-model="serviceForm.ser_responsable" type="text" 
+                                    class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500"
+                                    :class="{ 'border-red-500': serviceForm.errors.ser_responsable }">
+                                <div v-if="serviceForm.errors.ser_responsable" class="text-red-500 text-xs mt-1">{{ serviceForm.errors.ser_responsable }}</div>
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Localisation (Étage)</label>
-                                <input v-model="serviceForm.ser_etage" type="text" placeholder="ex: 2ème étage" class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500">
+                                <input v-model="serviceForm.ser_etage" type="text" placeholder="ex: 2ème étage" 
+                                    class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500"
+                                    :class="{ 'border-red-500': serviceForm.errors.ser_etage }">
+                                <div v-if="serviceForm.errors.ser_etage" class="text-red-500 text-xs mt-1">{{ serviceForm.errors.ser_etage }}</div>
                             </div>
                         </div>
                         <div v-else class="space-y-4">
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Nom / Raison Sociale</label>
-                                <input v-model="fournisseurForm.fou_nom" type="text" required class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500">
+                                <input v-model="fournisseurForm.fou_nom" type="text" required 
+                                    class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500"
+                                    :class="{ 'border-red-500': fournisseurForm.errors.fou_nom }">
+                                <div v-if="fournisseurForm.errors.fou_nom" class="text-red-500 text-xs mt-1">{{ fournisseurForm.errors.fou_nom }}</div>
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Catégorie d'activité</label>
-                                <input v-model="fournisseurForm.fou_categorie" type="text" placeholder="ex: Plomberie, Sécurité, etc." class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500">
+                                <input v-model="fournisseurForm.fou_categorie" type="text" placeholder="ex: Plomberie, Sécurité, etc." 
+                                    class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500"
+                                    :class="{ 'border-red-500': fournisseurForm.errors.fou_categorie }">
+                                <div v-if="fournisseurForm.errors.fou_categorie" class="text-red-500 text-xs mt-1">{{ fournisseurForm.errors.fou_categorie }}</div>
                             </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-700 mb-1">Téléphone</label>
-                                    <input v-model="fournisseurForm.fou_telephone" type="text" class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500">
+                                    <input v-model="fournisseurForm.fou_telephone" type="text" 
+                                        class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500"
+                                        :class="{ 'border-red-500': fournisseurForm.errors.fou_telephone }">
+                                    <div v-if="fournisseurForm.errors.fou_telephone" class="text-red-500 text-xs mt-1">{{ fournisseurForm.errors.fou_telephone }}</div>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-700 mb-1">Email</label>
-                                    <input v-model="fournisseurForm.fou_email" type="email" class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500">
+                                    <input v-model="fournisseurForm.fou_email" type="email" 
+                                        class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500"
+                                        :class="{ 'border-red-500': fournisseurForm.errors.fou_email }">
+                                    <div v-if="fournisseurForm.errors.fou_email" class="text-red-500 text-xs mt-1">{{ fournisseurForm.errors.fou_email }}</div>
                                 </div>
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Adresse</label>
-                                <textarea v-model="fournisseurForm.fou_adresse" rows="2" class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500"></textarea>
+                                <textarea v-model="fournisseurForm.fou_adresse" rows="2" 
+                                    class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500"
+                                    :class="{ 'border-red-500': fournisseurForm.errors.fou_adresse }"></textarea>
+                                <div v-if="fournisseurForm.errors.fou_adresse" class="text-red-500 text-xs mt-1">{{ fournisseurForm.errors.fou_adresse }}</div>
                             </div>
                         </div>
 
@@ -365,3 +412,20 @@ const logout = () => {
         </Teleport>
     </div>
 </template>
+
+<style scoped>
+.animate-fade-in {
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+</style>

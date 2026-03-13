@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue';
 import { Link, router, usePage, Head } from '@inertiajs/vue3';
+import Toast from '@/Components/Toast.vue';
 import { Bar, Pie } from 'vue-chartjs';
 import {
     Chart as ChartJS,
@@ -128,6 +129,7 @@ const logout = () => { if (confirm('Déconnexion ?')) router.post(route('logout'
 <template>
     <Head title="Rapports - Responsable" />
     <div class="min-h-screen bg-slate-50 flex">
+        <Toast />
         <!-- Sidebar -->
         <aside class="fixed left-0 top-0 h-screen w-52 bg-slate-800 shadow-2xl z-50 flex flex-col">
             <div class="px-6 py-6 border-b border-slate-700/50">

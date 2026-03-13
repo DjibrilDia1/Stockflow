@@ -27,6 +27,7 @@ class Fournisseur extends Model
         'fou_telephone',
         'fou_email',
         'fou_adresse',
+        'fou_categorie',
     ];
 
     /**

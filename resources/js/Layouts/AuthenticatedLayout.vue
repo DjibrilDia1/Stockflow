@@ -5,23 +5,15 @@ import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
+import Toast from '@/Components/Toast.vue';
 
 const showingNavigationDropdown = ref(false);
-
-const show = ref(true);
-const flash = computed(() => usePage().props.flash);
-
-watch(flash, () => {
-    show.value = true;
-    setTimeout(() => {
-        show.value = false;
-    }, 4000);
-}, { deep: true });
 </script>
 
 <template>
     <div>
+        <Toast />
         <div class="min-h-screen bg-gray-100">
             <nav
                 class="border-b border-gray-100 bg-white"
@@ -62,7 +54,7 @@ watch(flash, () => {
                                                 :href="route('profile.edit')"
                                                 class="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
                                             >
-                                                {{ $page.props.auth.user.first_name }} {{ $page.props.auth.user.last_name }}
+                                                {{ $page.props.auth.user.name }}
 
                                                 <svg
                                                     class="-me-0.5 ms-2 h-4 w-4"
@@ -199,15 +191,6 @@ watch(flash, () => {
                     <slot name="header" />
                 </div>
             </header>
-
-            <div v-if="$page.props.flash.success && show" class="fixed top-20 right-5 z-50 rounded-md bg-green-600 px-6 py-4">
-                <p class="text-white font-semibold">{{ $page.props.flash.success }}</p>
-                <button @click="show = false" class="absolute top-2 right-2 text-white">&times;</button>
-            </div>
-            <div v-if="$page.props.flash.error && show" class="fixed top-20 right-5 z-50 rounded-md bg-red-600 px-6 py-4">
-                <p class="text-white font-semibold">{{ $page.props.flash.error }}</p>
-                <button @click="show = false" class="absolute top-2 right-2 text-white">&times;</button>
-            </div>
 
             <!-- Page Content -->
             <main>

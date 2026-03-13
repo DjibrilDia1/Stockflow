@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Fournisseur;
 
 class Service extends Model
 {
@@ -16,6 +17,17 @@ class Service extends Model
     public const UPDATED_AT = 'ser_updated_at';
 
     /**
+     * Get data for the services and suppliers management index.
+     */
+    public static function getIndexData()
+    {
+        return [
+            'services' => self::paginate(3, ['*'], 'services')->withQueryString(),
+            'fournisseurs' => Fournisseur::paginate(3, ['*'], 'fournisseurs')->withQueryString(),
+        ];
+    }
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
@@ -24,6 +36,8 @@ class Service extends Model
         'ser_nom',
         'ser_code',
         'ser_type',
+        'ser_responsable',
+        'ser_etage',
     ];
 
     /**

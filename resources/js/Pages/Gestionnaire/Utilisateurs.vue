@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { Link, router, usePage, useForm } from '@inertiajs/vue3';
+import Toast from '@/Components/Toast.vue';
 
 const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gestionnaire');
@@ -88,6 +89,7 @@ const logout = () => {
 
 <template>
     <div class="min-h-screen bg-slate-50 flex">
+        <Toast />
         <aside class="fixed left-0 top-0 h-screen w-52 bg-slate-800 shadow-2xl z-50 flex flex-col">
             <div class="px-6 py-6 border-b border-slate-700/50">
                 <h1 class="text-2xl font-bold tracking-tight text-white">
@@ -172,42 +174,52 @@ const logout = () => {
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Nom complet</label>
                                 <input v-model="userForm.name" type="text" placeholder="Ex: Moussa Ndiaye" required
-                                    class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                                    class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+                                    :class="{ 'border-red-500': userForm.errors.name }">
+                                <div v-if="userForm.errors.name" class="text-red-500 text-xs mt-1">{{ userForm.errors.name }}</div>
                             </div>
 
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Email professionnel</label>
                                 <input v-model="userForm.email" type="email" placeholder="m.ndiaye@stockflow.sn"
                                     required
-                                    class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                                    class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+                                    :class="{ 'border-red-500': userForm.errors.email }">
+                                <div v-if="userForm.errors.email" class="text-red-500 text-xs mt-1">{{ userForm.errors.email }}</div>
                             </div>
 
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-700 mb-1">Rôle</label>
                                     <select v-model="userForm.role"
-                                        class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                                        class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+                                        :class="{ 'border-red-500': userForm.errors.role }">
                                         <option value="gestionnaire">Gestionnaire</option>
                                         <option value="demandeur">Demandeur</option>
                                         <option value="responsable">Responsable</option>
                                     </select>
+                                    <div v-if="userForm.errors.role" class="text-red-500 text-xs mt-1">{{ userForm.errors.role }}</div>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-700 mb-1">Service</label>
                                     <select v-model="userForm.ser_id" required
-                                        class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                                        class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+                                        :class="{ 'border-red-500': userForm.errors.ser_id }">
                                         <option value="" disabled>Choisir un service</option>
                                         <option v-for="service in props.services" :key="service.ser_id" :value="service.ser_id">
                                             {{ service.ser_nom }}
                                         </option>
                                     </select>
+                                    <div v-if="userForm.errors.ser_id" class="text-red-500 text-xs mt-1">{{ userForm.errors.ser_id }}</div>
                                 </div>
                             </div>
 
                             <div v-if="!isEditing">
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Mot de passe</label>
                                 <input v-model="userForm.password" type="password" required
-                                    class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                                    class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+                                    :class="{ 'border-red-500': userForm.errors.password }">
+                                <div v-if="userForm.errors.password" class="text-red-500 text-xs mt-1">{{ userForm.errors.password }}</div>
                             </div>
 
                             <div class="pt-4 flex gap-3">
