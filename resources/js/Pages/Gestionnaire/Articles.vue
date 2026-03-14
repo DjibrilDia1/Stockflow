@@ -1,12 +1,41 @@
 <script setup>
-import { ref } from 'vue';
-import { Link, router, useForm } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
+import { Link, router, useForm, usePage } from '@inertiajs/vue3';
+import Toast from '@/Components/Toast.vue';
+
+const page = usePage();
+const userName = computed(() => page.props.auth?.user?.name ?? 'Gestionnaire');
+
+// Onglet actif : 'articles' ou 'categories'
+const activeTab = ref('articles');
 
 const props = defineProps({
     items: Object,
     categories: Object,
     categories_all: Array,
     warehouses: Array,
+});
+
+const searchQuery = ref('');
+const filterCategory = ref('');
+
+const filteredArticles = computed(() => {
+    return props.items?.data?.filter(item => {
+        const matchesSearch = !searchQuery.value ||
+            (item.art_nom ?? '').toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+            (item.art_reference ?? '').toLowerCase().includes(searchQuery.value.toLowerCase());
+
+        const matchesCategory = !filterCategory.value || item.art_cat_id == filterCategory.value;
+
+        return matchesSearch && matchesCategory;
+    }) ?? [];
+});
+
+const filteredCategories = computed(() => {
+    return props.categories?.data?.filter(cat =>
+        (cat.cat_nom ?? '').toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        (cat.cat_code ?? '').toLowerCase().includes(searchQuery.value.toLowerCase())
+    ) ?? [];
 });
 
 const showAddModal = ref(false);
@@ -112,7 +141,7 @@ const navigation = [
     { name: 'Demandes', route: 'gestionnaire.demandes.index', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
     { name: 'Rapports', route: 'gestionnaire.rapports.index', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
     { name: 'Utilisateurs', route: 'gestionnaire.utilisateurs.index', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
-    { name: 'Services & Fournisseurs', route: 'gestionnaire.services-fournisseurs.index', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
+    { name: 'Services & Fournitures', route: 'gestionnaire.services-fournisseurs.index', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
 ];
 
 const logout = () => {
@@ -122,6 +151,7 @@ const logout = () => {
 
 <template>
     <div class="min-h-screen bg-slate-50 flex">
+        <Toast />
         <!-- Sidebar -->
         <aside class="fixed left-0 top-0 h-screen w-52 bg-slate-800 shadow-2xl z-50 flex flex-col">
             <div class="px-6 py-6 border-b border-slate-700/50">
@@ -170,9 +200,10 @@ const logout = () => {
                     </Link>
                     <span class="font-medium">Articles & Catégories</span>
                 </div>
-                <div class="flex items-center gap-2 text-slate-700">
-                    <span class="text-sm font-medium">Gestionnaire</span>
-                    <div class="w-9 h-9 bg-slate-100 rounded-full flex items-center justify-center">
+                <div class="flex items-center gap-2 text-slate-700 hover:text-teal-600 cursor-pointer group">
+                    <div class="text-sm font-medium text-slate-700">{{ userName }}</div>
+                    <div
+                        class="w-9 h-9 flex items-center justify-center bg-slate-100 rounded-full group-hover:bg-teal-50 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -181,21 +212,44 @@ const logout = () => {
                 </div>
             </header>
 
-            <main class="p-8 space-y-12">
-                <!-- Alertes Success/Error -->
-                <div v-if="$page.props.flash.success"
-                    class="bg-teal-100 border border-teal-400 text-teal-700 px-4 py-3 rounded relative animate-fade-in"
-                    role="alert">
-                    <span class="block sm:inline font-bold">{{ $page.props.flash.success }}</span>
+            <main class="p-8 space-y-8">
+                <!-- ONGLETS -->
+                <div class="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit">
+                    <button @click="activeTab = 'articles'" :class="[
+                        'flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all',
+                        activeTab === 'articles'
+                            ? 'bg-white text-teal-700 shadow-sm border border-slate-200'
+                            : 'text-slate-500 hover:text-slate-700'
+                    ]">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                        Gestion des articles
+                        <span class="ml-1 px-2 py-0.5 rounded-full text-xs font-bold"
+                            :class="activeTab === 'articles' ? 'bg-teal-100 text-teal-700' : 'bg-slate-200 text-slate-500'">
+                            {{ items.total }}
+                        </span>
+                    </button>
+                    <button @click="activeTab = 'categories'" :class="[
+                        'flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all',
+                        activeTab === 'categories'
+                            ? 'bg-white text-teal-700 shadow-sm border border-slate-200'
+                            : 'text-slate-500 hover:text-slate-700'
+                    ]">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                        </svg>
+                        Catégories articles
+                        <span class="ml-1 px-2 py-0.5 rounded-full text-xs font-bold"
+                            :class="activeTab === 'categories' ? 'bg-teal-100 text-teal-700' : 'bg-slate-200 text-slate-500'">
+                            {{ categories.total }}
+                        </span>
+                    </button>
                 </div>
-                <div v-if="$page.props.flash.error"
-                    class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative animate-fade-in"
-                    role="alert">
-                    <span class="block sm:inline font-bold">{{ $page.props.flash.error }}</span>
-                </div>
-
                 <!-- SECTION ARTICLES -->
-                <section class="space-y-6">
+                <section v-show="activeTab === 'articles'" class="space-y-6">
                     <div class="flex justify-between items-center">
                         <div>
                             <h2 class="text-2xl font-bold text-slate-800">Gestion des articles</h2>
@@ -212,6 +266,25 @@ const logout = () => {
 
                     </div>
 
+                    <div
+                        class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-wrap gap-4 items-center">
+                        <div class="relative flex-1 min-w-[300px]">
+                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <input v-model="searchQuery" type="text" placeholder="Rechercher par nom ou référence..."
+                                class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+                        </div>
+                        <select v-model="filterCategory"
+                            class="bg-slate-50 border border-slate-200 rounded-lg appearance-none text-sm outline-none focus:ring-2 focus:ring-teal-500">
+                            <option value="">Toutes les catégories</option>
+                            <option v-for="cat in categories_all" :key="cat.cat_id" :value="cat.cat_id">{{ cat.cat_nom
+                                }}</option>
+                        </select>
+                    </div>
+
                     <div class="bg-white rounded-xl shadow-md border border-slate-100 overflow-hidden">
                         <table class="w-full text-left border-collapse">
                             <thead>
@@ -226,7 +299,7 @@ const logout = () => {
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
-                                <tr v-for="item in items.data" :key="item.art_id"
+                                <tr v-for="item in filteredArticles" :key="item.art_id"
                                     class="hover:bg-slate-50 transition-colors">
                                     <td class="px-6 py-4 text-sm font-medium text-blue-600">{{ item.art_reference }}
                                     </td>
@@ -240,7 +313,7 @@ const logout = () => {
                                             <div v-for="stock in item.item_stocks" :key="stock.sta_id"
                                                 class="text-[10px] text-slate-400 leading-tight">
                                                 <span class="font-medium text-slate-500">{{ stock.warehouse?.ent_nom
-                                                    }}:</span> {{ stock.sta_quantite }}
+                                                }}:</span> {{ stock.sta_quantite }}
                                             </div>
                                         </div>
                                     </td>
@@ -268,6 +341,11 @@ const logout = () => {
                                         </div>
                                     </td>
                                 </tr>
+                                <tr v-if="filteredArticles.length === 0">
+                                    <td colspan="6" class="px-6 py-10 text-center text-slate-400 text-sm">
+                                        Aucun article trouvé pour « {{ searchQuery }} »
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                         <!-- Pagination Articles -->
@@ -285,7 +363,7 @@ const logout = () => {
                 </section>
 
                 <!-- SECTION CATÉGORIES -->
-                <section class="space-y-6">
+                <section v-show="activeTab === 'categories'" class="space-y-6">
                     <div class="flex justify-between items-center">
                         <div>
                             <h2 class="text-2xl font-bold text-slate-800">Gestion des catégories</h2>
@@ -301,6 +379,18 @@ const logout = () => {
                         </button>
                     </div>
 
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                        <div class="relative max-w-md">
+                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <input v-model="searchQuery" type="text" placeholder="Rechercher par nom ou code..."
+                                class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+                        </div>
+                    </div>
+
                     <div class="bg-white rounded-xl shadow-md border border-slate-100 overflow-hidden">
                         <table class="w-full text-left border-collapse">
                             <thead>
@@ -313,7 +403,7 @@ const logout = () => {
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
-                                <tr v-for="cat in categories.data" :key="cat.cat_id"
+                                <tr v-for="cat in filteredCategories" :key="cat.cat_id"
                                     class="hover:bg-slate-50 transition-colors">
                                     <td class="px-6 py-4 text-sm font-medium text-blue-600">{{ cat.cat_code }}</td>
                                     <td class="px-6 py-4 text-sm text-slate-700">{{ cat.cat_nom }}</td>
@@ -341,6 +431,11 @@ const logout = () => {
                                         </div>
                                     </td>
                                 </tr>
+                                <tr v-if="filteredCategories.length === 0">
+                                    <td colspan="4" class="px-6 py-10 text-center text-slate-400 text-sm">
+                                        Aucune catégorie trouvée pour « {{ searchQuery }} »
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                         <!-- Pagination Catégories -->
@@ -362,7 +457,7 @@ const logout = () => {
         <!-- MODAL AJOUT ARTICLE -->
         <div v-if="showAddModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showAddModal = false"></div>
-            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-md overflow-hidden animate-fade-in">
+            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-fade-in">
                 <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                     <h3 class="text-lg font-bold text-slate-800">Ajouter un article</h3>
                     <button @click="showAddModal = false"
@@ -441,7 +536,7 @@ const logout = () => {
         <!-- MODAL MODIFICATION ARTICLE -->
         <div v-if="showEditModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showEditModal = false"></div>
-            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
+            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-fade-in">
                 <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-blue-50">
                     <h3 class="text-lg font-bold text-slate-800">Modifier l'article</h3>
                     <button @click="showEditModal = false"
@@ -519,8 +614,15 @@ const logout = () => {
         <!-- MODAL AJOUT CATÉGORIE -->
         <div v-if="showAddCategoryModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showAddCategoryModal = false"></div>
-            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 overflow-hidden animate-fade-in">
-                <h3 class="text-lg font-bold mb-4 text-slate-800 border-b pb-2">Nouvelle Catégorie</h3>
+            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 overflow-hidden animate-fade-in">
+                <div class="flex items-center justify-between border-b pb-2 mb-4">
+                    <h3 class="text-lg font-bold text-slate-800">Nouvelle Catégorie</h3>
+
+                    <button @click="showAddCategoryModal = false"
+                        class="text-slate-400 hover:text-slate-600 text-2xl leading-none">
+                        &times;
+                    </button>
+                </div>
                 <form @submit.prevent="addCategory" class="space-y-4">
                     <div>
                         <input v-model="categoryForm.cat_code" placeholder="Référence (Code)"
@@ -557,7 +659,7 @@ const logout = () => {
         <!-- MODAL MODIFICATION CATÉGORIE -->
         <div v-if="showEditCategoryModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showEditCategoryModal = false"></div>
-            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 overflow-hidden animate-fade-in">
+            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 overflow-hidden animate-fade-in">
                 <h3 class="text-lg font-bold mb-4 text-slate-800 border-b pb-2">Modifier la catégorie</h3>
                 <form @submit.prevent="updateCategory" class="space-y-4">
                     <div>

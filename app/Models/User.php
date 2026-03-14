@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Service;
 
 class User extends Authenticatable
 {
@@ -26,6 +27,25 @@ class User extends Authenticatable
         'role',
         'ser_id',
     ];
+
+    /**
+     * Get data for the user management index.
+     */
+    public static function getIndexData()
+    {
+        return [
+            'users' => self::withService()->paginate(3),
+            'services' => Service::all(['ser_id', 'ser_nom']),
+        ];
+    }
+
+    /**
+     * Scope to eager load the service.
+     */
+    public function scopeWithService($query)
+    {
+        return $query->with('service');
+    }
 
     /**
      * Get the service that the user belongs to.

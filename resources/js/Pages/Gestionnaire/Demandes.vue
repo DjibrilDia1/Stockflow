@@ -1,14 +1,14 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
+import Toast from '@/Components/Toast.vue';
 
 const page = usePage();
 const showDetailModal = ref(false);
-const selectedDetail = ref('');
+const selectedDemande = ref(null);
 
-
-const openDetail = (detail) => {
-    selectedDetail.value = detail;
+const openDetail = (demande) => {
+    selectedDemande.value = demande;
     showDetailModal.value = true;
 };
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gestionnaire');
@@ -16,6 +16,22 @@ const userName = computed(() => page.props.auth?.user?.name ?? 'Gestionnaire');
 
 const props = defineProps({
     withdrawRequests: Object,
+});
+
+const searchQuery = ref('');
+const filterStatus = ref('');
+
+const filteredDemandes = computed(() => {
+    return props.withdrawRequests?.data?.filter(d => {
+        const matchesSearch = !searchQuery.value || 
+            (d.dso_code ?? '').toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+            (d.user?.name ?? '').toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+            (d.service?.ser_nom ?? '').toLowerCase().includes(searchQuery.value.toLowerCase());
+        
+        const matchesStatus = !filterStatus.value || d.dso_statut === filterStatus.value;
+
+        return matchesSearch && matchesStatus;
+    }) ?? [];
 });
 
 const showAddDemandeModal = ref(false);
@@ -73,6 +89,7 @@ const logout = () => {
 
 <template>
     <div class="min-h-screen bg-slate-50 flex">
+        <Toast />
         <aside class="fixed left-0 top-0 h-screen w-52 bg-slate-800 shadow-2xl z-50 flex flex-col">
             <div class="px-6 py-6 border-b border-slate-700/50">
                 <h1 class="text-2xl font-bold tracking-tight text-white">
@@ -138,82 +155,6 @@ const logout = () => {
                         <h2 class="text-2xl font-bold text-slate-900">Demandes de retrait</h2>
                         <p class="text-slate-500 mt-1">Gérer les demandes de retrait d'articles</p>
                     </div>
-                    <button @click="showAddDemandeModal = true"
-                        class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-all shadow-sm">
-                        <span class="text-xl font-light">+</span> Nouvelle demande
-                    </button>
-                    <div v-if="showAddDemandeModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
-                            @click="showAddDemandeModal = false"></div>
-
-                        <div
-                            class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-fade-in">
-                            <div
-                                class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                                <h3 class="text-lg font-bold text-slate-800">Nouvelle demande de retrait</h3>
-                                <button @click="showAddDemandeModal = false"
-                                    class="text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
-                            </div>
-
-                            <form @submit.prevent="addDemande" class="p-6 space-y-4">
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-semibold text-slate-700 mb-1">Référence</label>
-                                        <input v-model="newDemande.ref" type="text"
-                                            class="w-full px-4 py-2 border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-semibold text-slate-700 mb-1">Date</label>
-                                        <input v-model="newDemande.date" type="date" required
-                                            class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-semibold text-slate-700 mb-1">Type
-                                            (Demandeur)</label>
-                                        <select v-model="newDemande.demandeur"
-                                            class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
-                                            <option value="Entrée">Entrée</option>
-                                            <option value="Sortie">Sortie</option>
-                                            <option value="Transfert">Transfert</option>
-                                            <option value="Ajustement">Ajustement</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-semibold text-slate-700 mb-1">Entrepôt</label>
-                                        <select v-model="newDemande.entrepot" required
-                                            class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
-                                            <option value="" disabled>Choisir...</option>
-                                            <option value="Fournitures">Fournitures</option>
-                                            <option value="Mobilier">Mobilier</option>
-                                            <option value="Informatique">Informatique</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-1">Détails des
-                                        articles</label>
-                                    <textarea v-model="newDemande.detail" rows="3"
-                                        placeholder="Ex: Stylos noirs x 20, Rames de papier x 5..."
-                                        class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none text-sm"></textarea>
-                                </div>
-
-                                <div class="pt-4 flex gap-3">
-                                    <button type="button" @click="showAddDemandeModal = false"
-                                        class="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-semibold hover:bg-slate-50 transition-colors">
-                                        Annuler
-                                    </button>
-                                    <button type="submit"
-                                        class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg font-semibold hover:bg-teal-700 transition-colors shadow-md">
-                                        Enregistrer la demande
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
                 </div>
 
                 <div
@@ -224,28 +165,17 @@ const logout = () => {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
-                        <input type="text" placeholder="Rechercher une demande..."
+                        <input v-model="searchQuery" type="text" placeholder="Rechercher une demande..."
                             class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none">
                     </div>
-                    <select
-                        class="bg-slate-50 border border-slate-200 rounded-lg px-10 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-500">
-                        <option>Type tous</option>
+                    <select v-model="filterStatus"
+                        class="bg-slate-50 border border-slate-200 rounded-lg pl-4 pr-10 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-500 appearance-none bg-no-repeat bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%208l5%205%205-5%22%20stroke%3D%22%236b7280%22%20stroke-width%3D%222%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_0.5rem_center] bg-[length:1.25em_1.25em]">
+                        <option value="">Tous les statuts</option>
+                        <option value="DRAFT">Brouillon</option>
+                        <option value="APPROVED">Approuvé</option>
+                        <option value="REJECTED">Rejeté</option>
+                        <option value="FULFILLED">Terminé</option>
                     </select>
-                    <select
-                        class="bg-slate-50 border border-slate-200 rounded-lg px-10 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-500">
-                        <option>Article Tous</option>
-                    </select>
-                    <select
-                        class="bg-slate-50 border border-slate-200 rounded-lg px-10 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-500">
-                        <option>Entrepot Tous</option>
-                    </select>
-                    <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1">
-                        <input type="date"
-                            class="bg-transparent border-none text-sm text-slate-500 focus:ring-0 outline-none">
-                        <span class="text-slate-400">-</span>
-                        <input type="date"
-                            class="bg-transparent border-none text-sm text-slate-500 focus:ring-0 outline-none">
-                    </div>
                 </div>
 
                 <div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
@@ -258,11 +188,12 @@ const logout = () => {
                                 <th class="px-6 py-4">Quantité</th>
                                 <th class="px-6 py-4">Date</th>
                                 <th class="px-6 py-4">Statut</th>
+                                <th class="px-6 py-4 text-center">Détails</th>
                                 <th class="px-6 py-4 text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
-                            <tr v-for="item in props.withdrawRequests.data" :key="item.dso_id"
+                            <tr v-for="item in filteredDemandes" :key="item.dso_id"
                                 class="hover:bg-slate-50 transition-colors group">
                                 <td class="px-6 py-5 text-sm font-medium text-blue-500 underline cursor-pointer">#{{
                                     item.dso_id }}</td>
@@ -293,6 +224,17 @@ const logout = () => {
                                         :class="['px-3 py-1.5 rounded-md text-[10px] font-bold block min-w-[90px] text-center', getStatusClass(item.dso_statut)]">
                                         {{ item.dso_statut }}
                                     </span>
+                                </td>
+
+                                <td class="px-6 py-4 text-center">
+                                    <button @click="openDetail(item)"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-teal-700 bg-teal-50 border border-teal-200 rounded-lg hover:bg-teal-600 hover:text-white hover:border-teal-600 transition-all">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                        Voir plus
+                                    </button>
                                 </td>
 
                                 <td class="px-6 py-4">
@@ -341,44 +283,108 @@ const logout = () => {
                                 props.withdrawRequests.total }}</span>
                     </div>
                 </div>
-                <div v-if="showDetailModal" class="fixed inset-0 z-[110] flex items-center justify-center p-4">
-                    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" @click="showDetailModal = false">
-                    </div>
+                <Teleport to="body">
+                    <div v-if="showDetailModal && selectedDemande"
+                        class="fixed inset-0 z-[999] flex items-center justify-center p-4">
+                        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"
+                            @click="showDetailModal = false"></div>
 
-                    <Teleport to="body">
-                        <div v-if="showDetailModal" class="fixed inset-0 z-[999] flex items-center justify-center p-4">
-                            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
-                                @click="showDetailModal = false"></div>
+                        <div
+                            class="relative bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden animate-fade-in">
 
-                            <div
-                                class="relative bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
-                                <div
-                                    class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-teal-50">
+                            <!-- En-tête -->
+                            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-teal-50">
+                                <div>
                                     <h3 class="text-sm font-bold text-teal-800 uppercase tracking-wider">
-                                        Détails de l'article
+                                        Détails de la demande
                                     </h3>
-                                    <button @click="showDetailModal = false"
-                                        class="text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
+                                    <p class="text-xs text-teal-600 mt-0.5">
+                                        DSO-{{ String(selectedDemande.dso_id).padStart(5, '0') }}
+                                    </p>
                                 </div>
+                                <button @click="showDetailModal = false"
+                                    class="text-slate-400 hover:text-slate-600 text-2xl leading-none">&times;</button>
+                            </div>
 
-                                <div class="p-6">
-                                    <div class="max-h-[60vh] overflow-y-auto pr-2">
-                                        <p class="text-slate-700 whitespace-pre-line leading-relaxed break-words">
-                                            {{ selectedDetail }}
+                            <!-- Corps -->
+                            <div class="p-6 space-y-5 max-h-[65vh] overflow-y-auto">
+
+                                <!-- Infos générales -->
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p class="text-xs text-slate-400 uppercase font-semibold mb-1">Service</p>
+                                        <p class="text-sm font-medium text-slate-700">
+                                            {{ selectedDemande.service?.ser_nom || 'Sans service' }}
                                         </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-slate-400 uppercase font-semibold mb-1">Demandeur</p>
+                                        <p class="text-sm font-medium text-slate-700">
+                                            {{ selectedDemande.requester?.name || 'N/A' }}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-slate-400 uppercase font-semibold mb-1">Date</p>
+                                        <p class="text-sm font-medium text-slate-700">
+                                            {{ new Date(selectedDemande.dso_created_at || Date.now()).toLocaleDateString('fr-FR') }}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-slate-400 uppercase font-semibold mb-1">Statut</p>
+                                        <span :class="['px-2.5 py-1 rounded-md text-[10px] font-bold uppercase', getStatusClass(selectedDemande.dso_statut)]">
+                                            {{ selectedDemande.dso_statut }}
+                                        </span>
                                     </div>
                                 </div>
 
-                                <div class="p-4 bg-slate-50 border-t border-slate-100 text-right">
-                                    <button @click="showDetailModal = false"
-                                        class="px-4 py-2 bg-slate-800 text-white text-sm rounded-lg font-semibold hover:bg-slate-700 transition-colors">
-                                        Fermer
-                                    </button>
+                                <!-- Liste des articles -->
+                                <div>
+                                    <p class="text-xs text-slate-400 uppercase font-semibold mb-2">Articles demandés</p>
+                                    <div class="rounded-lg border border-slate-200 overflow-hidden">
+                                        <table class="w-full text-sm">
+                                            <thead>
+                                                <tr class="bg-slate-50 text-xs text-slate-500 uppercase">
+                                                    <th class="px-4 py-2 text-left font-semibold">Article</th>
+                                                    <th class="px-4 py-2 text-center font-semibold">Qté demandée</th>
+                                                    <th class="px-4 py-2 text-center font-semibold">Qté servie</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-slate-100">
+                                                <tr v-for="line in selectedDemande.lines" :key="line.lds_id"
+                                                    class="hover:bg-slate-50">
+                                                    <td class="px-4 py-2.5 text-slate-700 font-medium">
+                                                        {{ line.item?.art_nom || 'Article inconnu' }}
+                                                    </td>
+                                                    <td class="px-4 py-2.5 text-center text-slate-600">
+                                                        {{ line.lds_qte_demandee }}
+                                                    </td>
+                                                    <td class="px-4 py-2.5 text-center">
+                                                        <span :class="line.lds_qte_servie > 0 ? 'text-teal-600 font-semibold' : 'text-slate-400'">
+                                                            {{ line.lds_qte_servie ?? 0 }}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                                <tr v-if="!selectedDemande.lines?.length">
+                                                    <td colspan="3" class="px-4 py-3 text-center text-slate-400 text-xs">
+                                                        Aucun article dans cette demande
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
+
+                            <!-- Pied -->
+                            <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+                                <button @click="showDetailModal = false"
+                                    class="px-5 py-2 bg-slate-800 text-white text-sm rounded-lg font-semibold hover:bg-slate-700 transition-colors">
+                                    Fermer
+                                </button>
+                            </div>
                         </div>
-                    </Teleport>
-                </div>
+                    </div>
+                </Teleport>
             </main>
         </div>
     </div>

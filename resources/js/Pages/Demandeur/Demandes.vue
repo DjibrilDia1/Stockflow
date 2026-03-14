@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import NewRequestModal from '@/Components/NewRequestModal.vue';
+import Toast from '@/Components/Toast.vue';
 
 const props = defineProps({
     requests: Array,
@@ -36,6 +37,7 @@ const showModal = ref(false);
 
 <template>
     <div class="min-h-screen bg-slate-50 flex">
+        <Toast />
         <aside class="fixed left-0 top-0 h-screen w-52 bg-slate-800 shadow-2xl z-50 flex flex-col">
             <div class="px-6 py-6 border-b border-slate-700/50">
                 <h1 class="text-2xl font-bold tracking-tight text-white">
@@ -113,7 +115,7 @@ const showModal = ref(false);
                     :articles="articlesDisponibles" 
                     @close="showModal = false"
                 />
-
+                
                 <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
                     <table class="w-full">
                         <thead class="bg-slate-50 border-b border-slate-200">

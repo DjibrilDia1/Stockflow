@@ -4,6 +4,7 @@ import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
+import Toast from '@/Components/Toast.vue';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { onBeforeUnmount, onMounted } from 'vue';
 
@@ -46,6 +47,7 @@ const submit = () => {
     <Head title="Connexion" />
 
     <div class="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-teal-50/40">
+        <Toast />
         <!-- Orbes décoratifs -->
         <div class="pointer-events-none absolute -left-32 top-32 h-96 w-96 rounded-full bg-teal-400/10 blur-3xl animate-float" />
         <div class="pointer-events-none absolute -right-32 bottom-20 h-96 w-96 rounded-full bg-blue-400/10 blur-3xl animate-float-delayed" />

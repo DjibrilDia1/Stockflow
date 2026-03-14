@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue';
 import { Link, router, usePage, Head } from '@inertiajs/vue3';
+import Toast from '@/Components/Toast.vue';
 import { Bar, Pie } from 'vue-chartjs';
 import {
     Chart as ChartJS,
@@ -61,10 +62,9 @@ watch(filterForm, () => {
 
 const changeTab = (tab) => {
     currentTab.value = tab;
-    router.get(route('gestionnaire.rapports.index'), { tab }, {
-        preserveState: true,
-        preserveScroll: true
-    });
+    const url = new URL(window.location);
+    url.searchParams.set('tab', tab);
+    window.history.replaceState({}, '', url);
 };
 
 const exportExcel = () => {
@@ -98,7 +98,7 @@ const barChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-        legend: { display: false }
+        legend: { display: true, position: 'bottom' }
     }
 };
 
@@ -114,7 +114,10 @@ const pieChartData = computed(() => ({
 
 const pieChartOptions = {
     responsive: true,
-    maintainAspectRatio: false
+    maintainAspectRatio: false,
+    plugins: {
+        legend: { display: true, position: 'bottom' }
+    }
 };
 
 const navigation = [
@@ -133,6 +136,7 @@ const logout = () => { if (confirm('Déconnexion ?')) router.post(route('logout'
 <template>
     <Head title="Rapports - Gestionnaire" />
     <div class="min-h-screen bg-slate-50 flex">
+        <Toast />
         <!-- Sidebar -->
         <aside class="fixed left-0 top-0 h-screen w-52 bg-slate-800 shadow-2xl z-50 flex flex-col">
             <div class="px-6 py-6 border-b border-slate-700/50">
@@ -146,19 +150,37 @@ const logout = () => { if (confirm('Déconnexion ?')) router.post(route('logout'
                 </Link>
             </nav>
             <div class="p-4 border-t border-slate-700/50">
-                <button @click="logout" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-400 hover:bg-red-500/10 hover:text-red-400 rounded-lg transition-all">Déconnexion</button>
+                <button @click="logout"
+                    class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-400 hover:bg-red-500/10 hover:text-red-400 rounded-lg transition-all group">
+                    <svg class="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    Déconnexion
+                </button>
             </div>
         </aside>
 
         <div class="ml-52 flex-1">
             <header class="bg-white border-b border-slate-200 sticky top-0 z-10 px-8 py-4 flex items-center justify-between">
                 <div class="flex items-center gap-4 text-slate-500">
-                    <span class="font-medium text-lg text-slate-800">Rapports</span>
+                    <Link :href="route('gestionnaire.demandes.index')"
+                        class="text-slate-400 hover:text-teal-600 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </Link>
+                    <span class="font-medium">Rapports</span>
                 </div>
-                <div class="flex items-center gap-2 text-slate-700">
-                    <div class="text-sm font-medium">{{ userName }}</div>
-                    <div class="w-9 h-9 flex items-center justify-center bg-slate-100 rounded-full">
-                        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                <div class="flex items-center gap-2 text-slate-700 hover:text-teal-600 cursor-pointer group">
+                    <div class="text-sm font-medium text-slate-700">{{ userName }}</div>
+                    <div
+                        class="w-9 h-9 flex items-center justify-center bg-slate-100 rounded-full group-hover:bg-teal-50 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
                     </div>
                 </div>
             </header>
@@ -234,7 +256,11 @@ const logout = () => { if (confirm('Déconnexion ?')) router.post(route('logout'
                         <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
                             <div class="text-sm text-slate-500">Affichage de {{ movementsData.from || 0 }} à {{ movementsData.to || 0 }} sur {{ movementsData.total }} mouvements</div>
                             <div class="flex gap-2">
-                                <Link v-for="link in movementsData.links" :key="link.label" :href="link.url || '#'" v-html="link.label" :class="['px-3 py-1 rounded text-sm transition-all', link.active ? 'bg-teal-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100', !link.url ? 'opacity-50 cursor-not-allowed' : '']" preserve-scroll />
+                                <Link v-for="link in movementsData.links" :key="link.label" 
+                                    :href="link.url ? link.url + '&tab=movements' : '#'" 
+                                    v-html="link.label" 
+                                    :class="['px-3 py-1 rounded text-sm transition-all', link.active ? 'bg-teal-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100', !link.url ? 'opacity-50 cursor-not-allowed' : '']" 
+                                    preserve-scroll preserve-state />
                             </div>
                         </div>
                     </div>

@@ -12,74 +12,74 @@ use Inertia\Response;
 class StockArticleController extends Controller
 {
     /**
-     * Affiche l'état actuel des stocks pour tous les articles dans tous les entrepôts.
+     * Affiche l'ï¿½tat actuel des stocks pour tous les articles dans tous les entrepï¿½ts.
      *
      * @return Response La vue Inertia avec la liste des stocks d'articles.
      */
     public function index(): Response
     {
         return Inertia::render('Gestionnaire/StockArticles/Index', [
-            'itemStocks' => StockArticle::with(['item', 'warehouse'])->get(),
+            'itemStocks' => StockArticle::withDetails()->get(),
         ]);
     }
 
     /**
-     * Affiche un message indiquant que la création directe de stock n'est pas recommandée.
-     * Le stock est une conséquence des mouvements (entrées/sorties).
+     * Affiche un message indiquant que la crï¿½ation directe de stock n'est pas recommandï¿½e.
+     * Le stock est une consï¿½quence des mouvements (entrï¿½es/sorties).
      *
      * @return Response La vue Inertia avec un message d'information.
      */
     public function create(): Response
     {
         return Inertia::render('Gestionnaire/StockArticles/Create', [
-            'message' => 'La création directe de stocks n\'est pas recommandée. Le stock est mis à jour via les mouvements.',
+            'message' => 'La crï¿½ation directe de stocks n\'est pas recommandï¿½e. Le stock est mis ï¿½ jour via les mouvements.',
         ]);
     }
 
     /**
-     * Empàªche l'enregistrement direct d'un enregistrement de stock.
-     * La logique métier veut que le stock soit géré via les mouvements de stock.
+     * Empï¿½che l'enregistrement direct d'un enregistrement de stock.
+     * La logique mï¿½tier veut que le stock soit gï¿½rï¿½ via les mouvements de stock.
      *
      * @param  Request  $request
      * @return RedirectResponse Une redirection avec un message d'erreur.
      */
     public function store(Request $request): RedirectResponse
     {
-        // La création directe d'un enregistrement StockArticle n'est généralement pas effectuée.
-        // Le stock est géré via les enregistrements MouvementStock.
-        return Redirect::route('item-stocks.index')->with('error', 'La création directe de stock n\'est pas autorisée.');
+        // La crï¿½ation directe d'un enregistrement StockArticle n'est gï¿½nï¿½ralement pas effectuï¿½e.
+        // Le stock est gï¿½rï¿½ via les enregistrements MouvementStock.
+        return Redirect::route('item-stocks.index')->with('error', 'La crï¿½ation directe de stock n\'est pas autorisï¿½e.');
     }
 
     /**
-     * Affiche le stock pour un article et un entrepôt spécifiques.
+     * Affiche le stock pour un article et un entrepï¿½t spï¿½cifiques.
      *
-     * @param  StockArticle  $itemStock L'enregistrement de stock spécifique.
-     * @return Response La vue Inertia avec les détails du stock.
+     * @param  StockArticle  $itemStock L'enregistrement de stock spï¿½cifique.
+     * @return Response La vue Inertia avec les dï¿½tails du stock.
      */
     public function show(StockArticle $itemStock): Response
     {
-        $itemStock->load(['item', 'warehouse']); // Pré-charge les relations pour l'élément unique
+        $itemStock->load(['item', 'warehouse']); // Prï¿½-charge les relations pour l'ï¿½lï¿½ment unique
         return Inertia::render('Gestionnaire/StockArticles/Show', [
             'itemStock' => $itemStock,
         ]);
     }
 
     /**
-     * Affiche un message indiquant que la modification directe de stock n'est pas recommandée.
+     * Affiche un message indiquant que la modification directe de stock n'est pas recommandï¿½e.
      *
-     * @param  StockArticle  $itemStock L'enregistrement de stock à modifier.
+     * @param  StockArticle  $itemStock L'enregistrement de stock ï¿½ modifier.
      * @return Response La vue Inertia avec un message d'information.
      */
     public function edit(StockArticle $itemStock): Response
     {
         return Inertia::render('Gestionnaire/StockArticles/Edit', [
             'itemStock' => $itemStock,
-            'message' => 'La modification directe du stock n\'est pas recommandée. Le stock est mis à jour via les mouvements.',
+            'message' => 'La modification directe du stock n\'est pas recommandï¿½e. Le stock est mis ï¿½ jour via les mouvements.',
         ]);
     }
 
     /**
-     * Empàªche la mise à jour directe d'un enregistrement de stock.
+     * Empï¿½che la mise ï¿½ jour directe d'un enregistrement de stock.
      *
      * @param  Request  $request
      * @param  StockArticle  $itemStock
@@ -87,21 +87,21 @@ class StockArticleController extends Controller
      */
     public function update(Request $request, StockArticle $itemStock): RedirectResponse
     {
-        // La mise à jour directe d'un enregistrement StockArticle n'est généralement pas effectuée.
-        // Le stock est géré via les enregistrements MouvementStock.
-        return Redirect::route('item-stocks.index')->with('error', 'La mise à jour directe du stock n\'est pas autorisée.');
+        // La mise ï¿½ jour directe d'un enregistrement StockArticle n'est gï¿½nï¿½ralement pas effectuï¿½e.
+        // Le stock est gï¿½rï¿½ via les enregistrements MouvementStock.
+        return Redirect::route('item-stocks.index')->with('error', 'La mise ï¿½ jour directe du stock n\'est pas autorisï¿½e.');
     }
 
     /**
-     * Empàªche la suppression directe d'un enregistrement de stock.
+     * Empï¿½che la suppression directe d'un enregistrement de stock.
      *
      * @param  StockArticle  $itemStock
      * @return RedirectResponse Une redirection avec un message d'erreur.
      */
     public function destroy(StockArticle $itemStock): RedirectResponse
     {
-        // La suppression directe d'un enregistrement StockArticle n'est généralement pas effectuée.
-        // Le stock est géré via les enregistrements MouvementStock.
-        return Redirect::route('item-stocks.index')->with('error', 'La suppression directe du stock n\'est pas autorisée.');
+        // La suppression directe d'un enregistrement StockArticle n'est gï¿½nï¿½ralement pas effectuï¿½e.
+        // Le stock est gï¿½rï¿½ via les enregistrements MouvementStock.
+        return Redirect::route('item-stocks.index')->with('error', 'La suppression directe du stock n\'est pas autorisï¿½e.');
     }
 }

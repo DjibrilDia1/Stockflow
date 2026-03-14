@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { Link, router, usePage, useForm } from '@inertiajs/vue3';
+import Toast from '@/Components/Toast.vue';
 
 const page = usePage();
 const userName = computed(() => page.props.auth?.user?.name ?? 'Gestionnaire');
@@ -12,6 +13,15 @@ const props = defineProps({
 
 const showAddUserModal = ref(false);
 const isEditing = ref(false);
+const searchQuery = ref('');
+
+const filteredUsers = computed(() => {
+    return props.users?.data?.filter(user =>
+        (user.name ?? '').toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        (user.email ?? '').toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        (user.service?.ser_nom ?? '').toLowerCase().includes(searchQuery.value.toLowerCase())
+    ) ?? [];
+});
 
 const userForm = useForm({
     id: null,
@@ -37,7 +47,7 @@ const openEditModal = (user) => {
     userForm.email = user.email;
     userForm.role = user.role;
     userForm.ser_id = user.ser_id;
-    userForm.password = ''; 
+    userForm.password = '';
     showAddUserModal.value = true;
 };
 
@@ -88,6 +98,7 @@ const logout = () => {
 
 <template>
     <div class="min-h-screen bg-slate-50 flex">
+        <Toast />
         <aside class="fixed left-0 top-0 h-screen w-52 bg-slate-800 shadow-2xl z-50 flex flex-col">
             <div class="px-6 py-6 border-b border-slate-700/50">
                 <h1 class="text-2xl font-bold tracking-tight text-white">
@@ -155,15 +166,15 @@ const logout = () => {
                         Ajouter utilisateur
                     </button>
                 </div>
-
+                <Teleport to="body">
                 <div v-if="showAddUserModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
-                        @click="showAddUserModal = false"></div>
-
+                    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showAddUserModal = false">
+                    </div>
+                
                     <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
-                        <div
-                            class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                            <h3 class="text-lg font-bold text-slate-800">{{ isEditing ? 'Modifier l\'utilisateur' : 'Nouvel Utilisateur' }}</h3>
+                        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                            <h3 class="text-lg font-bold text-slate-800">{{ isEditing ? 'Modifier l\'utilisateur' :
+                                'Nouvel Utilisateur' }}</h3>
                             <button @click="showAddUserModal = false"
                                 class="text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
                         </div>
@@ -172,42 +183,59 @@ const logout = () => {
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Nom complet</label>
                                 <input v-model="userForm.name" type="text" placeholder="Ex: Moussa Ndiaye" required
-                                    class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                                    class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+                                    :class="{ 'border-red-500': userForm.errors.name }">
+                                <div v-if="userForm.errors.name" class="text-red-500 text-xs mt-1">{{
+                                    userForm.errors.name }}</div>
                             </div>
 
                             <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">Email professionnel</label>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Email
+                                    professionnel</label>
                                 <input v-model="userForm.email" type="email" placeholder="m.ndiaye@stockflow.sn"
                                     required
-                                    class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                                    class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+                                    :class="{ 'border-red-500': userForm.errors.email }">
+                                <div v-if="userForm.errors.email" class="text-red-500 text-xs mt-1">{{
+                                    userForm.errors.email }}</div>
                             </div>
 
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-700 mb-1">Rôle</label>
                                     <select v-model="userForm.role"
-                                        class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                                        class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+                                        :class="{ 'border-red-500': userForm.errors.role }">
                                         <option value="gestionnaire">Gestionnaire</option>
                                         <option value="demandeur">Demandeur</option>
                                         <option value="responsable">Responsable</option>
                                     </select>
+                                    <div v-if="userForm.errors.role" class="text-red-500 text-xs mt-1">{{
+                                        userForm.errors.role }}</div>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-700 mb-1">Service</label>
                                     <select v-model="userForm.ser_id" required
-                                        class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                                        class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+                                        :class="{ 'border-red-500': userForm.errors.ser_id }">
                                         <option value="" disabled>Choisir un service</option>
-                                        <option v-for="service in props.services" :key="service.ser_id" :value="service.ser_id">
+                                        <option v-for="service in props.services" :key="service.ser_id"
+                                            :value="service.ser_id">
                                             {{ service.ser_nom }}
                                         </option>
                                     </select>
+                                    <div v-if="userForm.errors.ser_id" class="text-red-500 text-xs mt-1">{{
+                                        userForm.errors.ser_id }}</div>
                                 </div>
                             </div>
 
                             <div v-if="!isEditing">
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">Mot de passe</label>
                                 <input v-model="userForm.password" type="password" required
-                                    class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
+                                    class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+                                    :class="{ 'border-red-500': userForm.errors.password }">
+                                <div v-if="userForm.errors.password" class="text-red-500 text-xs mt-1">{{
+                                    userForm.errors.password }}</div>
                             </div>
 
                             <div class="pt-4 flex gap-3">
@@ -223,6 +251,7 @@ const logout = () => {
                         </form>
                     </div>
                 </div>
+            </teleport>
 
                 <div
                     class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-wrap gap-4 items-center">
@@ -232,7 +261,7 @@ const logout = () => {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
-                        <input type="text" placeholder="Rechercher un utilisateur..."
+                        <input v-model="searchQuery" type="text" placeholder="Rechercher un utilisateur..."
                             class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none">
                     </div>
                 </div>
@@ -241,7 +270,8 @@ const logout = () => {
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="border-b border-slate-100 bg-slate-50/50">
-                                <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Service / Nom</th>
+                                <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                    Service / Nom</th>
                                 <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                                     Email</th>
                                 <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Rôle
@@ -254,7 +284,7 @@ const logout = () => {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-50">
-                            <tr v-for="user in props.users.data" :key="user.id"
+                            <tr v-for="user in filteredUsers" :key="user.id"
                                 class="hover:bg-slate-50/80 transition-colors">
                                 <td class="px-6 py-4">
                                     <div class="flex flex-col">
@@ -279,19 +309,24 @@ const logout = () => {
                                     <div class="flex justify-end gap-2">
                                         <button @click="openEditModal(user)"
                                             class="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                             </svg>
                                         </button>
-                                        <button @click="deleteUser(user.id)"
+                                        <button v-if="user.id !== $page.props.auth.user.id" @click="deleteUser(user.id)"
                                             class="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition-colors">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                         </button>
                                     </div>
+                                </td>
+                            </tr>
+                            <tr v-if="filteredUsers.length === 0">
+                                <td colspan="5" class="px-6 py-10 text-center text-slate-400 text-sm">
+                                    Aucun utilisateur trouvé pour « {{ searchQuery }} »
                                 </td>
                             </tr>
                         </tbody>
@@ -300,14 +335,16 @@ const logout = () => {
                     <!-- Pagination -->
                     <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-col items-center gap-2">
                         <div class="flex items-center gap-1">
-                            <Link v-for="(link, k) in props.users.links" :key="k" :href="link.url || '#'" v-html="link.label"
-                                class="px-3 py-1 text-sm rounded transition-all"
-                                :class="{'bg-teal-600 text-white font-bold': link.active, 'text-slate-400 hover:text-teal-600': !link.active && link.url, 'text-slate-300 cursor-not-allowed': !link.url}" />
+                            <Link v-for="(link, k) in props.users.links" :key="k" :href="link.url || '#'"
+                                v-html="link.label" class="px-3 py-1 text-sm rounded transition-all"
+                                :class="{ 'bg-teal-600 text-white font-bold': link.active, 'text-slate-400 hover:text-teal-600': !link.active && link.url, 'text-slate-300 cursor-not-allowed': !link.url }" />
                         </div>
-                        <span class="text-xs text-slate-500">{{ props.users.from }}-{{ props.users.to }} sur {{ props.users.total }} utilisateurs</span>
+                        <span class="text-xs text-slate-500">{{ props.users.from }}-{{ props.users.to }} sur {{
+                            props.users.total }} utilisateurs</span>
                     </div>
 
                 </div>
+                
             </main>
         </div>
     </div>

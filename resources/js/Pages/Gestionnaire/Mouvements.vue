@@ -1,16 +1,42 @@
 <script setup>
-import { ref } from 'vue';
-import { Link, router, useForm } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
+import { Link, router, useForm, usePage } from '@inertiajs/vue3';
+import Toast from '@/Components/Toast.vue';
 
+const page = usePage();
+const userName = computed(() => page.props.auth?.user?.name ?? 'Gestionnaire');
 
 const props = defineProps({
     stockMovements: Object,
+    warehouses_paginated: {
+        type: Object,
+        default: () => ({ data: [], links: [], total: 0 })
+    },
     articles: Array,
     warehouses: Array,
     suppliers: Array,
 });
 
+const activeTab = ref('mouvements');
 const showAddMouvementModal = ref(false);
+
+const showEntrepotModal = ref(false);
+const isEditingEntrepot = ref(false);
+const searchEntrepot = ref('');
+
+const filteredEntrepots = computed(() =>
+    props.warehouses_paginated?.data?.filter(e =>
+        (e.ent_nom ?? '').toLowerCase().includes(searchEntrepot.value.toLowerCase()) ||
+        (e.ent_code ?? '').toLowerCase().includes(searchEntrepot.value.toLowerCase())
+    ) ?? []
+);
+
+const entrepotForm = useForm({
+    ent_id: null,
+    ent_nom: '',
+    ent_code: '',
+    ent_localisation: '',
+});
 
 const movementForm = useForm({
     mvs_date_mouvement: new Date().toISOString().slice(0, 10),
@@ -50,6 +76,41 @@ const addMouvement = () => {
 const deleteMouvement = (id) => {
     if (confirm('Êtes-vous sûr de vouloir supprimer ce mouvement ? Cette action est irréversible.')) {
         router.delete(route('gestionnaire.mouvements.destroy', id));
+    }
+};
+
+const openAddEntrepotModal = () => {
+    isEditingEntrepot.value = false;
+    entrepotForm.reset();
+    entrepotForm.clearErrors();
+    showEntrepotModal.value = true;
+};
+
+const openEditEntrepotModal = (item) => {
+    isEditingEntrepot.value = true;
+    entrepotForm.clearErrors();
+    entrepotForm.ent_id = item.ent_id;
+    entrepotForm.ent_nom = item.ent_nom;
+    entrepotForm.ent_code = item.ent_code;
+    entrepotForm.ent_localisation = item.ent_localisation ?? '';
+    showEntrepotModal.value = true;
+};
+
+const deleteEntrepot = (id) => {
+    if (confirm('Confirmer la suppression de cet entrepôt ?')) {
+        router.delete(route('gestionnaire.mouvements.entrepots.destroy', id));
+    }
+};
+
+const saveEntrepot = () => {
+    if (isEditingEntrepot.value) {
+        entrepotForm.put(route('gestionnaire.mouvements.entrepots.update', entrepotForm.ent_id), {
+            onSuccess: () => showEntrepotModal.value = false
+        });
+    } else {
+        entrepotForm.post(route('gestionnaire.mouvements.entrepots.store'), {
+            onSuccess: () => showEntrepotModal.value = false
+        });
     }
 };
 
@@ -112,6 +173,7 @@ const logout = () => {
 
 <template>
     <div class="min-h-screen bg-slate-50 flex">
+        <Toast />
         <aside class="fixed left-0 top-0 h-screen w-52 bg-slate-800 shadow-2xl z-50 flex flex-col">
             <div class="px-6 py-6 border-b border-slate-700/50">
                 <h1 class="text-2xl font-bold tracking-tight text-white">
@@ -157,9 +219,10 @@ const logout = () => {
                     </Link>
                     <span class="font-medium">Mouvements</span>
                 </div>
-                <div class="flex items-center gap-2 text-slate-700">
-                    <span class="text-sm font-medium">Gestionnaire de compte</span>
-                    <div class="w-9 h-9 bg-slate-100 rounded-full flex items-center justify-center">
+                <div class="flex items-center gap-2 text-slate-700 hover:text-teal-600 cursor-pointer group">
+                    <div class="text-sm font-medium text-slate-700">{{ userName }}</div>
+                    <div
+                        class="w-9 h-9 flex items-center justify-center bg-slate-100 rounded-full group-hover:bg-teal-50 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -169,21 +232,62 @@ const logout = () => {
             </header>
 
             <main class="p-8 space-y-6">
-                <div class="flex justify-between items-center">
+                <div class="flex justify-between items-end">
                     <div>
-                        <h2 class="text-2xl font-bold text-slate-800">Gestion des mouvements</h2>
-                        <p class="text-slate-500 text-sm">Gérer les entrées, sorties et ajustements de stock</p>
+                        <h2 class="text-2xl font-bold text-slate-800">Flux & Entrepôts</h2>
+                        <p class="text-slate-500 text-sm">Gérez les mouvements de stock et la configuration des entrepôts</p>
                     </div>
-                    <button @click="showAddMouvementModal = true"
-                        class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-all shadow-sm">
+                    <button v-if="activeTab === 'mouvements'" @click="showAddMouvementModal = true"
+                        class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-sm">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
                         Nouveau mouvement
                     </button>
+                    <button v-else @click="openAddEntrepotModal"
+                        class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-sm">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Nouvel Entrepôt
+                    </button>
+                </div>
 
-
+                <!-- Tabs Navigation -->
+                <div class="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit">
+                    <button @click="activeTab = 'mouvements'" :class="[
+                        'flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all',
+                        activeTab === 'mouvements'
+                            ? 'bg-white text-teal-700 shadow-sm border border-slate-200'
+                            : 'text-slate-500 hover:text-slate-700'
+                    ]">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                        </svg>
+                        Mouvements
+                        <span class="ml-1 px-2 py-0.5 rounded-full text-xs font-bold"
+                            :class="activeTab === 'mouvements' ? 'bg-teal-100 text-teal-700' : 'bg-slate-200 text-slate-500'">
+                            {{ props.stockMovements?.total ?? 0 }}
+                        </span>
+                    </button>
+                    <button @click="activeTab = 'entrepots'" :class="[
+                        'flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all',
+                        activeTab === 'entrepots'
+                            ? 'bg-white text-teal-700 shadow-sm border border-slate-200'
+                            : 'text-slate-500 hover:text-slate-700'
+                    ]">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                        Entrepôts
+                        <span class="ml-1 px-2 py-0.5 rounded-full text-xs font-bold"
+                            :class="activeTab === 'entrepots' ? 'bg-teal-100 text-teal-700' : 'bg-slate-200 text-slate-500'">
+                            {{ props.warehouses_paginated?.total ?? 0 }}
+                        </span>
+                    </button>
+                </div>
+                
+                <Teleport to="body">
                     <div v-if="showAddMouvementModal"
                         class="fixed inset-0 z-[100] flex items-center justify-center p-4">
                         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
@@ -315,7 +419,10 @@ const logout = () => {
                             </form>
                         </div>
                     </div>
-                </div>
+                </Teleport>
+
+                <!-- Mouvements Section -->
+                <div v-show="activeTab === 'mouvements'" class="space-y-6">
 
                 <div
                     class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-wrap gap-4 items-center">
@@ -447,8 +554,115 @@ const logout = () => {
                         </span>
                     </div>
                 </div>
+                </div> <!-- End Mouvements Section -->
+
+                <!-- Entrepots Section -->
+                <div v-show="activeTab === 'entrepots'" class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-slate-100">
+                        <div class="relative max-w-sm">
+                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <input v-model="searchEntrepot" type="text" placeholder="Rechercher par nom ou code..."
+                                class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none bg-slate-50" />
+                        </div>
+                    </div>
+
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50 border-b border-slate-100 text-xs font-semibold text-slate-500 uppercase">
+                            <tr>
+                                <th class="px-6 py-4">Nom de l'Entrepôt</th>
+                                <th class="px-6 py-4">Code / Référence</th>
+                                <th class="px-6 py-4">Localisation</th>
+                                <th class="px-6 py-4">Date de création</th>
+                                <th class="px-6 py-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <tr v-for="ent in filteredEntrepots" :key="ent.ent_id" class="hover:bg-slate-50/50 transition-colors">
+                                <td class="px-6 py-4 font-semibold text-slate-800">{{ ent.ent_nom }}</td>
+                                <td class="px-6 py-4 text-sm text-slate-600">{{ ent.ent_code || '—' }}</td>
+                                <td class="px-6 py-4 text-sm text-slate-600">{{ ent.ent_localisation || '—' }}</td>
+                                <td class="px-6 py-4 text-sm text-slate-500">{{ new Date(ent.ent_created_at).toLocaleDateString('fr-FR') }}</td>
+                                <td class="px-6 py-4 text-right">
+                                    <div class="flex justify-end gap-2">
+                                        <button @click="openEditEntrepotModal(ent)" class="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="Modifier">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                            </svg>
+                                        </button>
+                                        <button @click="deleteEntrepot(ent.ent_id)" class="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition-colors" title="Supprimer">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr v-if="filteredEntrepots.length === 0">
+                                <td colspan="5" class="px-6 py-10 text-center text-slate-400 text-sm">
+                                    Aucun entrepôt trouvé.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-col items-center gap-2">
+                        <div class="flex items-center gap-1">
+                            <Link v-for="(link, k) in (props.warehouses_paginated?.links ?? [])" :key="k" :href="link.url || '#'" v-html="link.label"
+                                class="px-3 py-1 text-sm rounded transition-all"
+                                :class="{'bg-teal-600 text-white font-bold': link.active, 'text-slate-400 hover:text-teal-600': !link.active && link.url, 'text-slate-300 cursor-not-allowed': !link.url}" />
+                        </div>
+                        <span class="text-xs text-slate-400">{{ props.warehouses_paginated?.from ?? 0 }}–{{ props.warehouses_paginated?.to ?? 0 }} sur {{ props.warehouses_paginated?.total ?? 0 }} entrepôts</span>
+                    </div>
+                </div>
 
             </main>
+
+            <Teleport to="body">
+                <div v-if="showEntrepotModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showEntrepotModal = false"></div>
+                    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
+                        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                            <h3 class="font-bold text-slate-800">{{ isEditingEntrepot ? 'Modifier' : 'Ajouter' }} un Entrepôt</h3>
+                            <button @click="showEntrepotModal = false" class="text-slate-400 text-2xl">&times;</button>
+                        </div>
+                        <form @submit.prevent="saveEntrepot" class="p-6 space-y-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Nom de l'Entrepôt</label>
+                                <input v-model="entrepotForm.ent_nom" type="text" required
+                                    class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500"
+                                    :class="{ 'border-red-400': entrepotForm.errors.ent_nom }">
+                                <p v-if="entrepotForm.errors.ent_nom" class="text-red-500 text-xs mt-1">{{ entrepotForm.errors.ent_nom }}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Code / Référence</label>
+                                <input v-model="entrepotForm.ent_code" type="text" required
+                                    class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500"
+                                    :class="{ 'border-red-400': entrepotForm.errors.ent_code }">
+                                <p v-if="entrepotForm.errors.ent_code" class="text-red-500 text-xs mt-1">{{ entrepotForm.errors.ent_code }}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Localisation (Optionnel)</label>
+                                <textarea v-model="entrepotForm.ent_localisation" rows="2"
+                                    class="w-full px-4 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-500"
+                                    :class="{ 'border-red-400': entrepotForm.errors.ent_localisation }"></textarea>
+                                <p v-if="entrepotForm.errors.ent_localisation" class="text-red-500 text-xs mt-1">{{ entrepotForm.errors.ent_localisation }}</p>
+                            </div>
+                            
+                            <div class="pt-4 flex gap-3">
+                                <button type="button" @click="showEntrepotModal = false"
+                                    class="flex-1 py-2 border border-slate-200 rounded-lg font-semibold text-slate-600">Annuler</button>
+                                <button type="submit" :disabled="entrepotForm.processing"
+                                    class="flex-1 py-2 bg-teal-600 text-white rounded-lg font-semibold shadow-md">
+                                    {{ entrepotForm.processing ? 'Traitement...' : (isEditingEntrepot ? 'Mettre à jour' : 'Enregistrer') }}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </Teleport>
+
         </div>
     </div>
 </template>

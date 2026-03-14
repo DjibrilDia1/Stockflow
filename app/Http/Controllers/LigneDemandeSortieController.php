@@ -13,27 +13,7 @@ use Inertia\Response;
 
 class LigneDemandeSortieController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(): Response
-    {
-        return Inertia::render('Gestionnaire/LigneDemandeSorties/Index', [
-            'withdrawRequestLines' => LigneDemandeSortie::with(['withdrawRequest', 'item', 'warehouse'])->get(),
-        ]);
-    }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create(): Response
-    {
-        return Inertia::render('Gestionnaire/LigneDemandeSorties/Create', [
-            'withdrawRequests' => DemandeSortie::all(['dso_id']), // Just ID for selection
-            'items' => Article::all(['art_id', 'art_nom', 'art_reference']),
-            'warehouses' => Entrepot::all(['ent_id', 'ent_nom']),
-        ]);
-    }
 
     /**
      * Store a newly created resource in storage.

@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import NewRequestModal from '@/Components/NewRequestModal.vue';
+import Toast from '@/Components/Toast.vue';
 
 const props = defineProps({
     articles: Array,
@@ -56,6 +57,7 @@ const openRequestModal = (articleId) => {
 
 <template>
     <div class="min-h-screen bg-slate-50 flex">
+        <Toast />
         <aside class="fixed left-0 top-0 h-screen w-52 bg-slate-800 shadow-2xl z-50 flex flex-col">
             <div class="px-6 py-6 border-b border-slate-700/50">
                 <h1 class="text-2xl font-bold tracking-tight text-white">
@@ -95,7 +97,7 @@ const openRequestModal = (articleId) => {
             <header
                 class="bg-white border-b border-slate-200 sticky top-0 z-10 px-8 py-4 flex items-center justify-between">
                 <div class="flex items-center gap-4 text-slate-500">
-                    <Link :href="route('demandeur.dashboard')"
+                    <Link :href="route('demandeur.demandes.index')"
                         class="text-slate-400 hover:text-teal-600 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -125,7 +127,7 @@ const openRequestModal = (articleId) => {
                 <NewRequestModal :show="showModal" :articles="articlesDisponibles" :initialArticleId="initialArticleId"
                     @close="showModal = false" />
 
-                <section class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+                <section class="bg-white rounded-lg border border-slate-200 shadow-sm p-5">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <input v-model="searchQuery" type="text" placeholder="Rechercher par nom ou code..."
                             class="px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none">

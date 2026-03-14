@@ -22,8 +22,6 @@ class LigneDemandeSortie extends Model
 
     /**
      * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
      */
     protected $fillable = [
         'lds_dso_id',
@@ -33,6 +31,14 @@ class LigneDemandeSortie extends Model
         'lds_qte_servie',
         'lds_note',
     ];
+
+    /**
+     * Scope to eager load related models.
+     */
+    public function scopeWithDetails($query)
+    {
+        return $query->with(['withdrawRequest', 'item', 'warehouse']);
+    }
 
     /**
      * Get the withdraw request that owns the line.
@@ -57,5 +63,8 @@ class LigneDemandeSortie extends Model
     {
         return $this->belongsTo(Entrepot::class, 'lds_ent_id', 'ent_id');
     }
+
+    // --------------------------- Methodes ---------------------------
+    
 }
 
