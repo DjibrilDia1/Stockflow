@@ -7,13 +7,16 @@ const visible = ref(false);
 const message = ref('');
 const type = ref('success');
 
+let timeoutId = null;
+
 const showToast = (msg, msgType) => {
     if (!msg) return;
     message.value = msg;
     type.value = msgType;
     visible.value = true;
     
-    setTimeout(() => {
+    if (timeoutId) clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
         visible.value = false;
     }, 5000);
 };
