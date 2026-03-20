@@ -27,6 +27,8 @@ Route::get('/', function () {
 });
 
 Route::middleware('auth')->get('/dashboard', function () {
+    request()->session()->reflash();
+
     return match (request()->user()->role) {
         UserRole::GESTIONNAIRE => redirect()->route('gestionnaire.dashboard'),
         UserRole::RESPONSABLE => redirect()->route('responsable.dashboard'),

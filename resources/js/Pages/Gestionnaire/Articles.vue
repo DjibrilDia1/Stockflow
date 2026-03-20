@@ -21,10 +21,10 @@ const filterCategory = ref('');
 
 const filteredArticles = computed(() => {
     return props.items?.data?.filter(item => {
-        const matchesSearch = !searchQuery.value || 
+        const matchesSearch = !searchQuery.value ||
             (item.art_nom ?? '').toLowerCase().includes(searchQuery.value.toLowerCase()) ||
             (item.art_reference ?? '').toLowerCase().includes(searchQuery.value.toLowerCase());
-        
+
         const matchesCategory = !filterCategory.value || item.art_cat_id == filterCategory.value;
 
         return matchesSearch && matchesCategory;
@@ -32,7 +32,7 @@ const filteredArticles = computed(() => {
 });
 
 const filteredCategories = computed(() => {
-    return props.categories?.data?.filter(cat => 
+    return props.categories?.data?.filter(cat =>
         (cat.cat_nom ?? '').toLowerCase().includes(searchQuery.value.toLowerCase()) ||
         (cat.cat_code ?? '').toLowerCase().includes(searchQuery.value.toLowerCase())
     ) ?? [];
@@ -200,9 +200,10 @@ const logout = () => {
                     </Link>
                     <span class="font-medium">Articles & Catégories</span>
                 </div>
-                <div class="flex items-center gap-2 text-slate-700">
-                    <span class="text-sm font-medium">{{ userName }}</span>
-                    <div class="w-9 h-9 bg-slate-100 rounded-full flex items-center justify-center">
+                <div class="flex items-center gap-2 text-slate-700 hover:text-teal-600 cursor-pointer group">
+                    <div class="text-sm font-medium text-slate-700">{{ userName }}</div>
+                    <div
+                        class="w-9 h-9 flex items-center justify-center bg-slate-100 rounded-full group-hover:bg-teal-50 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -265,18 +266,22 @@ const logout = () => {
 
                     </div>
 
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-wrap gap-4 items-center">
+                    <div
+                        class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-wrap gap-4 items-center">
                         <div class="relative flex-1 min-w-[300px]">
-                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                             <input v-model="searchQuery" type="text" placeholder="Rechercher par nom ou référence..."
                                 class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none">
                         </div>
                         <select v-model="filterCategory"
-                            class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-500">
+                            class="bg-slate-50 border border-slate-200 rounded-lg appearance-none text-sm outline-none focus:ring-2 focus:ring-teal-500">
                             <option value="">Toutes les catégories</option>
-                            <option v-for="cat in categories_all" :key="cat.cat_id" :value="cat.cat_id">{{ cat.cat_nom }}</option>
+                            <option v-for="cat in categories_all" :key="cat.cat_id" :value="cat.cat_id">{{ cat.cat_nom
+                                }}</option>
                         </select>
                     </div>
 
@@ -308,7 +313,7 @@ const logout = () => {
                                             <div v-for="stock in item.item_stocks" :key="stock.sta_id"
                                                 class="text-[10px] text-slate-400 leading-tight">
                                                 <span class="font-medium text-slate-500">{{ stock.warehouse?.ent_nom
-                                                    }}:</span> {{ stock.sta_quantite }}
+                                                }}:</span> {{ stock.sta_quantite }}
                                             </div>
                                         </div>
                                     </td>
@@ -376,8 +381,10 @@ const logout = () => {
 
                     <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
                         <div class="relative max-w-md">
-                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                             <input v-model="searchQuery" type="text" placeholder="Rechercher par nom ou code..."
                                 class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none">
@@ -608,7 +615,14 @@ const logout = () => {
         <div v-if="showAddCategoryModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showAddCategoryModal = false"></div>
             <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 overflow-hidden animate-fade-in">
-                <h3 class="text-lg font-bold mb-4 text-slate-800 border-b pb-2">Nouvelle Catégorie</h3>
+                <div class="flex items-center justify-between border-b pb-2 mb-4">
+                    <h3 class="text-lg font-bold text-slate-800">Nouvelle Catégorie</h3>
+
+                    <button @click="showAddCategoryModal = false"
+                        class="text-slate-400 hover:text-slate-600 text-2xl leading-none">
+                        &times;
+                    </button>
+                </div>
                 <form @submit.prevent="addCategory" class="space-y-4">
                     <div>
                         <input v-model="categoryForm.cat_code" placeholder="Référence (Code)"

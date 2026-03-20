@@ -91,7 +91,7 @@ const getAlertBadgeClass = (current, threshold) => {
             <header
                 class="bg-white border-b border-slate-200 sticky top-0 z-10 px-8 py-4 flex items-center justify-between">
                 <div>
-                    <h2 class="text-xl font-bold text-slate-800">Tableau de bord Responsable</h2>
+                    <h2 class="text-xl font-bold text-slate-800">Dashboard Responsable</h2>
                     <p class="text-sm text-slate-500">Validation et supervision des demandes</p>
                 </div>
                 <div class="flex items-center gap-2 text-slate-700 hover:text-teal-600 cursor-pointer group">

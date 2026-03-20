@@ -115,7 +115,7 @@ const showModal = ref(false);
                     :articles="articlesDisponibles" 
                     @close="showModal = false"
                 />
-
+                
                 <section class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
                     <table class="w-full">
                         <thead class="bg-slate-50 border-b border-slate-200">

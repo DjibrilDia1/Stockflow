@@ -16,7 +16,7 @@ const isEditing = ref(false);
 const searchQuery = ref('');
 
 const filteredUsers = computed(() => {
-    return props.users?.data?.filter(user => 
+    return props.users?.data?.filter(user =>
         (user.name ?? '').toLowerCase().includes(searchQuery.value.toLowerCase()) ||
         (user.email ?? '').toLowerCase().includes(searchQuery.value.toLowerCase()) ||
         (user.service?.ser_nom ?? '').toLowerCase().includes(searchQuery.value.toLowerCase())
@@ -47,7 +47,7 @@ const openEditModal = (user) => {
     userForm.email = user.email;
     userForm.role = user.role;
     userForm.ser_id = user.ser_id;
-    userForm.password = ''; 
+    userForm.password = '';
     showAddUserModal.value = true;
 };
 
@@ -87,7 +87,7 @@ const navigation = [
     { name: 'Mouvements', route: 'gestionnaire.mouvements.index', icon: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' },
     { name: 'Demandes', route: 'gestionnaire.demandes.index', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
     { name: 'Rapports', route: 'gestionnaire.rapports.index', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
-    { name: 'Utilisateur', route: 'gestionnaire.utilisateurs.index', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
+    { name: 'Utilisateurs', route: 'gestionnaire.utilisateurs.index', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
     { name: 'Services & Fournisseurs', route: 'gestionnaire.services-fournisseurs.index', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
 ];
 
@@ -166,15 +166,15 @@ const logout = () => {
                         Ajouter utilisateur
                     </button>
                 </div>
-
+                <Teleport to="body">
                 <div v-if="showAddUserModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
-                        @click="showAddUserModal = false"></div>
-
+                    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showAddUserModal = false">
+                    </div>
+                
                     <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
-                        <div
-                            class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                            <h3 class="text-lg font-bold text-slate-800">{{ isEditing ? 'Modifier l\'utilisateur' : 'Nouvel Utilisateur' }}</h3>
+                        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                            <h3 class="text-lg font-bold text-slate-800">{{ isEditing ? 'Modifier l\'utilisateur' :
+                                'Nouvel Utilisateur' }}</h3>
                             <button @click="showAddUserModal = false"
                                 class="text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
                         </div>
@@ -185,16 +185,19 @@ const logout = () => {
                                 <input v-model="userForm.name" type="text" placeholder="Ex: Moussa Ndiaye" required
                                     class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
                                     :class="{ 'border-red-500': userForm.errors.name }">
-                                <div v-if="userForm.errors.name" class="text-red-500 text-xs mt-1">{{ userForm.errors.name }}</div>
+                                <div v-if="userForm.errors.name" class="text-red-500 text-xs mt-1">{{
+                                    userForm.errors.name }}</div>
                             </div>
 
                             <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">Email professionnel</label>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Email
+                                    professionnel</label>
                                 <input v-model="userForm.email" type="email" placeholder="m.ndiaye@stockflow.sn"
                                     required
                                     class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
                                     :class="{ 'border-red-500': userForm.errors.email }">
-                                <div v-if="userForm.errors.email" class="text-red-500 text-xs mt-1">{{ userForm.errors.email }}</div>
+                                <div v-if="userForm.errors.email" class="text-red-500 text-xs mt-1">{{
+                                    userForm.errors.email }}</div>
                             </div>
 
                             <div class="grid grid-cols-2 gap-4">
@@ -207,7 +210,8 @@ const logout = () => {
                                         <option value="demandeur">Demandeur</option>
                                         <option value="responsable">Responsable</option>
                                     </select>
-                                    <div v-if="userForm.errors.role" class="text-red-500 text-xs mt-1">{{ userForm.errors.role }}</div>
+                                    <div v-if="userForm.errors.role" class="text-red-500 text-xs mt-1">{{
+                                        userForm.errors.role }}</div>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-700 mb-1">Service</label>
@@ -215,11 +219,13 @@ const logout = () => {
                                         class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
                                         :class="{ 'border-red-500': userForm.errors.ser_id }">
                                         <option value="" disabled>Choisir un service</option>
-                                        <option v-for="service in props.services" :key="service.ser_id" :value="service.ser_id">
+                                        <option v-for="service in props.services" :key="service.ser_id"
+                                            :value="service.ser_id">
                                             {{ service.ser_nom }}
                                         </option>
                                     </select>
-                                    <div v-if="userForm.errors.ser_id" class="text-red-500 text-xs mt-1">{{ userForm.errors.ser_id }}</div>
+                                    <div v-if="userForm.errors.ser_id" class="text-red-500 text-xs mt-1">{{
+                                        userForm.errors.ser_id }}</div>
                                 </div>
                             </div>
 
@@ -228,7 +234,8 @@ const logout = () => {
                                 <input v-model="userForm.password" type="password" required
                                     class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
                                     :class="{ 'border-red-500': userForm.errors.password }">
-                                <div v-if="userForm.errors.password" class="text-red-500 text-xs mt-1">{{ userForm.errors.password }}</div>
+                                <div v-if="userForm.errors.password" class="text-red-500 text-xs mt-1">{{
+                                    userForm.errors.password }}</div>
                             </div>
 
                             <div class="pt-4 flex gap-3">
@@ -244,6 +251,7 @@ const logout = () => {
                         </form>
                     </div>
                 </div>
+            </teleport>
 
                 <div
                     class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-wrap gap-4 items-center">
@@ -262,7 +270,8 @@ const logout = () => {
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="border-b border-slate-100 bg-slate-50/50">
-                                <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Service / Nom</th>
+                                <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                    Service / Nom</th>
                                 <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                                     Email</th>
                                 <th class="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Rôle
@@ -326,14 +335,16 @@ const logout = () => {
                     <!-- Pagination -->
                     <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-col items-center gap-2">
                         <div class="flex items-center gap-1">
-                            <Link v-for="(link, k) in props.users.links" :key="k" :href="link.url || '#'" v-html="link.label"
-                                class="px-3 py-1 text-sm rounded transition-all"
-                                :class="{'bg-teal-600 text-white font-bold': link.active, 'text-slate-400 hover:text-teal-600': !link.active && link.url, 'text-slate-300 cursor-not-allowed': !link.url}" />
+                            <Link v-for="(link, k) in props.users.links" :key="k" :href="link.url || '#'"
+                                v-html="link.label" class="px-3 py-1 text-sm rounded transition-all"
+                                :class="{ 'bg-teal-600 text-white font-bold': link.active, 'text-slate-400 hover:text-teal-600': !link.active && link.url, 'text-slate-300 cursor-not-allowed': !link.url }" />
                         </div>
-                        <span class="text-xs text-slate-500">{{ props.users.from }}-{{ props.users.to }} sur {{ props.users.total }} utilisateurs</span>
+                        <span class="text-xs text-slate-500">{{ props.users.from }}-{{ props.users.to }} sur {{
+                            props.users.total }} utilisateurs</span>
                     </div>
 
                 </div>
+                
             </main>
         </div>
     </div>
