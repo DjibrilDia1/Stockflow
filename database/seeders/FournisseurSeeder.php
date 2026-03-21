@@ -25,14 +25,14 @@ class FournisseurSeeder extends Seeder
             'fou_contact_nom' => 'Cheikh Tidiane Sy',
             'fou_email' => 'commercial@sen-info.com',
             'fou_telephone' => '338606060',
-            'fou_adresse' => 'Sicap Liberté 6, Dakar'
+            'fou_adresse' => 'Sicap Liberte 6, Dakar'
         ]);
         Fournisseur::create([
             'fou_nom' => 'La Papeterie Africaine',
             'fou_contact_nom' => 'Fatou Ndiaye',
             'fou_email' => 'info@papeterie-africaine.sn',
             'fou_telephone' => '338454545',
-            'fou_adresse' => 'Rue 1 x 6, Médina, Dakar'
+            'fou_adresse' => 'Rue 1 x 6, Medina, Dakar'
         ]);
     }
 }

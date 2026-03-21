@@ -17,48 +17,15 @@ class MouvementStockController extends Controller
      */
     public function index(Request $request): Response
     {
-        $query = MouvementStock::with(['item', 'warehouse', 'supplier', 'service', 'user']);
-
-        if ($request->search) {
-            $query->where(function($q) use ($request) {
-                $q->where('mvs_motif', 'like', "%{$request->search}%")
-                  ->orWhereHas('item', function($q) use ($request) {
-                      $q->where('art_nom', 'like', "%{$request->search}%")
-                        ->orWhere('art_reference', 'like', "%{$request->search}%");
-                  });
-            });
-        }
-
-        if ($request->type) {
-            $query->where('mvs_type', $request->type);
-        }
-
-        if ($request->article_id) {
-            $query->where('mvs_art_id', $request->article_id);
-        }
-
-        if ($request->warehouse_id) {
-            $query->where(function($q) use ($request) {
-                $q->where('mvs_ent_id', $request->warehouse_id)
-                  ->orWhere('mvs_ent_dest_id', $request->warehouse_id);
-            });
-        }
-
-        if ($request->date_start) {
-            $query->where('mvs_date_mouvement', '>=', $request->date_start);
-        }
-
-        if ($request->date_end) {
-            $query->where('mvs_date_mouvement', '<=', $request->date_end);
-        }
+        $filters = $request->only(['search', 'type', 'article_id', 'warehouse_id', 'date_start', 'date_end']);
 
         return Inertia::render('Gestionnaire/Mouvements', [
-            'stockMovements' => $query->latest('mvs_date_mouvement')->paginate(4)->withQueryString(),
-            'warehouses_paginated' => \App\Models\Entrepot::paginate(5, ['*'], 'entrepots')->withQueryString(),
-            'articles' => \App\Models\Article::all(['art_id', 'art_nom', 'art_reference']),
-            'warehouses' => \App\Models\Entrepot::all(['ent_id', 'ent_nom']),
-            'suppliers' => \App\Models\Fournisseur::all(['fou_id', 'fou_nom']),
-            'filters' => $request->only(['search', 'type', 'article_id', 'warehouse_id', 'date_start', 'date_end'])
+            'stockMovements'       => MouvementStock::getPaginatedMovements($filters, 4),
+            'warehouses_paginated' => \App\Models\Entrepot::getPaginatedForManager(5),
+            'articles'             => \App\Models\Article::getForDropdown(),
+            'warehouses'           => \App\Models\Entrepot::getAllWarehouses(),
+            'suppliers'            => \App\Models\Fournisseur::getAllSuppliers(),
+            'filters'              => $filters
         ]);
     }
 

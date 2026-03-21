@@ -21,7 +21,7 @@ class ArticleSeeder extends Seeder
         Article::create([
             'art_reference' => 'STYLO-BLEU-001',
             'art_nom' => 'Stylo Bille Bleu',
-            'art_unite' => 'unité',
+            'art_unite' => 'unite',
             'art_cat_id' => $catFdb->cat_id,
             'art_seuil_alerte' => 10,
             'art_stock_securite' => 5,
@@ -31,7 +31,7 @@ class ArticleSeeder extends Seeder
         Article::create([
             'art_reference' => 'PC-PORT-HP-005',
             'art_nom' => 'Ordinateur Portable HP ProBook',
-            'art_unite' => 'unité',
+            'art_unite' => 'unite',
             'art_cat_id' => $catMatInf->cat_id,
             'art_seuil_alerte' => 2,
             'art_stock_securite' => 1,
@@ -41,7 +41,7 @@ class ArticleSeeder extends Seeder
         Article::create([
             'art_reference' => 'TONER-LASER-30A',
             'art_nom' => 'Cartouche Toner Laser 30A',
-            'art_unite' => 'unité',
+            'art_unite' => 'unite',
             'art_cat_id' => $catCons->cat_id,
             'art_seuil_alerte' => 3,
             'art_stock_securite' => 1,
@@ -51,7 +51,7 @@ class ArticleSeeder extends Seeder
         Article::create([
             'art_reference' => 'CAHIER-A4-CARRE',
             'art_nom' => 'Cahier A4 Grands Carreaux',
-            'art_unite' => 'unité',
+            'art_unite' => 'unite',
             'art_cat_id' => $catFdb->cat_id,
             'art_seuil_alerte' => 20,
             'art_stock_securite' => 10,

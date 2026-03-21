@@ -6,24 +6,22 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\Categorie;
-use App\Models\Entrepot;
-use App\Models\MouvementStock;
+use \Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class Article extends Model
 {
     use HasFactory;
 
-    protected $table = 'articles';
+    // =========================================================================
+    // CONFIGURATION
+    // =========================================================================
+
+    protected $table      = 'articles';
     protected $primaryKey = 'art_id';
 
     public const CREATED_AT = 'art_created_at';
     public const UPDATED_AT = 'art_updated_at';
-
-    /**
-     * The attributes that are mass assignable.
-     */
 
     protected $fillable = [
         'art_reference',
@@ -35,179 +33,57 @@ class Article extends Model
         'art_prix_defaut',
     ];
 
-    /**
-     * Calculate the total value of all stock using SQL for performance.
-     */
-    public static function getTotalStockValue(): float
+    // =========================================================================
+    // RELATIONS
+    // =========================================================================
+
+    /** Catégorie de l'article. */
+    public function category(): BelongsTo
     {
-        return DB::table('articles')
-            ->join('stocks_articles', 'articles.art_id', '=', 'stocks_articles.sta_art_id')
-            ->selectRaw('SUM(stocks_articles.sta_quantite * COALESCE(articles.art_prix_defaut, 0)) as total_value')
-            ->value('total_value') ?? 0.0;
+        return $this->belongsTo(Categorie::class, 'art_cat_id', 'cat_id');
     }
 
-    /**
-     * Get articles that are under their alert threshold using SQL optimization.
-     */
-    public static function getUnderThreshold()
+    /** Stocks de l'article par entrepôt. */
+    public function itemStocks(): HasMany
     {
-        return self::withStockDetails()
-            ->withSum('itemStocks as calculated_total_stock', 'sta_quantite')
-            ->get()
-            ->filter(function($article) {
-                return ($article->calculated_total_stock ?? 0) <= $article->art_seuil_alerte;
-            });
+        return $this->hasMany(StockArticle::class, 'sta_art_id', 'art_id');
     }
 
-    /**
-     * Get all data for the manager dashboard.
-     */
-    public static function getDashboardData()
+    /** Mouvements de stock liés à l'article. */
+    public function stockMovements(): HasMany
     {
-        $underThreshold = self::getUnderThreshold();
-        return [
-            'stats' => [
-                'underThreshold' => $underThreshold->count(),
-                'totalArticles' => self::count(),
-                'movements' => MouvementStock::count(),
-                'stockValue' => self::getTotalStockValue(),
-            ],
-            'stockAlerts' => $underThreshold->take(5)->map(fn($article) => [
-                'id' => $article->art_id,
-                'product' => $article->art_nom,
-                'location' => 'Tous entrepôts',
-                'current' => $article->total_stock,
-                'threshold' => $article->art_seuil_alerte,
-            ])->values(),
-            'recentMovements' => MouvementStock::withFullDetails()
-                ->latest()
-                ->take(5)
-                ->get()
-                ->map->formatForList(),
-            'topArticles' => MouvementStock::getTopConsumed(5)->map(fn($m) => [
-                'name' => $m->item->art_nom ?? 'N/A',
-                'value' => $m->total_qty
-            ]),
-        ];
+        return $this->hasMany(MouvementStock::class, 'mvs_art_id', 'art_id');
     }
 
-    /**
-     * Get paginated articles with all details for the manager.
-     */
-    public static function getPaginatedForManager($perPage = 3)
+    /** Lignes de demandes de sortie liées à l'article. */
+    public function withdrawRequestLines(): HasMany
     {
-        return self::withStockDetails()->paginate($perPage, ['*'], 'items');
+        return $this->hasMany(LigneDemandeSortie::class, 'lds_art_id', 'art_id');
     }
 
-    /**
-     * Get all data needed for the manager's article index.
-     */
-    public static function getIndexData()
-    {
-        return [
-            'items' => self::getPaginatedForManager(),
-            'categories_all' => Categorie::all(['cat_id', 'cat_nom']),
-            'categories' => Categorie::paginate(3, ['*'], 'categories'),
-            'warehouses' => Entrepot::all(['ent_id', 'ent_nom']),
-        ];
-    }
+    // =========================================================================
+    // ACCESSEURS
+    // =========================================================================
 
     /**
-     * Get data for the demandeur view.
-     */
-    public static function getForDemandeur()
-    {
-        $articles = self::withStockDetails()->get();
-        return [
-            'articles' => $articles->map->formatForDemandeur(),
-            'categories' => Categorie::all(['cat_id', 'cat_nom']),
-            'articlesDisponibles' => $articles->map->formatAvailability(),
-        ];
-    }
-
-    /**
-     * Create a new article safely.
-     */
-    public static function storeFromRequest(array $data)
-    {
-        return self::create($data);
-    }
-
-    /**
-     * Update article safely.
-     */
-    public function updateFromRequest(array $data)
-    {
-        return $this->update($data);
-    }
-
-    /**
-     * Delete article safely with error handling.
-     */
-    public function safeDelete()
-    {
-        return $this->delete();
-    }
-
-    /**
-     * Format the article for the demandeur list.
-     */
-    public function formatForDemandeur(): array
-    {
-        return [
-            'id' => $this->art_id,
-            'code' => $this->art_reference,
-            'name' => $this->art_nom,
-            'category' => $this->category->cat_nom ?? 'N/A',
-            'stock' => $this->total_stock,
-            'status' => $this->status,
-            'warehouses' => $this->itemStocks->map(fn($stock) => [
-                'id' => $stock->sta_ent_id,
-                'name' => $stock->warehouse->ent_nom ?? 'N/A',
-                'qty' => $stock->sta_quantite,
-            ]),
-        ];
-    }
-
-    /**
-     * Format the article for the availability list (simple view).
-     */
-    public function formatAvailability(): array
-    {
-        return [
-            'id' => $this->art_id,
-            'nom' => $this->art_nom,
-            'warehouses' => $this->itemStocks->map(fn($stock) => [
-                'id' => $stock->sta_ent_id,
-                'name' => $stock->warehouse->ent_nom ?? 'N/A',
-                'qty' => $stock->sta_quantite,
-            ])->values()
-        ];
-    }
-
-    /**
-     * Get the total stock quantity across all warehouses.
+     * Stock total cumulé sur tous les entrepôts.
+     * Utilise calculated_total_stock (withSum) en priorité pour éviter
+     * toute requête SQL individuelle.
      */
     public function getTotalStockAttribute(): int
     {
-        return $this->itemStocks()->sum('sta_quantite');
+        if (isset($this->attributes['calculated_total_stock'])) {
+            return (int) $this->attributes['calculated_total_stock'];
+        }
+        if ($this->relationLoaded('itemStocks')) {
+            return (int) $this->itemStocks->sum('sta_quantite');
+        }
+        return 0;
     }
 
     /**
-     * The accessors to append to the model's array form.
-     */
-    protected $appends = ['total_stock', 'status'];
-
-    /**
-     * Scope to eager load category and stock details.
-     */
-    public function scopeWithStockDetails($query)
-    {
-        return $query->with(['category', 'itemStocks.warehouse']);
-    }
-
-    /**
-     * Get the stock status label.
+     * Statut lisible du stock : Disponible, Stock bas ou Rupture.
+     * Dépend de getTotalStockAttribute — ne pas appeler sans withStockDetails().
      */
     public function getStatusAttribute(): string
     {
@@ -218,109 +94,165 @@ class Article extends Model
         return $total > 0 ? 'Stock bas' : 'Rupture';
     }
 
+    // =========================================================================
+    // SCOPES
+    // =========================================================================
+
     /**
-     * Get the category that owns the item.
+     * Charge la catégorie, les stocks par entrepôt et calcule le stock total
+     * en une seule requête GROUP BY via withSum().
+     * À utiliser systématiquement pour éviter le problème N+1.
      */
-    public function category(): BelongsTo
+    public function scopeWithStockDetails($query)
     {
-        return $this->belongsTo(Categorie::class, 'art_cat_id', 'cat_id');
+        return $query
+            ->with(['category', 'itemStocks.warehouse'])
+            ->withSum('itemStocks as calculated_total_stock', 'sta_quantite');
     }
 
     /**
-     * Get the item stocks for the item.
-     */
-    public function itemStocks(): HasMany
-    {
-        return $this->hasMany(StockArticle::class, 'sta_art_id', 'art_id');
-    }
-
-    /**
-     * Get the stock movements for the item.
-     */
-    public function stockMovements(): HasMany
-    {
-        return $this->hasMany(MouvementStock::class, 'mvs_art_id', 'art_id');
-    }
-
-    /**
-     * Get the withdraw request lines for the item.
-     */
-    public function withdrawRequestLines(): HasMany
-    {
-        return $this->hasMany(LigneDemandeSortie::class, 'lds_art_id', 'art_id');
-    }
-
-    /**
-     * Scope: articles dont le stock total est inférieur ou égal au seuil d'alerte.
+     * Filtre les articles dont le stock total est inférieur ou égal au seuil d'alerte.
+     * Inclut withSum pour rendre total_stock disponible sans requête supplémentaire.
      */
     public function scopeBelowAlertThreshold($query)
     {
-        return $query->whereRaw(
-            'COALESCE((select SUM(sta_quantite) from stocks_articles where articles.art_id = stocks_articles.sta_art_id), 0) <= art_seuil_alerte'
-        )->withSum('itemStocks as total_stock', 'sta_quantite');
+        return $query
+            ->whereRaw('COALESCE((SELECT SUM(sta_quantite) FROM stocks_articles WHERE articles.art_id = stocks_articles.sta_art_id), 0) <= art_seuil_alerte')
+            ->withSum('itemStocks as total_stock', 'sta_quantite');
     }
 
+    // =========================================================================
+    // MÉTHODES STATIQUES — LECTURE / REQUÊTES
+    // =========================================================================
+
     /**
-     * Calcule la valeur totale du stock (somme des quantités × prix par défaut).
+     * Calcule la valeur totale du stock global (quantité × prix par défaut).
+     * Utilise une jointure SQL directe pour la performance.
      */
     public static function totalStockValue(): float
     {
-        return (float) (static::join('stocks_articles', 'articles.art_id', '=', 'stocks_articles.sta_art_id')
-            ->selectRaw('SUM(stocks_articles.sta_quantite * articles.art_prix_defaut) as total_value')
-            ->value('total_value') ?? 0);
+        return (float) (
+            DB::table('articles')
+                ->join('stocks_articles', 'articles.art_id', '=', 'stocks_articles.sta_art_id')
+                ->selectRaw('SUM(stocks_articles.sta_quantite * COALESCE(articles.art_prix_defaut, 0)) as total_value')
+                ->value('total_value') ?? 0
+        );
     }
 
     /**
-     * Retourne la liste formatée des articles pour la vue demandeur
+     * Retourne les articles dont le stock est sous le seuil d'alerte.
+     * Résultat : Collection filtrée en mémoire après un seul chargement.
      */
-    public static function forDemandeurDisplay(): \Illuminate\Support\Collection
+    public static function getUnderThreshold(): \Illuminate\Support\Collection
     {
-        return static::with(['category', 'itemStocks.warehouse'])->get()->map(function ($article) {
-            return [
-                'id'       => $article->art_id,
-                'code'     => $article->art_reference,
-                'name'     => $article->art_nom,
-                'category' => $article->category->cat_nom ?? 'N/A',
-                'stock'    => $article->total_stock,
-                'status'   => $article->total_stock > $article->art_seuil_alerte
-                    ? 'Disponible'
-                    : ($article->total_stock > 0 ? 'Stock bas' : 'Rupture'),
-                'warehouses' => $article->itemStocks->map(fn ($stock) => [
-                    'id'   => $stock->sta_ent_id,
-                    'name' => $stock->warehouse->ent_nom ?? 'N/A',
-                    'qty'  => $stock->sta_quantite,
-                ]),
-            ];
-        });
+        return self::withStockDetails()
+            ->get()
+            ->filter(fn ($article) => ($article->calculated_total_stock ?? 0) <= $article->art_seuil_alerte);
     }
 
     /**
-     * Retourne la liste simplifiée des articles disponibles pour le formulaire
-     * de demande de sortie (id, nom, entrepôts avec quantités).
+     * Retourne les articles paginés avec tous leurs détails pour la vue gestionnaire.
      */
-    public static function asAvailableList(): \Illuminate\Support\Collection
+    public static function getPaginatedForManager(int $perPage = 3)
     {
-        return static::with(['itemStocks.warehouse'])->get()->map(function ($article) {
-            return [
-                'id'         => $article->art_id,
-                'nom'        => $article->art_nom,
-                'warehouses' => $article->itemStocks->map(fn ($stock) => [
-                    'id'   => $stock->sta_ent_id,
-                    'name' => $stock->warehouse->ent_nom ?? 'N/A',
-                    'qty'  => $stock->sta_quantite,
-                ])->values(),
-            ];
-        });
-    }
-
-    // Articles paginer avec les relations
-    public static function getWithRelationsPaginated($perPage)
-    {
-        return self::with(['category', 'itemStocks.warehouse'])->paginate($perPage, ['*'], 'items');
+        return self::withStockDetails()->paginate($perPage, ['*'], 'items');
     }
 
     /**
-     * Check if enough stock exists in a specific warehouse.
+     * Retourne la liste formatée des articles pour la vue demandeur (avec stock et statut).
+     */
+    public static function forDemandeurDisplay(): Collection
+    {
+        return static::withStockDetails()
+            ->get()
+            ->map(fn ($article) => $article->formatForDemandeur());
+    }
+
+    /**
+     * Retourne la liste simplifiée des articles pour le formulaire de demande de sortie
+     * (id, nom, entrepôts disponibles avec quantités).
+     */
+    public static function asAvailableList(): Collection
+    {
+        return static::with(['itemStocks.warehouse'])
+            ->withSum('itemStocks as calculated_total_stock', 'sta_quantite')
+            ->get()
+            ->map(fn ($article) => $article->formatAvailability());
+    }
+
+    /**
+     * Retourne les articles allégés pour les menus déroulants (sans relations ni appends).
+     */
+    public static function getForDropdown(): Collection
+    {
+        return self::select(['art_id', 'art_nom', 'art_reference'])->get();
+    }
+
+    // =========================================================================
+    // MÉTHODES STATIQUES — ÉCRITURE
+    // =========================================================================
+
+    /** Crée un article depuis les données validées du request. */
+    public static function storeFromRequest(array $data): static
+    {
+        return self::create($data);
+    }
+
+    // =========================================================================
+    // MÉTHODES D'INSTANCE — FORMATAGE
+    // =========================================================================
+
+    /**
+     * Formate l'article pour la liste du demandeur (stock, statut, entrepôts).
+     * Nécessite withStockDetails() en amont.
+     */
+    public function formatForDemandeur(): array
+    {
+        return [
+            'id'         => $this->art_id,
+            'code'       => $this->art_reference,
+            'name'       => $this->art_nom,
+            'category'   => $this->category->cat_nom ?? 'N/A',
+            'stock'      => $this->total_stock,
+            'status'     => $this->status,
+            'warehouses' => $this->itemStocks->map(fn ($stock) => [
+                'id'   => $stock->sta_ent_id,
+                'name' => $stock->warehouse->ent_nom ?? 'N/A',
+                'qty'  => $stock->sta_quantite,
+            ])->values(),
+        ];
+    }
+
+    /**
+     * Formate l'article pour la liste de disponibilité (formulaire de demande).
+     * Nécessite itemStocks.warehouse chargé en amont.
+     */
+    public function formatAvailability(): array
+    {
+        return [
+            'id'         => $this->art_id,
+            'nom'        => $this->art_nom,
+            'warehouses' => $this->itemStocks->map(fn ($stock) => [
+                'id'   => $stock->sta_ent_id,
+                'name' => $stock->warehouse->ent_nom ?? 'N/A',
+                'qty'  => $stock->sta_quantite,
+            ])->values(),
+        ];
+    }
+
+    // =========================================================================
+    // MÉTHODES D'INSTANCE — LOGIQUE MÉTIER
+    // =========================================================================
+
+    /** Met à jour l'article depuis les données validées du request. */
+    public function updateFromRequest(array $data): bool
+    {
+        return $this->update($data);
+    }
+
+    /**
+     * Vérifie si un stock suffisant existe dans un entrepôt donné.
+     * Déclenche une requête SQL — à utiliser ponctuellement (pas en boucle).
      */
     public function hasStock(int $warehouseId, int $quantity): bool
     {

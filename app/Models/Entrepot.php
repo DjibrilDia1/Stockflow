@@ -48,5 +48,10 @@ class Entrepot extends Model
         return self::all(['ent_id', 'ent_nom']);
     }
     
+    public static function getPaginatedForManager(int $perPage = 5)
+    {
+        return self::paginate($perPage, ['*'], 'entrepots')->withQueryString();
+    }
+    
 }
 

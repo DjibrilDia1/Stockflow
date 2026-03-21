@@ -14,7 +14,7 @@ class CategorieSeeder extends Seeder
     public function run(): void
     {
         Categorie::create(['cat_nom' => 'Fournitures de bureau', 'cat_code' => 'FDB']);
-        Categorie::create(['cat_nom' => 'Matériel Informatique', 'cat_code' => 'MAT-INF']);
+        Categorie::create(['cat_nom' => 'Materiel Informatique', 'cat_code' => 'MAT-INF']);
         Categorie::create(['cat_nom' => 'Consommables', 'cat_code' => 'CONS']);
     }
 }

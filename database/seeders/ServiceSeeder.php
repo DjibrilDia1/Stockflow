@@ -22,13 +22,13 @@ class ServiceSeeder extends Seeder
         Service::create([
             'ser_nom' => 'Service Technique',
             'ser_code' => 'TECH',
-            'ser_type' => 'Opérationnel'
+            'ser_type' => 'Operationnel'
         ]);
 
         Service::create([
             'ser_nom' => 'Service Production',
             'ser_code' => 'PROD',
-            'ser_type' => 'Opérationnel'
+            'ser_type' => 'Operationnel'
         ]);
     }
 }

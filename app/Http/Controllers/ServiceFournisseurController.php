@@ -17,8 +17,8 @@ class ServiceFournisseurController extends Controller
     public function index(Request $request): Response
     {
         return Inertia::render('Gestionnaire/Services-Fournisseurs', [
-            'services'     => Service::getUsersCountAttribute(3),
-            'fournisseurs' => Fournisseur::getUsersCountAttribute(3),
+            'services'     => Service::getPaginated(3),
+            'fournisseurs' => Fournisseur::getPaginated(3),
         ]);
     }
 

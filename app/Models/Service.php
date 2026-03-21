@@ -65,9 +65,11 @@ class Service extends Model
     }
 
     // -------------------------- Methodes -------------------------
-    public static function getUsersCountAttribute($perPage)
+    public static function getPaginated(int $perPage)
     {
-        return self::paginate($perPage, ['*'], 'services')->withQueryString();
+        return self::withCount('users')
+            ->paginate($perPage, ['*'], 'services')
+            ->withQueryString();
     }
     
 }

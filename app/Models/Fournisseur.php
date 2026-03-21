@@ -37,9 +37,14 @@ class Fournisseur extends Model
     }
 
     // Methodes pour les fournisseurs
-    public static function getUsersCountAttribute($perPage)
+    public static function getPaginated(int $perPage)
     {
         return self::paginate($perPage, ['*'], 'fournisseurs')->withQueryString();
+    }
+
+    public static function getAllSuppliers()
+    {
+        return self::all(['fou_id', 'fou_nom']);
     }
 }
 

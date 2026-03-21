@@ -14,15 +14,15 @@ class EntrepotSeeder extends Seeder
     public function run(): void
     {
         Entrepot::create([
-            'ent_nom' => 'Entrepôt Principal',
+            'ent_nom' => 'Entrepot Principal',
             'ent_code' => 'ENT-MAIN',
-            'ent_localisation' => 'Bà¢timent A, Zone Industrielle'
+            'ent_localisation' => 'Batiment A, Zone Industrielle'
         ]);
 
         Entrepot::create([
             'ent_nom' => 'Annexe Magasin',
             'ent_code' => 'ANN-MAG',
-            'ent_localisation' => 'Bà¢timent C, à côté de la production'
+            'ent_localisation' => 'Batiment C, a cote de la production'
         ]);
     }
 }
