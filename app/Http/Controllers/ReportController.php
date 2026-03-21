@@ -82,10 +82,29 @@ class ReportController extends Controller
     private function getKpiData()
     {
         $totalArticles      = Article::count();
-        $lowStockCount      = StockArticle::lowStock()->count();
-        $outOfStockCount    = StockArticle::outOfStock()->count();
+        
+        $lowStockItems = StockArticle::withDetails()->lowStock()->get()->map(fn($s) => [
+            'nom' => $s->item->art_nom ?? 'Inconnu',
+            'qte' => $s->sta_quantite,
+            'entrepot' => $s->warehouse->ent_nom ?? 'N/A'
+        ]);
+        
+        $outOfStockItems = StockArticle::withDetails()->outOfStock()->get()->map(fn($s) => [
+            'nom' => $s->item->art_nom ?? 'Inconnu',
+            'qte' => $s->sta_quantite,
+            'entrepot' => $s->warehouse->ent_nom ?? 'N/A'
+        ]);
+        
+        $availableItems = StockArticle::withDetails()->available()->get()->map(fn($s) => [
+            'nom' => $s->item->art_nom ?? 'Inconnu',
+            'qte' => $s->sta_quantite,
+            'entrepot' => $s->warehouse->ent_nom ?? 'N/A'
+        ]);
+
+        $lowStockCount      = $lowStockItems->count();
+        $outOfStockCount    = $outOfStockItems->count();
         $movementsThisMonth = MouvementStock::thisMonth()->count();
-        $availableCount     = StockArticle::available()->count();
+        $availableCount     = $availableItems->count();
 
         $mostConsumedItem     = MouvementStock::mostConsumedArticle();
         $mostConsumedItemName = '-';
@@ -105,6 +124,11 @@ class ReportController extends Controller
                 'quantity' => $mostConsumedItem ? $mostConsumedItem->total_qty : 0,
             ],
             'totalArticles' => $totalArticles,
+            'itemsByStatus' => [
+                'low' => $lowStockItems,
+                'out' => $outOfStockItems,
+                'available' => $availableItems,
+            ]
         ];
     }
 

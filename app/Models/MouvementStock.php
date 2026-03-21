@@ -152,7 +152,8 @@ class MouvementStock extends Model
     {
         return self::withFullDetails()
             ->filtered($filters)
-            ->latest('mvs_date_mouvement')
+            ->orderByDesc('mvs_date_mouvement')
+            ->orderByDesc('mvs_created_at')
             ->paginate($perPage)
             ->withQueryString();
     }

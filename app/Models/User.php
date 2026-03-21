@@ -34,7 +34,7 @@ class User extends Authenticatable
     public static function getIndexData()
     {
         return [
-            'users' => self::withService()->paginate(3),
+            'users' => self::withService()->orderByDesc('created_at')->paginate(3),
             'services' => Service::all(['ser_id', 'ser_nom']),
         ];
     }

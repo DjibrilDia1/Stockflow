@@ -234,14 +234,21 @@ const logout = () => { if (confirm('Déconnexion ?')) router.post(route('logout'
                     <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
                         <div class="overflow-x-auto">
                             <table class="w-full text-left">
-                                <thead><tr class="bg-slate-50/50 text-xs font-bold text-slate-500 uppercase"><th class="px-6 py-4">Date</th><th class="px-6 py-4">Article</th><th class="px-6 py-4">Entrepôt</th><th class="px-6 py-4">Type</th><th class="px-6 py-4 text-right">Quantité</th><th class="px-6 py-4">Source/Dest.</th></tr></thead>
+                                <thead><tr class="bg-slate-50/50 text-xs font-bold text-slate-500 uppercase"><th class="px-6 py-4">Date</th><th class="px-6 py-4">Article</th><th class="px-6 py-4">Entrepôt</th><th class="px-6 py-4">Type</th><th class="px-6 py-4">Quantité</th><th class="px-6 py-4">Source/Dest.</th></tr></thead>
                                 <tbody class="divide-y divide-slate-100">
                                     <tr v-for="mvt in movementsData.data" :key="mvt.mvs_id" class="hover:bg-slate-50 transition-colors">
                                         <td class="px-6 py-4 text-sm text-slate-600">{{ new Date(mvt.mvs_date_mouvement).toLocaleString() }}</td>
                                         <td class="px-6 py-4 text-sm font-bold text-slate-800">{{ mvt.item.art_nom }}</td>
                                         <td class="px-6 py-4 text-sm text-slate-600">{{ mvt.warehouse.ent_nom }}</td>
                                         <td class="px-6 py-4"><span :class="['px-2 py-1 rounded-full text-[10px] font-bold', getTypeClass(mvt.mvs_type)]">{{ mvt.mvs_type }}</span></td>
-                                        <td class="px-6 py-4 text-sm text-right font-mono font-bold" :class="mvt.mvs_quantite > 0 ? 'text-emerald-600' : 'text-red-600'">{{ mvt.mvs_quantite > 0 ? '+' : '' }}{{ mvt.mvs_quantite }}</td>
+                                        <td class="px-6 py-4 text-sm font-bold" :class="{
+                                            'text-emerald-600': mvt.mvs_type === 'IN',
+                                            'text-red-600': mvt.mvs_type === 'OUT',
+                                            'text-blue-600': mvt.mvs_type === 'TRANSFER',
+                                            'text-amber-600': mvt.mvs_type === 'ADJUST',
+                                        }">
+                                            {{ mvt.mvs_quantite }}
+                                        </td>
                                         <td class="px-6 py-4 text-sm text-slate-500">{{ mvt.supplier?.fou_nom || mvt.service?.ser_nom || '-' }}</td>
                                     </tr>
                                 </tbody>
@@ -280,6 +287,83 @@ const logout = () => { if (confirm('Déconnexion ?')) router.post(route('logout'
                             <h3 class="text-lg font-semibold text-slate-800 mb-4">Répartition du Stock</h3>
                             <div class="h-64">
                                 <Pie :data="pieChartData" :options="pieChartOptions" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Article Lists by Status -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+                        <!-- Out of Stock -->
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                            <div class="px-4 py-3 bg-red-50 border-b border-red-100 flex justify-between items-center">
+                                <h4 class="text-sm font-bold text-red-700 uppercase">Articles en Rupture</h4>
+                                <span class="bg-red-600 text-white text-[10px] px-2 py-0.5 rounded-full">{{ kpiData.itemsByStatus.out.length }}</span>
+                            </div>
+                            <div class="max-h-60 overflow-y-auto p-2">
+                                <table class="w-full text-xs">
+                                    <thead class="text-slate-500 border-b">
+                                        <tr><th class="text-left py-2 px-2">Article</th><th class="text-right py-2 px-2">Entrepôt</th></tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-50">
+                                        <tr v-for="(item, idx) in kpiData.itemsByStatus.out" :key="idx" class="hover:bg-slate-50">
+                                            <td class="py-2 px-2 font-medium text-slate-700">{{ item.nom }}</td>
+                                            <td class="py-2 px-2 text-right text-slate-500 italic">{{ item.entrepot }}</td>
+                                        </tr>
+                                        <tr v-if="kpiData.itemsByStatus.out.length === 0">
+                                            <td colspan="2" class="py-4 text-center text-slate-400">Aucun article en rupture</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Low Stock -->
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                            <div class="px-4 py-3 bg-amber-50 border-b border-amber-100 flex justify-between items-center">
+                                <h4 class="text-sm font-bold text-amber-700 uppercase">Stock Faible</h4>
+                                <span class="bg-amber-500 text-white text-[10px] px-2 py-0.5 rounded-full">{{ kpiData.itemsByStatus.low.length }}</span>
+                            </div>
+                            <div class="max-h-60 overflow-y-auto p-2">
+                                <table class="w-full text-xs">
+                                    <thead class="text-slate-500 border-b">
+                                        <tr><th class="text-left py-2 px-2">Article</th><th class="text-center py-2 px-2">Qté</th><th class="text-right py-2 px-2">Entrepôt</th></tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-50">
+                                        <tr v-for="(item, idx) in kpiData.itemsByStatus.low" :key="idx" class="hover:bg-slate-50">
+                                            <td class="py-2 px-2 font-medium text-slate-700">{{ item.nom }}</td>
+                                            <td class="py-2 px-2 text-center text-amber-600 font-bold">{{ item.qte }}</td>
+                                            <td class="py-2 px-2 text-right text-slate-500 italic text-[10px]">{{ item.entrepot }}</td>
+                                        </tr>
+                                        <tr v-if="kpiData.itemsByStatus.low.length === 0">
+                                            <td colspan="3" class="py-4 text-center text-slate-400">Aucun article sous seuil</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Available -->
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                            <div class="px-4 py-3 bg-teal-50 border-b border-teal-100 flex justify-between items-center">
+                                <h4 class="text-sm font-bold text-teal-700 uppercase">Articles Disponibles</h4>
+                                <span class="bg-teal-600 text-white text-[10px] px-2 py-0.5 rounded-full">{{ kpiData.itemsByStatus.available.length }}</span>
+                            </div>
+                            <div class="max-h-60 overflow-y-auto p-2">
+                                <table class="w-full text-xs">
+                                    <thead class="text-slate-500 border-b">
+                                        <tr><th class="text-left py-2 px-2">Article</th><th class="text-center py-2 px-2">Qté</th><th class="text-right py-2 px-2">Entrepôt</th></tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-50">
+                                        <tr v-for="(item, idx) in kpiData.itemsByStatus.available" :key="idx" class="hover:bg-slate-50">
+                                            <td class="py-2 px-2 font-medium text-slate-700">{{ item.nom }}</td>
+                                            <td class="py-2 px-2 text-center text-emerald-600 font-bold">{{ item.qte }}</td>
+                                            <td class="py-2 px-2 text-right text-slate-500 italic text-[10px]">{{ item.entrepot }}</td>
+                                        </tr>
+                                        <tr v-if="kpiData.itemsByStatus.available.length === 0">
+                                            <td colspan="3" class="py-4 text-center text-slate-400">Aucun article disponible</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>

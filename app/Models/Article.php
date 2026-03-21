@@ -155,7 +155,7 @@ class Article extends Model
      */
     public static function getPaginatedForManager(int $perPage = 3)
     {
-        return self::withStockDetails()->paginate($perPage, ['*'], 'items');
+        return self::withStockDetails()->orderByDesc('art_created_at')->paginate($perPage, ['*'], 'items');
     }
 
     /**
@@ -259,4 +259,7 @@ class Article extends Model
         $stock = $this->itemStocks()->where('sta_ent_id', $warehouseId)->first();
         return $stock && $stock->sta_quantite >= $quantity;
     }
+
+    // app/Models/Article.php
+    protected $appends = ['total_stock'];
 }
